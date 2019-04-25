@@ -1,3 +1,10 @@
+# Cromwell Runner
+
+To install,
+```
+git clone https://github.com/ding-lab/CromwellRunner.git PROJECT_NAME
+```
+
 
 
 # TODO
