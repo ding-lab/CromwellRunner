@@ -14,10 +14,10 @@ CASES_FN="dat/cases.dat"
 
 # Path to BamMap, which is a file which defines sequence data path and other metadata
 # BamMap format is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
-BAMMAP="/gscuser/mwyczalk/projects/CPTAC3/CPTAC3.catalog/MGI.BamMap.dat"
+BAMMAP="/gscuser/mwyczalk/projects/TinDaisy/TinDaisyCromwellRunner/ccRCC_drug.catalog/ccRCC_drug.MGI.BamMap.dat"
 
-# This path below is for CPTAC3-standard GRCh38 reference
-REF_PATH="/gscmnt/gc2521/dinglab/mwyczalk/somatic-wrapper-data/image.data/A_Reference/GRCh38.d1.vd1.fa"
+# This path below is for reference for Yige 
+REF_PATH="/gscmnt/gc3021/dinglab/PDX/RawData/PDX_other/Kidney/WES/all_sequences.fa"
 
 # See katmai:/home/mwyczalk_test/Projects/TinDaisy/sw1.3-compare/README.dbsnp.md for discussion of dbSnP references
 # Updating to dbSnP-COSMIC version 20190416
