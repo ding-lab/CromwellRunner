@@ -1,10 +1,22 @@
-Testing of cromwell CWL engine for TinDaisy at MGI
 
-* Tracking runs here: https://docs.google.com/spreadsheets/d/12ANLh3H1dgZcGFwmCjL3i-XZHtukeicw6DtboAjMT7E/edit#gid=0
 
 # TODO
-* When GBM is done, clean up cromwell directories into one clean directory, describe clean setup for production
+* implement, describe `runtidy -x finalize`
 * Add discussion about MutectDemo, whose YAML file is in ./config
+* Add ability to process CRAM files.  This will need to read associated secondary files (.bai not required, .crai required)
+* Look into why vcf_2_maf went zombie on Yige's run.  Think about getting rid of that step, or else debug bypassing
+
+# Data prep
+
+BAM files and reference need to be indexed.
+```
+samtools index BAM
+java -jar picard.jar CreateSequenceDictionary R=REF.fa O=REF.dict
+```
+where for instance `REF="all_sequences"`
+
+dbSnP-COSMIC VCF needs to have chromosome names which match the reference, otherwise it will
+silently not match anything.  Note that dbSnP-COSMIC.GRCh38.d1.vd1.20190416.vcf.gz has chrom names like `chr1`
 
 # Run procedure
 
@@ -19,7 +31,7 @@ Preparation:
     * TUMOR_BAM  - from BamMap
     * REF        - /gscmnt/gc2521/dinglab/mwyczalk/somatic-wrapper-data/image.data/A_Reference/GRCh38.d1.vd1.fa
     * TD_ROOT    - /gscuser/mwyczalk/projects/TinDaisy/TinDaisy 
-    * DBSNP_DB   - /gscmnt/gc2521/dinglab/mwyczalk/somatic-wrapper-data/image.data/B_Filter/dbSnP-COSMIC.GRCh38.d1.vd1.20190415.vcf.gz
+    * DBSNP_DB   - /gscmnt/gc2521/dinglab/mwyczalk/somatic-wrapper-data/image.data/B_Filter/dbSnP-COSMIC.GRCh38.d1.vd1.20190416.vcf.gz
                    see katmai:/home/mwyczalk_test/Projects/TinDaisy/sw1.3-compare/README.dbsnp.md for details
     * VEP_CACHE_GZ - /gscmnt/gc2521/dinglab/mwyczalk/somatic-wrapper-data/image.data/D_VEP/vep-cache.90_GRCh38.tar.gz
 ```
