@@ -1,11 +1,14 @@
 # Cromwell Runner
 
+Initialize, run, and finalize TinDaisy Cromwell workflows on MGI
+
 To install,
 ```
 git clone https://github.com/ding-lab/CromwellRunner.git PROJECT_NAME
 ```
 
-
+Documentation here is based on [TinDaisy](https://github.com/ding-lab/TinDaisy) Cromwell demonstration development work
+in `demo/task_call/cromwell`
 
 # TODO
 * implement, describe `runtidy -x finalize`
