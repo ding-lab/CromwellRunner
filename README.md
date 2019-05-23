@@ -18,7 +18,7 @@ in `demo/task_call/cromwell`
 
 # Data prep
 
-BAM files and reference need to be indexed.
+BAM files and reference need to be indexed.  This is done for CPTAC3 data
 ```
 samtools index BAM
 java -jar picard.jar CreateSequenceDictionary R=REF.fa O=REF.dict
@@ -45,6 +45,7 @@ Preparation:
                    see katmai:/home/mwyczalk_test/Projects/TinDaisy/sw1.3-compare/README.dbsnp.md for details
     * VEP_CACHE_GZ - /gscmnt/gc2521/dinglab/mwyczalk/somatic-wrapper-data/image.data/D_VEP/vep-cache.90_GRCh38.tar.gz
 ```
+   For Normal Adjacent analyses, also need to define `TUMOR_ST` as `tissue_adjacent` rather than `tumor`
 3. Create file `dat/cases.dat`, which lists all cases we'll be processing
    Note that entries here will be used to find BAMs in BamMap to populate YAML files
 4. Optionally, put the following in ~/.bashrc or execute each time:
@@ -57,9 +58,11 @@ here is important so that processes are not stranded after you log out
 5. `0_start_docker.sh`
 6. `conda activate jq`.  This environment contains `jq`, `parallel`, and `tmux`
 7. `1_make_yaml.sh` - this will generate start configuration files for all cases in `cases.dat`
-8. Edit `2_run_tasks.sh` to define the number of cromwell jobs to run at once: `ARGS="-J N"`
-   If `parallel` prints a bunch of citation information, run `parallel --citation` - this typically has to be done just once per system
+8. Optionally edit `2_run_tasks.sh` to define the number of cromwell jobs to run at once: `ARGS="-J N"`
+    * Alternatively, pass `-J N` as argument to `2_` in the next step
 9. Start runs with `2_run_tasks.sh`.  
+   May want to test with `2_run_tasks.sh -1 -d` first, which will do a dry run of one case (see Debugging seciton below).
+   If `parallel` prints a bunch of citation information, run `parallel --citation` - this typically has to be done just once per system
    You can detach from `tmux` now and jobs will continue
 
 Iteratively check status of runs
@@ -70,6 +73,12 @@ When runs conclude  (this is undergoing revision)
 12. Clean run directories 
 
 # Additional details
+
+## Debugging
+
+`-1` flag to `2_run_tasks.sh` (and most other scripts) will execute just the first case and exit.  `-d` flag is "dry run",
+and will print out commands without executing them.  Both these flags, often in combination, are useful to test configuration
+files and syntax prior to launching a real run.
 
 ## Cases vs. WorkflowID
 

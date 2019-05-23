@@ -14,10 +14,10 @@ CASES_FN="dat/cases.dat"
 
 # Path to BamMap, which is a file which defines sequence data path and other metadata
 # BamMap format is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
-BAMMAP="/gscuser/mwyczalk/projects/TinDaisy/TinDaisyCromwellRunner/ccRCC_drug.catalog/ccRCC_drug.MGI.BamMap.dat"
+BAMMAP="/gscuser/mwyczalk/projects/CPTAC3/CPTAC3.catalog/MGI.BamMap.dat"
 
-# This path below is for reference for Yige 
-REF_PATH="/gscmnt/gc3021/dinglab/PDX/RawData/PDX_other/Kidney/WES/all_sequences.fa"
+# This path below is for CPTAC3-standard GRCh38 reference
+REF_PATH="/gscmnt/gc2521/dinglab/mwyczalk/somatic-wrapper-data/image.data/A_Reference/GRCh38.d1.vd1.fa"
 
 # See katmai:/home/mwyczalk_test/Projects/TinDaisy/sw1.3-compare/README.dbsnp.md for discussion of dbSnP references
 # Updating to dbSnP-COSMIC version 20190416
@@ -33,7 +33,10 @@ YAML_TEMPLATE="config/CPTAC3-template.yaml"
 
 # These parameters used when finding data in BamMap
 ES="WXS"                            # experimental strategy
-TUMOR_ST="tumor"                    # Sample type for tumor BAM, for BAMMAP matching
+
+# TUMOR_ST is normally "tumor", but will be "tissue_normal" for Normal Adjacent Normal Adjacent analyses
+# TUMOR_ST="tumor"                    # Sample type for tumor BAM, for BAMMAP matching
+TUMOR_ST="tissue_normal"            # Sample type for Normal Adjacent analyses
 NORMAL_ST='blood_normal'            # Sample type for normal BAM, for BAMMAP matching.  Default 'blood_normal'
 REF_NAME="hg38"                     # Reference, used when matching to BAMMAP
 

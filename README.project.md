@@ -1,17 +1,23 @@
-Running Yige's 5 CCRCC cases as defined here: https://github.com/ding-lab/ccRCC_drug.catalog
+Production run of Y2.b2 WXS adjacent / blood normal analysis
 
-The CRAM run failed right away because .bai files not found
+Previous run like this is here:
+    /gscuser/mwyczalk/projects/TinDaisy/TinDaisy/demo/task_call/cromwell.Y2b1.normals
 
-B2,C2,D2 completed successfully
-A1,E2 Completed processing through VEP Filter, then hung on vcf_2_maf steps.
+Here, adjacent normal serves as the "tumor" case, blood normal serves as the "normal" case
 
-RCC_A1  c9528f73-a1b9-4788-be2d-1b140fa6f111    null
-RCC_B2  d04a179c-8b87-473b-a8ee-82f057b8c24a    /gscmnt/gc2541/cptac3_analysis/cromwell-workdir/cromwell-executions/tindaisy.cwl/d04a179c-8b87-473b-a8ee-82f057b8c24a/call-vep_filter/execution/results/vep_filter/vep_filtered.vcf
-RCC_C2  7e0f5873-d190-4c0a-98c9-f8606d4bf6a9    /gscmnt/gc2541/cptac3_analysis/cromwell-workdir/cromwell-executions/tindaisy.cwl/7e0f5873-d190-4c0a-98c9-f8606d4bf6a9/call-vep_filter/execution/results/vep_filter/vep_filtered.vcf
-RCC_D2  dfb4ad1d-ec84-4ebf-adde-597f5ae920bd    /gscmnt/gc2541/cptac3_analysis/cromwell-workdir/cromwell-executions/tindaisy.cwl/dfb4ad1d-ec84-4ebf-adde-597f5ae920bd/call-vep_filter/execution/results/vep_filter/vep_filtered.vcf
-RCC_E2  8cda2476-b9c1-4845-8321-dad4ea4ecef5    null
-RCC_C2_CRAM 081c2ed5-4e8f-4e41-9c3c-5876df0a7023    null
+1. get list of all Y2.b2 cases (exclude Y2.b2-noWXS):
+```
+grep Y2.b2 /gscuser/mwyczalk/projects/CPTAC3/CPTAC3.catalog/CPTAC3.cases.dat | grep -v Y2.b2-noWXS | cut -f 1 > dat/cases.Y2.b2.dat
+```
 
-# can reconstruct output files for A1 and E2 even while running:
-RCC_A1 /gscmnt/gc2541/cptac3_analysis/cromwell-workdir/cromwell-executions/tindaisy.cwl/c9528f73-a1b9-4788-be2d-1b140fa6f111/call-vep_filter/execution/results/vep_filter/vep_filtered.vcf
-RCC_E2 /gscmnt/gc2541/cptac3_analysis/cromwell-workdir/cromwell-executions/tindaisy.cwl/8cda2476-b9c1-4845-8321-dad4ea4ecef5/call-vep_filter/execution/results/vep_filter/vep_filtered.vcf
+However, note that not all of these have a tissue / adjacent normal sample:
+$ grep -f dat/cases.Y2.b2.dat ~/projects/CPTAC3/CPTAC3.catalog/CPTAC3.file-summary.txt | cut -f 8 | sort | uniq -c
+     47 WXS.hg38 T N
+      9 WXS.hg38 T N A
+
+To proceed, we extract just those cases which have the adjacent normal:
+```
+grep -f dat/cases.Y2.b2.dat ~/projects/CPTAC3/CPTAC3.catalog/CPTAC3.file-summary.txt | grep "WXS.hg38 T N A" | cut -f 1 > dat/cases.dat
+```
+
+-> we are processing 9 cases here

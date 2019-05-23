@@ -3,15 +3,11 @@
 source config/project_config.sh
 
 # How to pass NOTE to runlog?  
-NOTE="NA"
+NOTE="experimental finalization of Y2.b2 run"
 
-CROMWELL_QUERY="$TD_ROOT/src/cq"
+CQD="$TD_ROOT/src"
 
-bash $TD_ROOT/src/summarize_cromwell_runs.sh -c $CROMWELL_QUERY $@
-bash $TD_ROOT/src/runLogger.sh -c $CROMWELL_QUERY -m $NOTE $@
-# datatidy register
-
-# Add dataCleaner.sh
+bash $TD_ROOT/src/runtidy -x finalize -c $CQD -m "$NOTE" $@
 
 rc=$?
 if [[ $rc != 0 ]]; then
