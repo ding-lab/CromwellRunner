@@ -69,7 +69,9 @@ Iteratively check status of runs
 10. `cq` will list status of all runs.  `cq` is a utility in `TinDaisy/src` with a lot of options; run `cq -h` to learn more.  
 
 When runs conclude  (this is undergoing revision)
-11. Run `3_make_analysis_summary.sh` to collect all results
+11. Run `3_finalize_runs.sh`
+  * TODO: This needs additional work.  Probably, include default to clean directories
+11. Run `4_make_analysis_summary.sh` to collect all results
 12. Clean run directories 
 
 # Additional details
