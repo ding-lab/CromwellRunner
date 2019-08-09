@@ -6,8 +6,16 @@
 
 # System: MGI
 
+CROMWELL_JAR="/gscuser/mwyczalk/projects/TinDaisy/CromwellRunner/cromwell.jar/44/cromwell-44.jar"
+
 # Root directory.  Where TinDaisy is installed
 TD_ROOT="/gscuser/mwyczalk/projects/TinDaisy/TinDaisy"
+
+# Workflow root - where Cromwell output goes.  This value replaces text WORKFLOW_ROOT in CONFIG_TEMPLATE,
+# and is written to CONFIG_FILE
+WORKFLOW_ROOT="/gscmnt/gc2541/cptac3_analysis"
+CONFIG_TEMPLATE="config/cromwell-config-db.template.dat"
+CONFIG_FILE="dat/cromwell-config-db.dat"
 
 # List of cases to analyze.  This has to be created
 CASES_FN="dat/cases.dat"
