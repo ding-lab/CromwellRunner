@@ -3,7 +3,7 @@
 source config/project_config.sh
 
 # How to pass NOTE to runlog?  
-NOTE="experimental finalization of Y2.b2 run"
+NOTE="experimental finalization of Y2.b4 run"
 
 CQD="$TD_ROOT/src"
 

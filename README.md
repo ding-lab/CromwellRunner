@@ -14,7 +14,6 @@ in `demo/task_call/cromwell`
 * implement, describe `runtidy -x finalize`
 * Add discussion about MutectDemo, whose YAML file is in ./config
 * Add ability to process CRAM files.  This will need to read associated secondary files (.bai not required, .crai required)
-* Look into why vcf_2_maf went zombie on Yige's run.  Think about getting rid of that step, or else debug bypassing
 
 # Data prep
 
@@ -55,9 +54,16 @@ Preparation:
 Start runs.  Here, assuming that will use `parallel` to run N Cromwell instances on MGI at once. Note that order
 here is important so that processes are not stranded after you log out
 4. Run `tmux new` on known machine (e.g., `virtual-workstation1`).  
-5. `0_start_docker.sh`
-6. `conda activate jq`.  This environment contains `jq`, `parallel`, and `tmux`
-7. `1_make_yaml.sh` - this will generate start configuration files for all cases in `cases.dat`
+5. `0_start_docker.sh` - this is required to start cromwell jobs and run `cq`
+   `conda activate jq`.  This environment contains `jq`, `parallel`, and `tmux`
+6. **ALTERNATIVE to 5**  As of summer 2019 the default MGI Cromwell database server is not working, and a local service must be launched to
+    query database-connected runs (required for `cq` and other run management tools).  To start and define the server,
+    * `0_start_docker.sh`
+    * `0b_start_server.sh`
+    * `conda activate jq`
+    * `export CROMWELL_URL=http://localhost:8000`
+    * Confirm the URL with, `cq -q url`
+7. `1_make_yaml.sh` - this will generate start configuration (YAML) files for all cases in `cases.dat` and one Cromwell config file
 8. Optionally edit `2_run_tasks.sh` to define the number of cromwell jobs to run at once: `ARGS="-J N"`
     * Alternatively, pass `-J N` as argument to `2_` in the next step
 9. Start runs with `2_run_tasks.sh`.  
