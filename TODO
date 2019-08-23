@@ -1,0 +1,5 @@
+Implement basic non-db functionality (so that datatidy can be used)
+Improve error handling if database does not exist / is down / is not correctly defined
+Update documentation with description of local database
+Think through where runlog and datalog files go.  Currently in ./logs, probably not the best place
+Allow prune step to use arbitrary configuration file to define which files kept
