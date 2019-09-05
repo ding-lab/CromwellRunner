@@ -2,33 +2,89 @@
 
 Initialize, run, and finalize TinDaisy Cromwell workflows on MGI
 
-To install,
-```
-git clone https://github.com/ding-lab/CromwellRunner.git PROJECT_NAME
-```
-
-Documentation here is based on [TinDaisy](https://github.com/ding-lab/TinDaisy) Cromwell demonstration development work
-in `demo/task_call/cromwell`
-
 # TODO
 * Add discussion about MutectDemo, whose YAML file is in ./config
 * Add ability to process CRAM files.  This will need to read associated secondary files (.bai not required, .crai required)
 
 # Data prep
 
-BAM files and reference need to be indexed.  This is done for CPTAC3 data
+## Index BAMs
+BAM files and reference need to be indexed.  This is frequently done prior to analysis
 ```
 samtools index BAM
 java -jar picard.jar CreateSequenceDictionary R=REF.fa O=REF.dict
 ```
 where for instance `REF="all_sequences"`
 
+## dbSnP-COSMIC
+TODO: describe this in more detail.
+
 dbSnP-COSMIC VCF needs to have chromosome names which match the reference, otherwise it will
 silently not match anything.  Note that dbSnP-COSMIC.GRCh38.d1.vd1.20190416.vcf.gz has chrom names like `chr1`
 
 # Run procedure
 
-Preparation:
+## Installation
+
+### Configure conda environment
+
+Create a conda environment named `jq` with the following packages:
+* `jq`
+* `parallel`
+* `tmux`
+
+This may work:
+```
+conda install jq parallel tmux
+```
+
+### Install TinDaisy and CromwellRunner
+CromwellRunner is a set of scripts and configuration files designed to simplify running TinDaisy.  Both need to be installed.
+
+```
+git clone https://github.com/ding-lab/TinDaisy
+git clone https://github.com/ding-lab/CromwellRunner.git PROJECT_NAME
+```
+where `PROJECT_NAME` is an arbitrary name for this particular run or batch.
+
+
+## BamMap
+
+A BamMap is a file developed in Ding Lab for CPTAC3 project used by TinDaisy `runplan` to create YAML per-run configuration files.  
+A BamMap is a catalog of samples, their metadata, and their paths, with one BAM file per line.
+* [Format of BamMap](https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh)
+* [Example of a real BamMap](https://github.com/ding-lab/CPTAC3.catalog/blob/master/MGI.BamMap.dat)
+
+It is a tab-separated file with the following columns:
+```
+BamMap columns
+1  sample_name                  ---
+2  case                         ***
+3  disease                      ---
+4  experimental_strategy        ***
+5  sample_type                  ***
+6  data_path                    ---
+7  filesize
+8  data_format
+9  reference                    ***
+10  UUID                        ---
+11  system
+```
+Fields marked `***` are used to find the appropriate sample, and fields marked `---` are then read.
+
+### Making your own BamMap
+
+Non-CPTAC3 data will typically not have a BamMap constructed as above.  It is possible to make a synthetic BamMap by generating fields as follows:
+* `sample_name` is an arbitrary human-readable name for this sample.  Example: `C3L-00032.WXS.T.hg38`
+* `case` is unique name of this subject
+* `disease` is an arbitrary disease code
+* `experimental_strategy` takes the values `WXS`, `WGS`, `RNA-Seq`, or `miRNA-Seq`
+* `sample_type` takes the values `tumor`, `tissue_normal`, `blood_normal`.  
+* `data_path` is the full path to the sequence data (BAM file).  Note that the index file must be available as the BAM path with `.bai` appended
+* `reference` is typically `hg19` or `hg38`, though other values can be used
+* `UUID` is a unique identifier of a specific sample.  It need not be used
+
+## Run Preparation
 1. Possibly edit `config/cromwell-config-db.dat`
    -> this will define where the output of Cromwell goes, which can be large
    Currently, output directory is DATAD=`/gscmnt/gc2541/cptac3_analysis/cromwell-workdir`
@@ -44,25 +100,22 @@ Preparation:
     * VEP_CACHE_GZ - /gscmnt/gc2521/dinglab/mwyczalk/somatic-wrapper-data/image.data/D_VEP/vep-cache.90_GRCh38.tar.gz
 ```
    For Normal Adjacent analyses, also need to define `TUMOR_ST` as `tissue_adjacent` rather than `tumor`
+
 3. Create file `dat/cases.dat`, which lists all cases we'll be processing
    Note that entries here will be used to find BAMs in BamMap to populate YAML files
 4. Optionally, put the following in ~/.bashrc or execute each time:
       `export PATH="$PATH:$TD_ROOT/src", with TD_ROOT as defined in `config/project_config.sh`
     This lets `cq` be available for command line work
+5. `1_make_yaml.sh` - this will generate start configuration (YAML) files for all cases in `cases.dat` and one Cromwell config file
+
+## Start runs
 
 Start runs.  Here, assuming that will use `parallel` to run N Cromwell instances on MGI at once. Note that order
 here is important so that processes are not stranded after you log out
-4. Run `tmux new` on known machine (e.g., `virtual-workstation1`).  
-5. `0_start_docker.sh` - this is required to start cromwell jobs and run `cq`
-   `conda activate jq`.  This environment contains `jq`, `parallel`, and `tmux`
-6. **ALTERNATIVE to 5**  As of summer 2019 the default MGI Cromwell database server is not working, and a local service must be launched to
-    query database-connected runs (required for `cq` and other run management tools).  To start and define the server,
-    * `0_start_docker.sh`
-    * `0b_start_server.sh`
-    * `conda activate jq`
-    * `export CROMWELL_URL=http://localhost:8000`
-    * Confirm the URL with, `cq -q url`
-7. `1_make_yaml.sh` - this will generate start configuration (YAML) files for all cases in `cases.dat` and one Cromwell config file
+
+5. Run `tmux new` on known machine (e.g., `virtual-workstation1`).  
+6. `0_start_docker.sh` - this is required on MGI to start cromwell jobs and run `cq`
+7. `conda activate jq` - as described above
 8. Optionally edit `2_run_tasks.sh` to define the number of cromwell jobs to run at once: `ARGS="-J N"`
     * Alternatively, pass `-J N` as argument to `2_` in the next step
 9. Start runs with `2_run_tasks.sh`.  
@@ -70,10 +123,18 @@ here is important so that processes are not stranded after you log out
    If `parallel` prints a bunch of citation information, run `parallel --citation` - this typically has to be done just once per system
    You can detach from `tmux` now and jobs will continue
 
-Iteratively check status of runs
+## Check on runs 
+6. Note that as of summer 2019 the default MGI Cromwell database server is not working, and a local service must be launched to
+    query database-connected runs (required for `cq` and other run management tools).  To start and define the server,
+    * `0_start_docker.sh`
+    * `0b_start_server.sh`
+    * `conda activate jq`
+    * `export CROMWELL_URL=http://localhost:8000`
+    * Confirm the URL with, `cq -q url`
 10. `cq` will list status of all runs.  `cq` is a utility in `TinDaisy/src` with a lot of options; run `cq -h` to learn more.  
 
-When runs conclude  (this is undergoing revision)
+## Finalize runs
+
 11. Run `3_finalize_runs.sh`
     Note, this is not required if 2_run_task.sh run with -F flag, which automatically finalizes all runs upon completion
 11. Run `4_make_analysis_summary.sh` to collect all results
