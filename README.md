@@ -4,7 +4,9 @@ Initialize, run, and finalize TinDaisy Cromwell workflows on MGI
 
 # TODO
 * Add discussion about MutectDemo, whose YAML file is in ./config
+  * this is important - work on this with Fernanda
 * Add ability to process CRAM files.  This will need to read associated secondary files (.bai not required, .crai required)
+* Add discussion of cases.dat
 
 # Data prep
 
@@ -47,6 +49,70 @@ git clone https://github.com/ding-lab/CromwellRunner.git PROJECT_NAME
 ```
 where `PROJECT_NAME` is an arbitrary name for this particular run or batch.
 
+### Configuration
+
+Optionally add the following line to `~/.bashrc` 
+```
+export PATH="$PATH:$TD_ROOT/src"
+```
+where `TD_ROOT` is as defined in `config/project_config.sh` below. This lets `cq` and other utilities be available for command line work
+
+## Run Preparation
+1. Review `config/CPTAC3-template.yaml`.  This contains configuration files and other parameters for the TinDaisy
+   workflow.  Note the following parameters:
+   * `chrlist: GRCh38.d1.vd1.chrlist.txt` is a list of all chromosomes, used for pindel analysis.  Will change for different references
+   * `assembly` and `vep_cache_version` correspond to VEP database used for annotation
+2. Review `config/project_config.dat`.  For MGI, it has the following definitions
+```
+    * REF_PATH   - /gscmnt/gc2521/dinglab/mwyczalk/somatic-wrapper-data/image.data/A_Reference/GRCh38.d1.vd1.fa
+    * REF_NAME   - short name of reference, for matching to BamMap
+    * TD_ROOT    - /gscuser/mwyczalk/projects/TinDaisy/TinDaisy 
+    * DBSNP_DB   - /gscmnt/gc2521/dinglab/mwyczalk/somatic-wrapper-data/image.data/B_Filter/dbSnP-COSMIC.GRCh38.d1.vd1.20190416.vcf.gz
+                   see katmai:/home/mwyczalk_test/Projects/TinDaisy/sw1.3-compare/README.dbsnp.md for details
+    * VEP_CACHE_GZ - /gscmnt/gc2521/dinglab/mwyczalk/somatic-wrapper-data/image.data/D_VEP/vep-cache.90_GRCh38.tar.gz
+    * WORKFLOW_ROOT - /gscmnt/gc2541/cptac3_analysis
+    * BAMMAP     - BamMap file listing paths to sequence data.  See details below
+```
+   `WORKFLOW_ROOT` defines where output of Cromwell goes, which can be large
+   For Normal Adjacent analyses, also need to define `TUMOR_ST` as `tissue_adjacent` rather than `tumor`
+3. Create file `dat/cases.dat`, which lists all cases we'll be processing
+   Note that entries here will be used to find BAMs in BamMap to populate YAML files
+
+## Start runs
+
+Start runs.  Here, assuming that will use `parallel` to run N Cromwell instances on MGI at once. Note that order
+here is important so that processes are not stranded after you log out
+
+5. Run `tmux new` on known machine (e.g., `virtual-workstation1`).  
+6. `0_start_docker.sh` - this is required on MGI to start cromwell jobs and run `cq`
+7. `conda activate jq` - as described above
+5. `1_make_yaml.sh` - this will generate start configuration (YAML) files for all cases in `cases.dat` and one Cromwell config file
+8. Optionally edit `2_run_tasks.sh` to define the number of cromwell jobs to run at once: `ARGS="-J N"`
+    * Alternatively, pass `-J N` as argument to `2_` in the next step
+9. Start runs with `2_run_tasks.sh`.  
+   May want to test with `2_run_tasks.sh -1 -d` first, which will do a dry run of one case (see Debugging seciton below).
+   If `parallel` prints a bunch of citation information, run `parallel --citation` - this typically has to be done just once per system
+   You can detach from `tmux` now and jobs will continue
+
+## Check on runs 
+6. Note that as of summer 2019 the default MGI Cromwell database server is not working, and a local service must be launched to
+    query database-connected runs (required for `cq` and other run management tools).  To start and define the server,
+    * `0_start_docker.sh`
+    * `0b_start_server.sh`
+    * `conda activate jq`
+    * `export CROMWELL_URL=http://localhost:8000`
+    * Confirm the URL with, `cq -q url`
+10. `cq` will list status of all runs.  `cq` is a utility in `TinDaisy/src` with a lot of options; run `cq -h` to learn more.  
+
+## Finalize runs
+
+11. Run `3_finalize_runs.sh`
+    Note, this is not required if 2_run_task.sh run with -F flag, which automatically finalizes all runs upon completion
+11. Run `4_make_analysis_summary.sh` to collect all results
+12. Clean run directories with `datatidy` utility.  Note that this may not need to be done for runs which successfully complete
+    which are started with the -F flag, which also compresses all run output and deletes input files
+
+# Additional details
 
 ## BamMap
 
@@ -84,64 +150,6 @@ Non-CPTAC3 data will typically not have a BamMap constructed as above.  It is po
 * `reference` is typically `hg19` or `hg38`, though other values can be used
 * `UUID` is a unique identifier of a specific sample.  It need not be used
 
-## Run Preparation
-1. Possibly edit `config/cromwell-config-db.dat`
-   -> this will define where the output of Cromwell goes, which can be large
-   Currently, output directory is DATAD=`/gscmnt/gc2541/cptac3_analysis/cromwell-workdir`
-   This file also defines hooks for connecting to MGI Cromwell DB, which a lot of workflow relies on (`cq` in particular)
-2. Possibly `config/project_config.dat`.  For MGI, it has the following definitions
-```
-    * NORMAL_BAM - from BamMap
-    * TUMOR_BAM  - from BamMap
-    * REF        - /gscmnt/gc2521/dinglab/mwyczalk/somatic-wrapper-data/image.data/A_Reference/GRCh38.d1.vd1.fa
-    * TD_ROOT    - /gscuser/mwyczalk/projects/TinDaisy/TinDaisy 
-    * DBSNP_DB   - /gscmnt/gc2521/dinglab/mwyczalk/somatic-wrapper-data/image.data/B_Filter/dbSnP-COSMIC.GRCh38.d1.vd1.20190416.vcf.gz
-                   see katmai:/home/mwyczalk_test/Projects/TinDaisy/sw1.3-compare/README.dbsnp.md for details
-    * VEP_CACHE_GZ - /gscmnt/gc2521/dinglab/mwyczalk/somatic-wrapper-data/image.data/D_VEP/vep-cache.90_GRCh38.tar.gz
-```
-   For Normal Adjacent analyses, also need to define `TUMOR_ST` as `tissue_adjacent` rather than `tumor`
-
-3. Create file `dat/cases.dat`, which lists all cases we'll be processing
-   Note that entries here will be used to find BAMs in BamMap to populate YAML files
-4. Optionally, put the following in ~/.bashrc or execute each time:
-      `export PATH="$PATH:$TD_ROOT/src", with TD_ROOT as defined in `config/project_config.sh`
-    This lets `cq` be available for command line work
-5. `1_make_yaml.sh` - this will generate start configuration (YAML) files for all cases in `cases.dat` and one Cromwell config file
-
-## Start runs
-
-Start runs.  Here, assuming that will use `parallel` to run N Cromwell instances on MGI at once. Note that order
-here is important so that processes are not stranded after you log out
-
-5. Run `tmux new` on known machine (e.g., `virtual-workstation1`).  
-6. `0_start_docker.sh` - this is required on MGI to start cromwell jobs and run `cq`
-7. `conda activate jq` - as described above
-8. Optionally edit `2_run_tasks.sh` to define the number of cromwell jobs to run at once: `ARGS="-J N"`
-    * Alternatively, pass `-J N` as argument to `2_` in the next step
-9. Start runs with `2_run_tasks.sh`.  
-   May want to test with `2_run_tasks.sh -1 -d` first, which will do a dry run of one case (see Debugging seciton below).
-   If `parallel` prints a bunch of citation information, run `parallel --citation` - this typically has to be done just once per system
-   You can detach from `tmux` now and jobs will continue
-
-## Check on runs 
-6. Note that as of summer 2019 the default MGI Cromwell database server is not working, and a local service must be launched to
-    query database-connected runs (required for `cq` and other run management tools).  To start and define the server,
-    * `0_start_docker.sh`
-    * `0b_start_server.sh`
-    * `conda activate jq`
-    * `export CROMWELL_URL=http://localhost:8000`
-    * Confirm the URL with, `cq -q url`
-10. `cq` will list status of all runs.  `cq` is a utility in `TinDaisy/src` with a lot of options; run `cq -h` to learn more.  
-
-## Finalize runs
-
-11. Run `3_finalize_runs.sh`
-    Note, this is not required if 2_run_task.sh run with -F flag, which automatically finalizes all runs upon completion
-11. Run `4_make_analysis_summary.sh` to collect all results
-12. Clean run directories with `datatidy` utility.  Note that this may not need to be done for runs which successfully complete
-    which are started with the -F flag, which also compresses all run output and deletes input files
-
-# Additional details
 
 **TODO** provide comprehensive description of all utilities in TinDaisy:
 * `cq` - general purpose query utility
