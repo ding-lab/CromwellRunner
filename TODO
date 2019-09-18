@@ -3,3 +3,9 @@ Improve error handling if database does not exist / is down / is not correctly d
 Update documentation with description of local database
 Think through where runlog and datalog files go.  Currently in ./logs, probably not the best place
 Allow prune step to use arbitrary configuration file to define which files kept
+
+Have a sense of "batches" or "generations" of runs.  Currently, when some runs fail, even after they're finalized, 
+    `cq` will report that they are still failed.  This is confusing if they are being re-run.  Having an idea of 
+    batches, or recognizing that a run has been finalized, will be helpful.
+    One idea is to report in `cq` output whether runs have been finalized
+

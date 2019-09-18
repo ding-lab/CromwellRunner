@@ -24,6 +24,20 @@ TODO: describe this in more detail.
 dbSnP-COSMIC VCF needs to have chromosome names which match the reference, otherwise it will
 silently not match anything.  Note that dbSnP-COSMIC.GRCh38.d1.vd1.20190416.vcf.gz has chrom names like `chr1`
 
+## chrlist
+
+This is a list of all chromosomes of interest, used for pindel.  Can be created from the reference's .fai file, retaining
+only the names of the chromosomes of interest (typically 1-Y)
+
+## Confirm YAML file
+
+It might be good to quickly check the existence of all files in YAML file with the following,
+```
+grep path $YAML | cut -f 2 -d : | xargs ls -l
+```
+
+
+
 # Run procedure
 
 ## Installation

@@ -6,7 +6,9 @@ CQD="$TD_ROOT/src"
 
 # -J N - specify number of jobs to run at once
 # -F - finalize and compress jobs immediately upon completion
-ARGS="-J 4 -F"
+#ARGS="-J 4 -F"
+ARGS="-F"
+ARGS="$ARGS -X -Xmx4g"
 bash $TD_ROOT/src/rungo $ARGS -c $CQD -R $CROMWELL_JAR -W $CWL -C $CONFIG_FILE $@
 
 rc=$?
