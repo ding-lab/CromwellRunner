@@ -4,4 +4,4 @@
 # https://confluence.ris.wustl.edu/pages/viewpage.action?spaceKey=DL&title=How+to+run+Docker+on+MGI
 
 # currently, using gsub, which tends to point to recent cromwell versions
-/gscmnt/gc2560/core/env/v1/bin/gsub -m 16
+/gscmnt/gc2560/core/env/v1/bin/gsub -m 32

@@ -43,8 +43,8 @@ YAML_TEMPLATE="config/CPTAC3-template.yaml"
 ES="WXS"                            # experimental strategy
 
 # TUMOR_ST is normally "tumor", but will be "tissue_normal" for Normal Adjacent Normal Adjacent analyses
-# TUMOR_ST="tumor"                    # Sample type for tumor BAM, for BAMMAP matching
-TUMOR_ST="tissue_normal"            # Sample type for Normal Adjacent analyses
+TUMOR_ST="tumor"                    # Sample type for tumor BAM, for BAMMAP matching
+# TUMOR_ST="tissue_normal"            # Sample type for Normal Adjacent analyses
 NORMAL_ST='blood_normal'            # Sample type for normal BAM, for BAMMAP matching.  Default 'blood_normal'
 REF_NAME="hg38"                     # Reference, used when matching to BAMMAP
 

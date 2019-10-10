@@ -8,7 +8,7 @@ CQD="$TD_ROOT/src"
 # -F - finalize and compress jobs immediately upon completion
 #ARGS="-J 4 -F"
 ARGS="-F"
-ARGS="$ARGS -X -Xmx4g"
+ARGS="$ARGS -X -Xmx10g"
 bash $TD_ROOT/src/rungo $ARGS -c $CQD -R $CROMWELL_JAR -W $CWL -C $CONFIG_FILE -k $CASES_FN $@
 
 rc=$?
