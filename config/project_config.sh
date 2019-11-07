@@ -6,6 +6,8 @@
 
 # System: MGI
 
+PROJECT="LSCC.20191104"
+
 CROMWELL_JAR="/gscuser/mwyczalk/projects/TinDaisy/CromwellRunner/cromwell.jar/44/cromwell-44.jar"
 
 # Root directory.  Where TinDaisy is installed
@@ -22,7 +24,7 @@ CASES_FN="dat/cases.dat"
 
 # Path to BamMap, which is a file which defines sequence data path and other metadata
 # BamMap format is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
-BAMMAP="/gscuser/mwyczalk/projects/CPTAC3/CPTAC3.catalog/MGI.BamMap.dat"
+BAMMAP="/gscuser/mwyczalk/projects/CPTAC3/CPTAC3.catalog/BamMap/MGI.BamMap.dat"
 
 # This path below is for CPTAC3-standard GRCh38 reference
 REF_PATH="/gscmnt/gc2521/dinglab/mwyczalk/somatic-wrapper-data/image.data/A_Reference/GRCh38.d1.vd1.fa"

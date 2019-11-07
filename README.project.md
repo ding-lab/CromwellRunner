@@ -1,1 +1,3 @@
-Describe the purpose of this project and track project-specific details here
+Processing 113 LSCC CPTAC3 cases
+
+Will be using ../cq.datalog
