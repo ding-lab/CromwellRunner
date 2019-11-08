@@ -2,6 +2,43 @@
 
 Initialize, run, and finalize TinDaisy Cromwell workflows on MGI
 
+# Quick start - CPTAC3, one case
+
+Set up environment:
+```
+tmux new -s C3L-02395
+bash 0_start_docker.sh
+bash 0b_start_server.sh
+conda activate jq
+export CROMWELL_URL=http://localhost:8000
+```
+
+Create `dat/cases.dat` with cases of interest
+
+mkdir dat
+vi dat/cases.dat
+    < manual edits >
+vi config/project_config.sh
+
+Confirm samples are correct with:
+runplan
+
+bash 1_make_yaml.sh
+
+ preliminary testing
+bash 2_start_runs.sh -d
+
+If this is a new project, need to create runlog file with,
+runtidy -f1
+
+Finally,
+bash 2_start_runs.sh
+
+Examining how it is running:
+Within a few minutes Cromwell output will start appearing in logs/C3L-02395.out
+
+
+
 # TODO
 * Add discussion about MutectDemo, whose YAML file is in ./config
   * this is important - work on this with Fernanda
