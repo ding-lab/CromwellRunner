@@ -1,15 +1,15 @@
 source /opt/lsf9/conf/lsf.conf
-source config/project_config.sh
+source config/project_config.MMRF-restart.sh
 
 CQD="$TD_ROOT/src"
 
-export DATALOG="/gscuser/mwyczalk/projects/TinDaisy/CromwellRunner/cq.datalog/datalog.dat"
 
 # -J N - specify number of jobs to run at once
 # -F - finalize and compress jobs immediately upon completion
+# -G - git project details of TD_ROOT`
 #ARGS="-J 4 -F"
-#ARGS="-F"
-ARGS="$ARGS -X -Xmx10g"
+ARGS="-F"
+ARGS="$ARGS -X -Xmx10g -G $TD_ROOT"
 bash $TD_ROOT/src/rungo $ARGS -p $PROJECT -c $CQD -R $CROMWELL_JAR -W $CWL -C $CONFIG_FILE -k $CASES_FN $@
 
 rc=$?
