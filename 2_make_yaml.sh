@@ -3,11 +3,13 @@
 # Note that running `runplan` will give back useful information about anticipated runs
 
 # This is sourced both here and in make_yaml.sh to fill out template parameters
-PARAMS="config/project_config.sh"
+PARAMS="config/project_config.MMRF-restart.sh"
 source $PARAMS  # we just care about TD_ROOT
 
+RESTART_MAP="dat/MMRF-20190925.map.dat"
+
 >&2 echo Writing YAML files
-$TD_ROOT/src/runplan -x yaml "$@" 
+$TD_ROOT/src/runplan -P $PARAMS -x yaml -R $RESTART_MAP "$@" 
 
 rc=$?
 if [[ $rc != 0 ]]; then

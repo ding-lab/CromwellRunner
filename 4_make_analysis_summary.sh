@@ -3,10 +3,11 @@
 # Note that running `runplan` will give back useful information about anticipated runs
 
 # This is sourced both here and in make_yaml.sh to fill out template parameters
-PARAMS="config/project_config.sh"
-source $PARAMS  # we just care about TD_ROOT
+PARAMS="config/project_config.MMRF-restart.sh"
+source $PARAMS  
 
-$TD_ROOT/src/runplan -x summary "$@" 
+CWLS=$(basename $CWL)
+$TD_ROOT/src/runplan -x summary -P $PARAMS -W $CWLS "$@" 
 
 rc=$?
 if [[ $rc != 0 ]]; then

@@ -384,3 +384,52 @@ Both run_pindel and run_strelka2 have adjustable numbers of threads / CPUs to ru
 This can be assessed using `cq -q timing`.  Current testing suggests 5 and 4 threads for pindel and strelka2, respectively,
 seems to make run times roughly uniform.  Mutect and varscan don't seem to have an option to adjust thread counts.
 
+## Zombie jobs
+**TODO** generalize these notes
+
+12 hours later only 2 jobs are running at once, suggesting there are 8 zombie succeeded jobs.  These can be identified with,
+```
+$ ls */*.out | cut -f 2 -d '/' | cut -f 1 -d '.' | cq - | grep Succeeded
+MMRF_1078       53f104b8-6108-4a72-ac85-faeb9a91c3c9    Succeeded
+MMRF_1518       b1146a19-baeb-40fa-b5cb-a0d2b66af663    Succeeded
+MMRF_1577       55d20393-d2b3-4dd9-b3ff-b15f79f684b9    Succeeded
+MMRF_1596       61e06fde-aa8e-4719-a2e1-0b9e54c78618    Succeeded
+MMRF_1603       ab08b7c6-79b1-4b82-87e9-0e8dbc55096e    Succeeded
+MMRF_1655       316cad9a-c7d6-4deb-b362-30d45ed9ac21    Succeeded
+MMRF_1725       04347069-d4ad-4f0e-9538-a01515a9260b    Succeeded
+```
+These will be manually killed as described in README.md, finalized, and compressed
+
+
+Description of how to kill zombie and clean it up:
+1. `tmux attach -t MMRF2`
+2. CTRL-Z to pause this, then `ps -eaf | grep MMRF_1795`
+    Look for job with `/usr/bin/java -Xmx10g -jar ...cromwell-44.jar`
+3. kill 106451 (the first PID listed)
+4. `fg` to bring command to foreground
+5. `cq` now indicates 10 jobs are running
+
+### Doing again
+The following script will do the above and write cases to zombies.dat
+ls */*.out | cut -f 2 -d '/' | cut -f 1 -d '.' | cq - | grep Succeeded | cut -f 1 > zombies.dat
+    MMRF_2064
+    MMRF_2197
+    MMRF_2214
+    MMRF_2292
+    MMRF_2427
+    MMRF_2428
+    MMRF_2429
+
+Note that jobs which concluded their cromwell run but which are being finalized or compressed 
+will show up on this list; best to test for zombies twice several minutes apart, or exclude 
+recent files
+
+pause running job
+PID=$(ps -eaf | grep MMRF_2197 | grep cromwell.jar | grep -v compress | tr -s ' ' | cut -f 2 -d ' ')
+kill $PID
+
+Finalize and compress
+export DATALOG="/gscuser/mwyczalk/projects/TinDaisy/CromwellRunner/cq.datalog/datalog.dat"
+cat zombies3.dat | runtidy -x finalize -p MMRF_WXS_restart -m "Succeeded zombie manual cleanup" -F Succeeded   -
+cat zombies3.dat | datatidy -x compress -p MMRF_WXS_restart -m "Succeeded zombie manual cleanup" -F Succeeded   -
+

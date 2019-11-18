@@ -7,12 +7,10 @@
 # * DBSNP_DB
 # * VEP_CACHE_GZ
 # * RESTART_D * for restarting YAML
-# 
+# * VEP_CACHE_VERSION
+# * ASSEMBLY
 
 # Parameters expected by tindaisy-postcall.cwl
-
-# UUID="e1bef1e2-0a1b-49cb-9c0a-b7d66ae9c5e2"
-# RESTART_ROOT="/gscmnt/gc2541/cptac3_analysis/cromwell-workdir/cromwell-executions/tindaisy.cwl/$UUID"
 
 pindel_vcf:
   class: File
@@ -61,8 +59,12 @@ vep_cache_gz:
   class: File
   path: ${VEP_CACHE_GZ}
 
-vep_cache_version: "90"
-assembly: "GRCh38"
+# These are being defined in PARAMS
+# vep_cache_version: "90"
+# assembly: "GRCh38"
+
+vep_cache_version: ${VEP_CACHE_VERSION}
+assembly: ${ASSEMBLY}
 
 bypass_vcf2maf: true
 
