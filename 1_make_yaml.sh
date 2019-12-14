@@ -1,16 +1,18 @@
 # Generate YAML config files
 
-# Note that running `runplan` will give back useful information about anticipated runs
+# Usage:
+# 1_make_yaml.sh -P PARAMS
 
-# This is sourced both here and in make_yaml.sh to fill out template parameters
+# All arguments are passed as is to src/runplan
 
-
-PARAMS="workflow.MutectDemo/project_config.compute1.sh"
-source $PARAMS  # we just care about TD_ROOT - is that true?
+# Note that running `runplan` with no arguments will give back useful information about anticipated runs
+# perhaps add this as default?
 
 #RESTART_MAP="dat/MMRF-20190925.map.dat"
 
 >&2 echo Writing YAML files
-#src/runplan -P $PARAMS -x yaml -R $RESTART_MAP "$@" 
-src/runplan -P $PARAMS -x yaml "$@" 
+CMD="src/runplan -x yaml "$@" "
+
+>&2 echo Running: $CMD
+eval $CMD
 

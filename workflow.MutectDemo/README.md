@@ -8,4 +8,11 @@ Goal of this work is to,
 3) demonstrate updated workflow organizational structure (./workflow.XXX)
 
 
+# How to run
 
+Trying idea of having base scripts in .., passing arguments to scripts to be workflow-specific
+
+```
+bash 1_make_yaml.sh workflow.MutectDemo/project_config.MutectDemo.compute1.sh
+
+```

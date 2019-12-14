@@ -17,7 +17,7 @@ Options:
 -p: Print BAM paths in query
 -n: Print BAM sample names in query
 -w: Print additional details in query (REF_PATH, TD_ROOT, DBSNP_DB, VEP_CACHE_GZ).  Requires PARAMS 
--g: Issue warnings rather than quitting. For `summary` task, if result file does not exist.  For `query`, if sample does not exist
+-g: Issue warnings rather than quitting for testing
 -s SUMMARY_OUT: output analysis summary file for task `summary`.  If '-', write to STDOUT
 -c CROMWELL_QUERY: explicit path to cromwell query utility `cq`.  Default "cq" 
 -R RESTART_MAP: file listing workflow IDs for each case when restarting runs.  Requires RESTART_ROOT in PARAMS
@@ -59,7 +59,7 @@ and UUID obtained from RESTART_MAP file (TSV with CASE and UUID, `cq | cut -f 1-
 Format of BamMap is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
 EOF
 
-source cromwell_utils.sh
+source src/cromwell_utils.sh
 
 SCRIPT=$(basename $0)
 
@@ -132,6 +132,18 @@ while getopts ":h1P:x:y:upnwgs:c:R:W:" opt; do
 done
 shift $((OPTIND-1))
 
+function complain {
+    MSG="$1"
+    WARN=$2
+    if [ -z $WARN ]; then
+        >&2 echo ERROR: $MSG
+        exit 1
+    else
+        >&2 echo WARNING: $MSG  Continuing
+    fi
+
+}
+
 # init_params reads PARAMS and fills in several 
 # variables used for YAML file creation and query with details
 function init_params {
@@ -140,32 +152,32 @@ function init_params {
         >&2 echo "$USAGE"
         exit 1
     fi
-    confirm $PARAMS 
+    confirm $PARAMS $ONLYWARN
 
     source $PARAMS
     if [ -z $REF_PATH ]; then
-        >&2 echo ERROR: REF_PATH not defined in $PARAMS
-        exit 1
+        complain "REF_PATH not defined in $PARAMS" $ONLYWARN
+        REF_PATH="undefined"   
     fi
     if [ -z $TD_ROOT ]; then
-        >&2 echo ERROR: TD_ROOT not defined in $PARAMS
-        exit 1
+        complain "TD_ROOT not defined in $PARAMS" $ONLYWARN
+        TD_ROOT="undefined"
     fi
     if [ -z $DBSNP_DB ]; then
-        >&2 echo ERROR: DBSNP_DB not defined in $PARAMS
-        exit 1
+        complain "DBSNP_DB not defined in $PARAMS" $ONLYWARN
+        DBSNP_DB="undefined"
     fi
     if [ -z $VEP_CACHE_GZ ]; then
-        >&2 echo ERROR: VEP_CACHE_GZ not defined in $PARAMS
-        exit 1
+        complain "VEP_CACHE_GZ not defined in $PARAMS" $ONLYWARN
+        VEP_CACHE_GZ="undefined"
     fi
     if [ -z $VEP_CACHE_VERSION ]; then
-        >&2 echo ERROR: VEP_CACHE_VERSION not defined in $PARAMS
-        exit 1
+        complain "VEP_CACHE_VERSION not defined in $PARAMS" $ONLYWARN
+        VEP_CACHE_VERSION="undefined"
     fi
     if [ -z $ASSEMBLY ]; then
-        >&2 echo ERROR: ASSEMBLY not defined in $PARAMS
-        exit 1
+        complain "ASSEMBLY not defined in $PARAMS" $ONLYWARN
+        ASSEMBLY="undefined"
     fi
 
     # envsubst requires variables to be exported - these are the parameters used for yaml file
@@ -178,38 +190,41 @@ function init_params {
 
     # These parameters used to be passed as arguments, but are now in PARAMS
     if [ -z $BAMMAP ]; then
-        >&2 echo ERROR: BAMMAP not defined in $PARAMS
-        exit 1
+        complain "BAMMAP not defined in $PARAMS" $ONLYWARN
+        BAMMAP="undefined"
+    else
+        confirm $BAMMAP $ONLYWARN
     fi
-    confirm $BAMMAP 
     if [ -z $CASES_FN ]; then
-        >&2 echo ERROR: CASES_FN not defined in $PARAMS
-        exit 1
+        complain "CASES_FN not defined in $PARAMS" $ONLYWARN
+        $CASES_FN="undefined"
+    else
+        confirm $CASES_FN $ONLYWARN
     fi
-    confirm $CASES_FN 
     if [ -z $YAML_TEMPLATE ]; then
-        >&2 echo ERROR: YAML_TEMPLATE not defined in $PARAMS
-        exit 1
+        complain "YAML_TEMPLATE not defined in $PARAMS" $ONLYWARN
+        YAML_TEMPLATE="undefined"
+    else
+        confirm $YAML_TEMPLATE $ONLYWARN
     fi
-    confirm $YAML_TEMPLATE 
 
 
     # the parameters below, also required, are used for matching BamMap
     if [ -z $ES ]; then
-        >&2 echo ERROR: ES not defined in $PARAMS
-        exit 1
+        complain "ES not defined in $PARAMS" $ONLYWARN
+        ES="undefined"
     fi
     if [ -z $TUMOR_ST ]; then
-        >&2 echo ERROR: TUMOR_ST not defined in $PARAMS
-        exit 1
+        complain "TUMOR_ST not defined in $PARAMS" $ONLYWARN
+        TUMOR_ST="undefined"
     fi
     if [ -z $NORMAL_ST ]; then
-        >&2 echo ERROR: NORMAL_ST not defined in $PARAMS
-        exit 1
+        complain "NORMAL_ST not defined in $PARAMS" $ONLYWARN
+        NORMAL_ST="undefined"
     fi
     if [ -z $REF_NAME ]; then
-        >&2 echo ERROR: REF_NAME not defined in $PARAMS
-        exit 1
+        complain "REF_NAME not defined in $PARAMS" $ONLYWARN
+        REF_NAME="undefined"
     fi
 }
 
@@ -221,7 +236,7 @@ init_params
 # 3: read from CASES_FN file
 # Note that if no cases defined, assume CASE='-'
 if [ "$#" == 0 ]; then
-    confirm "$CASES_FN"
+    confirm "$CASES_FN" $ONLYWARN
     CASES=$(cat $CASES_FN)
 elif [ "$1" == "-" ] ; then
     CASES=$(cat - )
@@ -330,7 +345,7 @@ function init_yaml {
         >&2 echo "$USAGE"
         exit 1
     fi
-    confirm $YAML_TEMPLATE 
+    confirm $YAML_TEMPLATE $ONLYWARN
 
     if [ $YAMLD != "-" ]; then
         mkdir -p $YAMLD
@@ -515,7 +530,7 @@ function do_query {
 # If RESTART_MAP is defined,
 # confirm it exists and confirm RESTART_ROOT is defined
 if [ ! -z $RESTART_MAP ]; then
-    confirm $RESTART_MAP 
+    confirm $RESTART_MAP $ONLYWARN
     >&2 echo Restart mapping from $RESTART_MAP
     if [ -z $RESTART_ROOT ]; then
         >&2 echo ERROR: RESTART_ROOT not defined in $PARAMS
