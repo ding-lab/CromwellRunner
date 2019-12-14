@@ -1,0 +1,4 @@
+compute1 branch has development work for preliminary runs on compute1.
+
+In particular, docker server startup and paths to project dirs will differ.
+Initial runs are manta

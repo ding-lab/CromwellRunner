@@ -3,7 +3,7 @@
 # Note that running `runplan` will give back useful information about anticipated runs
 
 # This is sourced both here and in make_yaml.sh to fill out template parameters
-PARAMS="config/project_config.MMRF-restart.sh"
+PARAMS="config/project_config.compute1.sh"
 source $PARAMS  # we just care about TD_ROOT
 
 RESTART_MAP="dat/MMRF-20190925.map.dat"
