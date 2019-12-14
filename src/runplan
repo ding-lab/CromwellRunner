@@ -566,13 +566,14 @@ for CASE in $CASES; do
         do_yaml $CASE $YAML_FN
 
         # Now do a sanity check on YAML files - make sure all files listed in it exist
-        SANITY=$(grep path $YAML_FN | cut -f 2 -d : | xargs ls -l 2>&1 >/dev/null)
+        SANITY=$(grep -v "#" $YAML_FN | grep path | cut -f 2 -d : | xargs ls -l 2>&1 >/dev/null)
         
         rcs=${PIPESTATUS[*]};
         for rc in ${rcs}; do
             if [[ $rc != 0 ]]; then
                 if [ $ONLYWARN ]; then
                     >&2 echo WARNING: $YAML_FN has non-existing paths
+                    >&2 echo "$SANITY"
                 else 
                     >&2 echo ERROR: $YAML_FN has non-existing paths:
                     >&2 echo "$SANITY"

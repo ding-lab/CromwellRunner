@@ -13,6 +13,6 @@ Goal of this work is to,
 Trying idea of having base scripts in .., passing arguments to scripts to be workflow-specific
 
 ```
-bash 1_make_yaml.sh -P workflow.MutectDemo/project_config.MutectDemo.compute1.sh -g foo
+bash 1_make_yaml.sh -P workflow.MutectDemo/project_config.MutectDemo.compute1.sh -g MutectDemo
 
 ```
