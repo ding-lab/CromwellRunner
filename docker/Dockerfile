@@ -9,6 +9,7 @@ RUN apt-get update -y && apt-get install -y \
     apt-utils \
     curl \
     default-jdk \
+    gettext-base \
     git \
     jq \
     libnss-sss \
