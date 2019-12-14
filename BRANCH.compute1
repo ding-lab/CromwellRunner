@@ -1,4 +1,8 @@
 compute1 branch has development work for preliminary runs on compute1.
 
-In particular, docker server startup and paths to project dirs will differ.
-Initial runs are manta
+Specifically,
+* docker server startup and paths to project dirs will differ.
+* Initial runs are manta
+* Constructing docker image to run cromwell and CromwellRunner in ./docker
+* moving cq-type code to ./src.  Motivation is to start separating out cq-code from
+  TinDaisy to make it more general

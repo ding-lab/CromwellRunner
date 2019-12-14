@@ -1,4 +1,10 @@
 # Testing on compute1
+o
+* docker server startup and paths to project dirs will differ.
+* Initial runs are manta
+* Constructing docker image to run cromwell and CromwellRunner in ./docker
+* moving cq-type code to ./src.  Motivation is to start separating out cq-code from
+  TinDaisy to make it more general
 
 ## Preliminaries
 

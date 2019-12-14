@@ -12,7 +12,7 @@ Options:
 -1: Quit after evaluating one case
 -x TASK: Execute given task.  Values: 'query' (default), 'yaml', 'summary'
 -y YAMLD: output directory of YAML files.  If "-", write YAML to stdout.  Default: ./yaml
--P PARAMS: parameters file which holds varibles for substution in template.  Default: config/project_config.sh
+-P PARAMS: parameters file which holds varibles for substution in template, read via `source $PARAMS`.  Default: config/project_config.sh
 -u: Print BAM UUIDs in query
 -p: Print BAM paths in query
 -n: Print BAM sample names in query

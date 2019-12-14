@@ -12,58 +12,58 @@
 
 tumor_bam:
   class: File
-  path: ../../../demo_data/MutectDemo-data/G15512.HCC1954.1.COST16011_region.bam
+  path: ${TD_ROOT}/demo/demo_data/MutectDemo-data/G15512.HCC1954.1.COST16011_region.bam
 normal_bam:
   class: File
-  path: ../../../demo_data/MutectDemo-data/HCC1954.NORMAL.30x.compare.COST16011_region.bam
+  path: ${TD_ROOT}/demo/demo_data/MutectDemo-data/HCC1954.NORMAL.30x.compare.COST16011_region.bam
 reference_fasta:
   class: File
-  path: ../../../demo_data/MutectDemo-data/Homo_sapiens_assembly19.COST16011_region.fa
+  path: ${TD_ROOT}/demo/demo_data/MutectDemo-data/Homo_sapiens_assembly19.COST16011_region.fa
 
 # vcf (vaf length depth) filter config
 pindel_vcf_filter_config:
   class: File
-  path: ../../../../params/vcf_filter_config-pindel.ini
+  path: ${TD_ROOT}/params/vcf_filter_config-pindel.ini
 strelka_vcf_filter_config:
   class: File
-  path: ../../../../params/vcf_filter_config-strelka.ini
+  path: ${TD_ROOT}/params/vcf_filter_config-strelka.ini
 varscan_vcf_filter_config:
   class: File
-  path: ../../../../params/vcf_filter_config-varscan.ini
+  path: ${TD_ROOT}/params/vcf_filter_config-varscan.ini
 mutect_vcf_filter_config:
   class: File
-  path: ../../../../params/vcf_filter_config-mutect.ini
+  path: ${TD_ROOT}/params/vcf_filter_config-mutect.ini
 
 # Caller config
 pindel_config:
   class: File
-  path: ../../../../params/pindel.WES.ini
+  path: ${TD_ROOT}/params/pindel.WES.ini
 strelka_config:
   class: File
-  path: ../../../../params/strelka.WES.ini
+  path: ${TD_ROOT}/params/strelka.WES.ini
 varscan_config:
   class: File
-  path: ../../../../params/varscan.WES.ini
+  path: ${TD_ROOT}/params/varscan.WES.ini
 
 # Other filter config
 classification_filter_config:
   class: File
-  path: ../../../../params/classification_filter_config.ini
+  path: ${TD_ROOT}/params/classification_filter_config.ini
 af_filter_config:
   class: File
-  path: ../../../../params/af_filter_config.ini
+  path: ${TD_ROOT}/params/af_filter_config.ini
 
 # Data files
 centromere_bed: 
   class: File
-  path: ../../../../params/centromere/ucsc-centromere.GRCh37.bed
+  path: ${TD_ROOT}/params/centromere/ucsc-centromere.GRCh37.bed
 dbsnp_db: # this is not correct for MutectDemo, but allows the pipeline to proceed
   class: File
-  path: ../../../demo_data/StrelkaDemo-data/dbsnp-StrelkaDemo.noCOSMIC.vcf.gz
+  path: ${TD_ROOT}/demo/demo_data/StrelkaDemo-data/dbsnp-StrelkaDemo.noCOSMIC.vcf.gz
 
 chrlist: # Defining this turns on pindel parallel
   class: File
-  path: ../../../demo_data/MutectDemo-data/chrlist.txt
+  path: ${TD_ROOT}/demo/demo_data/MutectDemo-data/chrlist.txt
 
 # Number of parallel jobs to run
 num_parallel_strelka2: 4

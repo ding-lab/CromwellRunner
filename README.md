@@ -1,6 +1,24 @@
-# Cromwell Runner
+# CromwellRunner
 
-Manage Cromwell workflows on MGI and RIS compute1
+CromwellRunner is a lightweight interactive workflow manager for managing Cromwell workflows on MGI and RIS compute1 systems at Washington University. 
+For a batch of cases it provides a set of interactive tools to stage, launch, interrogate, and finalize sets of jobs and workflow results.
+It provides functionality to discover and restart failed jobs, restart runs from intermediate results of past runs, and finalize completed runs to reduce disk use.
+
+CromwellRunner was originally developed to manage runs of the TinDaisy variant caller.  Workflow management functionality
+is being isolated in this project to allow for use with arbitrary workflows.
+
+## Organizational structure
+
+Example workflows are in ./workflow.XXX/ directories.  These provide configuration data and simple scripts which 
+take advantage of functionality in ./src.  Different workflows are provided to illustrate use and provide simpler ways
+to get started.
+
+## Installation
+
+Currently scripts here rely on TinDaisy, whose path is defined as `TD_ROOT`
+
+
+# Below is documentation from pre-compute1 reorganization
 
 # Quick start - CPTAC3, one case
 
