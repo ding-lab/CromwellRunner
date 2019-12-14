@@ -1,6 +1,6 @@
 # Cromwell Runner
 
-Initialize, run, and finalize TinDaisy Cromwell workflows on MGI
+Manage Cromwell workflows on MGI and RIS compute1
 
 # Quick start - CPTAC3, one case
 
