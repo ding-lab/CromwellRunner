@@ -1,7 +1,14 @@
-source /opt/lsf9/conf/lsf.conf
-source config/project_config.MMRF-restart.sh
 
-CQD="$TD_ROOT/src"
+
+# This file below is for MGI
+# source /opt/lsf9/conf/lsf.conf
+
+# below is for compute1
+source /opt/ibm/lsfsuite/lsf/conf/lsf.conf
+
+source config/project_config.compute1.sh
+
+# CQD="$TD_ROOT/src"
 
 
 # -J N - specify number of jobs to run at once
