@@ -57,7 +57,7 @@ RUNLOG can be defined as environment variable, e.g., `export RUNLOG=/path/to/log
 Note that this script requires `jq` to be installed: https://stedolan.github.io/jq/download/
 EOF
 
-source cromwell_utils.sh
+source src/cromwell_utils.sh
 SCRIPT=$(basename $0)
 
 # read default from environment variable if possible, otherwise use default

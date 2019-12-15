@@ -77,7 +77,7 @@ to be listed for a given case if they exist.
 DATALOG and RUNLOG can be defined as environment variables, e.g., `export DATALOG=/path/to/logs/datalog.dat`
 EOF
 
-source cromwell_utils.sh
+source src/cromwell_utils.sh
 
 SCRIPT=$(basename $0)
 SCRIPT_PATH=$(dirname $0)

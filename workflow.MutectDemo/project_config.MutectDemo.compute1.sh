@@ -53,6 +53,8 @@ CONFIG_FILE="dat/cromwell-config-db.dat"
 # template used for generating YAML files
 YAML_TEMPLATE="workflow.MutectDemo/MutectDemo.yaml"
 
+CWL="$TD_ROOT/cwl/workflows/tindaisy-postcall.cwl"
+
 ## Variables below superfluous for MutectDemo 
 # These parameters used when finding data in BamMap
 # ES="WXS"                            # experimental strategy

@@ -50,7 +50,7 @@ EOF
 #    ;login: The USENIX Magazine, February 2011:42-47.
 # [ https://www.usenix.org/system/files/login/articles/105438-Tange.pdf ]
 
-source cromwell_utils.sh
+source src/cromwell_utils.sh
 
 SCRIPT=$(basename $0)
 SCRIPT_PATH=$(dirname $0)

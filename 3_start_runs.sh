@@ -1,12 +1,22 @@
-
-
 # This file below is for MGI
 # source /opt/lsf9/conf/lsf.conf
 
 # below is for compute1
 source /opt/ibm/lsfsuite/lsf/conf/lsf.conf
 
-source config/project_config.compute1.sh
+PARAMS=$1
+shift
+if [ -z $PARAMS ]; then 
+    echo pass PARAMS argument $PARAMS 
+    exit 1
+fi
+
+if [ ! -f $PARAMS ]; then 
+    echo $PARAMS  does not exist
+    exit 1
+fi
+
+source $PARAMS
 
 # CQD="$TD_ROOT/src"
 
@@ -17,7 +27,10 @@ source config/project_config.compute1.sh
 #ARGS="-J 4 -F"
 ARGS="-F"
 ARGS="$ARGS -X -Xmx10g -G $TD_ROOT"
-bash $TD_ROOT/src/rungo $ARGS -p $PROJECT -c $CQD -R $CROMWELL_JAR -W $CWL -C $CONFIG_FILE -k $CASES_FN $@
+#CMD="bash src/rungo $ARGS -c src -p $PROJECT -R $CROMWELL_JAR -W $CWL -C $CONFIG_FILE -k $CASES_FN $@"
+CMD="bash src/rungo $ARGS -c src -p $PROJECT -R $CROMWELL_JAR -W $CWL -C $CONFIG_FILE $@"
+<&2 echo Running: $CMD
+eval $CMD
 
 rc=$?
 if [[ $rc != 0 ]]; then

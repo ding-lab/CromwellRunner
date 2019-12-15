@@ -84,7 +84,7 @@ This script relies on `cq` to get WorkflowID and status associated with each cas
 RUNLOG can be defined as environment variable, e.g., `export RUNLOG=/path/to/logs/runlog.dat`
 EOF
 
-source cromwell_utils.sh
+source src/cromwell_utils.sh
 
 SCRIPT=$(basename $0)
 SCRIPT_PATH=$(dirname $0)

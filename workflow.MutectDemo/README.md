@@ -14,5 +14,8 @@ Trying idea of having base scripts in .., passing arguments to scripts to be wor
 
 ```
 bash 1_make_yaml.sh -P workflow.MutectDemo/project_config.MutectDemo.compute1.sh -g MutectDemo
+bash 2_make_config.sh workflow.MutectDemo/project_config.MutectDemo.compute1.sh 
+bash 3_start_runs.sh workflow.MutectDemo/project_config.MutectDemo.compute1.sh 
 
 ```
+
