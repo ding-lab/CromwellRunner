@@ -246,14 +246,15 @@ if [ $DO_FINALIZE ]; then
     fi
 
     # run one runtidy and datatidy query to make sure they don't error out
-    CMD="$RUNTIDY -1 -x query"
+    CMD="echo $CASES | $RUNTIDY -1 -x query -"
     R=$($CMD)
     test_exit_status $SCRIPT
 
-    CMD="$DATATIDY -1 -x query"
+    CMD="echo $CASES | $DATATIDY -1 -x query -"
     R=$($CMD)
     test_exit_status $SCRIPT
 fi
+
 
 for CASE in $CASES; do
     NOW=$(date)

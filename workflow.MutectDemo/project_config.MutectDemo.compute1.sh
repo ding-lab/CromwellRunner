@@ -25,7 +25,10 @@ TD_ROOT="/home/m.wyczalkowski/Projects/TinDaisy/TinDaisy"
 # Workflow root - where Cromwell output goes.  This value replaces text WORKFLOW_ROOT in CONFIG_TEMPLATE,
 # and is written to CONFIG_FILE
 # On compute1 are putting WORKFLOW_ROOT on scratch disk for performance
-WORKFLOW_ROOT="/scratch/cromwell"
+#   * doesn't seem to work currently
+# WORKFLOW_ROOT="/scratch/cromwell"     # Doesn't work
+# WORKFLOW_ROOT="/data/Active/cromwell-data"    # doesn't work
+WORKFLOW_ROOT="/home/m.wyczalkowski/Projects/TinDaisy/cromwell-data"
 CONFIG_TEMPLATE="config/cromwell-config-db.template.dat"
 CONFIG_FILE="dat/cromwell-config-db.dat"
 
@@ -53,7 +56,7 @@ CONFIG_FILE="dat/cromwell-config-db.dat"
 # template used for generating YAML files
 YAML_TEMPLATE="workflow.MutectDemo/MutectDemo.yaml"
 
-CWL="$TD_ROOT/cwl/workflows/tindaisy-postcall.cwl"
+CWL="$TD_ROOT/cwl/workflows/tindaisy.cwl"
 
 ## Variables below superfluous for MutectDemo 
 # These parameters used when finding data in BamMap

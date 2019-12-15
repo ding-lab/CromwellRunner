@@ -25,7 +25,7 @@ source $PARAMS
 # -F - finalize and compress jobs immediately upon completion
 # -G - git project details of TD_ROOT`
 #ARGS="-J 4 -F"
-ARGS="-F"
+#ARGS="-F"
 ARGS="$ARGS -X -Xmx10g -G $TD_ROOT"
 #CMD="bash src/rungo $ARGS -c src -p $PROJECT -R $CROMWELL_JAR -W $CWL -C $CONFIG_FILE -k $CASES_FN $@"
 CMD="bash src/rungo $ARGS -c src -p $PROJECT -R $CROMWELL_JAR -W $CWL -C $CONFIG_FILE $@"
