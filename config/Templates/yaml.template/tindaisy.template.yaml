@@ -9,7 +9,7 @@
 # * NORMAL_BAM
 # * TUMOR_BAM
 # * REF_PATH
-# * TD_ROOT -> renamed PARAM_ROOT whose value is $TD_ROOT/params
+# * PARAM_ROOT -> value is $TD_ROOT/params
 # * DBSNP_DB
 # * VEP_CACHE_GZ
 # * VEP_CACHE_VERSION

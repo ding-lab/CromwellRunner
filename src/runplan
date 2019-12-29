@@ -42,12 +42,13 @@ Output YAML file filename is CASE.yaml.  It is based on YAML_TEMPLATE, with the 
     * NORMAL_BAM
     * TUMOR_BAM
     * REF_PATH
-    * TD_ROOT
+    * PARAM_ROOT
     * DBSNP_DB
     * VEP_CACHE_GZ
-    * RESTART_D
     * VEP_CACHE_VERSION
     * ASSEMBLY
+    * CHRLIST
+    * RESTART_D
 The TUMOR_BAM and NORMAL_BAM are defined by lookup of CASE in BamMap, RESTART_D
 is defined when -R flag is set, remainder defined in PARAMS
 
@@ -159,9 +160,9 @@ function init_params {
         complain "REF_PATH not defined in $PARAMS" $ONLYWARN
         REF_PATH="undefined"   
     fi
-    if [ -z $TD_ROOT ]; then
-        complain "TD_ROOT not defined in $PARAMS" $ONLYWARN
-        TD_ROOT="undefined"
+    if [ -z $PARAM_ROOT ]; then
+        complain "PARAM_ROOT not defined in $PARAMS" $ONLYWARN
+        PARAM_ROOT="undefined"
     fi
     if [ -z $DBSNP_DB ]; then
         complain "DBSNP_DB not defined in $PARAMS" $ONLYWARN
@@ -179,14 +180,19 @@ function init_params {
         complain "ASSEMBLY not defined in $PARAMS" $ONLYWARN
         ASSEMBLY="undefined"
     fi
+    if [ -z $CHRLIST ]; then
+        complain "CHRLIST not defined in $PARAMS" $ONLYWARN
+        CHRLIST="undefined"
+    fi
 
     # envsubst requires variables to be exported - these are the parameters used for yaml file
     export REF_PATH
-    export TD_ROOT
+    export PARAM_ROOT
     export DBSNP_DB
     export VEP_CACHE_GZ
     export VEP_CACHE_VERSION
     export ASSEMBLY
+    export CHRLIST
 
     # These parameters used to be passed as arguments, but are now in PARAMS
     if [ -z $BAMMAP ]; then

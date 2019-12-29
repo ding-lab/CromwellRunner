@@ -8,10 +8,11 @@
 # Note that running `runplan` with no arguments will give back useful information about anticipated runs
 # perhaps add this as default?
 
-#RESTART_MAP="dat/MMRF-20190925.map.dat"
+RESTART_MAP="dat/LSCC.20191104.restart-map.dat"
+PARAMS="Project.config.sh"
 
 >&2 echo Writing YAML files
-CMD="src/runplan -x yaml "$@" "
+CMD="src/runplan -x yaml -P $PARAMS -R $RESTART_MAP $@ "
 
 >&2 echo Running: $CMD
 eval $CMD

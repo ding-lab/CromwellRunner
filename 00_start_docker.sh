@@ -6,6 +6,8 @@ if [ $SYSTEM == "MGI" ]; then
 # Note that we are using a pre-packaged container.  TODO: update this to 
 # the image being used for compute1
 
+>&2 echo TODO: upgrade to cromwell-runner image
+
     /gscmnt/gc2560/core/env/v1/bin/gsub -m 32
 
 elif [ $SYSTEM == "compute1" ]; then

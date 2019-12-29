@@ -95,7 +95,7 @@ if [ -z $RUNLOG ]; then
 fi
 
 if [ -z $CQD ]; then
-    CQ="cq"
+    CQ="src/cq"
 else
     CQ="$CQD/cq"
 fi
@@ -185,7 +185,7 @@ if [ ! -f $DATALOG ]; then
 fi
 if [ ! -f $RUNLOG ]; then
         >&2 echo ERROR: RUNLOG file $RUNLOG does not exist, will not create one by default
-        >&2 echo "       runlog file can be created with \`runtidy -f1\`"
+        >&2 echo "       runlog file can be created with \`runtidy -f0\`"
         exit 1
 fi
 
@@ -433,7 +433,11 @@ function do_prune {
 function do_uncompress_merge {
     RID=$1
 
-    WD=$( $CQ -V -q workflowRoot $RID )                               
+>&2 echo DEBUG: RID = $RID
+    CMD=" $CQ -V -q workflowRoot $RID "
+>&2 echo DEBUG: CMD = $CMD
+    WD=$( $CMD )                               
+>&2 echo DEBUG: WD = $WD
 
     TARC="$WD/compressed_results.tar.gz"
     TARP="$WD/pruned_results.tar.gz"
@@ -446,6 +450,7 @@ function do_uncompress_merge {
         >&2 echo ERROR: No TAR file in $WD, nothing to do.  Exiting
         exit 1
     fi
+>&2 echo DEBUG: TAR = $TAR
 
     FILES="./call-pindel_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf \
         ./call-varscan_snv_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf \

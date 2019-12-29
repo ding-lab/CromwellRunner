@@ -16,6 +16,7 @@ Optional options
 -d: dry run: print commands but do not run
 -v: verbose
 -1: stop after one case processed.
+-0: do not process any cases, exit after initialization
 -x TASK: Execute given task.  Values: 'query' (default), 'register', 'stash', 'finalize'
 -k CASES_FN: file with list of all cases, one per line, used when CASE1 not defined. Default: dat/cases.dat
 -g LOGD: directory where runtime output (CASE.out, CASE.err, CASE.log ) can be found.  Default "./logs"
@@ -102,7 +103,7 @@ if [ -z $RUNLOG ]; then
     RUNLOG="./logs/runlog.dat"
 fi
 
-while getopts ":hdv1x:k:g:T:L:y:YF:c:m:D:fp:" opt; do
+while getopts ":hdv10x:k:g:T:L:y:YF:c:m:D:fp:" opt; do
   case $opt in
     h) 
       echo "$USAGE"
@@ -112,6 +113,9 @@ while getopts ":hdv1x:k:g:T:L:y:YF:c:m:D:fp:" opt; do
       DRYRUN="d"
       QUIET=0   # print stuff out
       DATATIDY_ARGS="$DATATIDY_ARGS -d"
+      ;;
+    0)  
+      JUSTZERO=1
       ;;
     1)  # propagate to datatidy
       JUSTONE=1
@@ -212,6 +216,9 @@ if [ ! -f $RUNLOG ]; then
         exit 1
     fi
     >&2 echo Creating new run log $RUNLOG
+    TARGET_DIR=$(dirname $RUNLOG)
+    CMD=$(mkdir -p $TARGET_DIR)
+    run_cmd $CMD "$DRYRUN" 1
     # Write header
     CMD="printf \"# Case\tProject\tWorkflowID\tStatus\tStartTime\tEndTime\tNote\n\" > $RUNLOG"
     run_cmd "$CMD" "$DRYRUN" 1
@@ -342,6 +349,10 @@ fi
 CMD="mkdir -p $LOGD"
 run_cmd "$CMD" "$DRYRUN"
 
+# -0 may be called to create runlog file then exit without processing any cases
+if [ $JUSTZERO ]; then
+    exit 0
+fi
 
 for CASE in $CASES; do
 

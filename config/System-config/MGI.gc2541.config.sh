@@ -28,7 +28,7 @@ DBSNP_ROOT="/gscmnt/gc2521/dinglab/mwyczalk/somatic-wrapper-data/image.data/B_Fi
 VEP_CACHE_ROOT="/gscmnt/gc2521/dinglab/mwyczalk/somatic-wrapper-data/image.data/D_VEP"
 
 # TD_ROOT is needed for CWL
-TD_ROOT="/gscuser/mwyczalk/projects/TinDaisy/TinDaisy/params"
+TD_ROOT="/gscuser/mwyczalk/projects/TinDaisy/TinDaisy"
 # TinDaisy parameters relative to TD_ROOT
 PARAM_ROOT="$TD_ROOT/params"
 

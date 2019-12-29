@@ -6,11 +6,9 @@ source Project.config.sh
 
 # This is sourced both here and in make_yaml.sh to fill out template parameters
 
-
-
 export DATALOG
 
-RESTART_MAP="dat/MMRF-20190925.map.dat"
+RESTART_MAP="dat/LSCC.20191104.restart-map.dat"
 
 >&2 echo Uncompressing restart files
 cut -f 2 $RESTART_MAP | src/datatidy -x uncompress_merge "$@" -

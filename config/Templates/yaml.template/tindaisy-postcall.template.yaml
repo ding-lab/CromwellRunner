@@ -3,7 +3,7 @@
 # * NORMAL_BAM
 # * TUMOR_BAM
 # * REF_PATH
-# * TD_ROOT
+# * PARAM_ROOT -> value is TD_ROOT/params
 # * DBSNP_DB
 # * VEP_CACHE_GZ
 # * VEP_CACHE_VERSION
@@ -41,10 +41,10 @@ reference_fasta:
 # Other filter config
 classification_filter_config:
   class: File
-  path: ${TD_ROOT}/params/classification_filter_config.ini
+  path: ${PARAM_ROOT}/filter_config/classification_filter_config.ini
 af_filter_config:
   class: File
-  path: ${TD_ROOT}/params/af_filter_config.ini
+  path: ${PARAM_ROOT}/filter_config/af_filter_config.ini
 
 # See README.md for discussion of dbSnP references
 dbsnp_db:
@@ -58,10 +58,6 @@ dbsnp_db:
 vep_cache_gz:
   class: File
   path: ${VEP_CACHE_GZ}
-
-# These are being defined in PARAMS
-# vep_cache_version: "90"
-# assembly: "GRCh38"
 
 vep_cache_version: ${VEP_CACHE_VERSION}
 assembly: ${ASSEMBLY}
