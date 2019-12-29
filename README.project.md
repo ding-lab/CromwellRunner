@@ -73,5 +73,13 @@ To make them all,
 bash 2_make_yaml.sh 
 ```
 
+## run 3_make_config.sh
 
+## Testing 4_start_runs.sh
 
+Get error:
+```
+The 'general' queue does not support Docker.
+Request aborted by esub. Job not submitted.
+
+```
