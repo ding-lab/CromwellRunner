@@ -29,4 +29,5 @@ in one group can be varied independently of those in another.
 In the case of paths to e.g. dbSnP DB, which will differ between system and reference, the system parameters
 will include DBSNP_ROOT, which will yield reference specific path defined in collection as e.g., "DBSNP_ROOT/dbSnP-COSMIC.REF.vcf.gz"
 
-
+TODO: The directory layout implemented here is inconvenient, since it is hard to find which variable is defined in which file.  Suggest
+making all files sit at one directory level or having some "parameter directory"

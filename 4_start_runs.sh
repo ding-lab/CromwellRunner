@@ -1,15 +1,4 @@
-# This file below is for MGI
-# source /opt/lsf9/conf/lsf.conf
-
-# below is for compute1
-source /opt/ibm/lsfsuite/lsf/conf/lsf.conf
-
-PARAMS=$1
-shift
-if [ -z $PARAMS ]; then 
-    echo pass PARAMS argument $PARAMS 
-    exit 1
-fi
+PARAMS="Project.config.sh"
 
 if [ ! -f $PARAMS ]; then 
     echo $PARAMS  does not exist
@@ -17,9 +6,7 @@ if [ ! -f $PARAMS ]; then
 fi
 
 source $PARAMS
-
-# CQD="$TD_ROOT/src"
-
+source $LSF_CONF
 
 # -J N - specify number of jobs to run at once
 # -F - finalize and compress jobs immediately upon completion

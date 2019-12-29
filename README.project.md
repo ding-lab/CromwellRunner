@@ -63,5 +63,15 @@ bash 1_uncompress_restart.sh
 ```
 
 ## Testing `2_make_yaml`
+To test one,
+```
+bash 2_make_yaml.sh -1
+```
+
+To make them all,
+```
+bash 2_make_yaml.sh 
+```
+
 
 

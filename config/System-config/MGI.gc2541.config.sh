@@ -6,13 +6,18 @@
 SYSTEM="MGI"
 #SYSTEM="compute1"  # not yet implemented
 
+# LSF_CONF for MGI
+LSF_CONF="/opt/lsf9/conf/lsf.conf"
+# LSF_CONF for compute1
+# LSF_CONF="/opt/ibm/lsfsuite/lsf/conf/lsf.conf"
+
 
 CROMWELL_JAR="/gscuser/mwyczalk/projects/TinDaisy/CromwellRunner/cromwell.jar/44/cromwell-44.jar"
 
 # Workflow root - where Cromwell output goes.  This value replaces text WORKFLOW_ROOT in CONFIG_TEMPLATE,
 # and is written to CONFIG_FILE
 WORKFLOW_ROOT="/gscmnt/gc2541/cptac3_analysis"
-CONFIG_TEMPLATE="config/cromwell-config-db.template.dat"
+CONFIG_TEMPLATE="config/Templates/cromwell-config.template/cromwell-config-db.template.dat"
 
 # Path to BamMap, which is a file which defines sequence data path and other metadata
 # BamMap format is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
