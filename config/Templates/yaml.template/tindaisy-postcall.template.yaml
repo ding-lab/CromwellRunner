@@ -6,9 +6,9 @@
 # * TD_ROOT
 # * DBSNP_DB
 # * VEP_CACHE_GZ
-# * RESTART_D * for restarting YAML
 # * VEP_CACHE_VERSION
 # * ASSEMBLY
+# * RESTART_D * for restarting YAML
 
 # Parameters expected by tindaisy-postcall.cwl
 
