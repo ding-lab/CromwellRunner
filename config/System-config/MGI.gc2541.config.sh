@@ -2,6 +2,11 @@
 # System config
 # MGI system with Cromwell output to gc2541
 #
+
+SYSTEM="MGI"
+#SYSTEM="compute1"  # not yet implemented
+
+
 CROMWELL_JAR="/gscuser/mwyczalk/projects/TinDaisy/CromwellRunner/cromwell.jar/44/cromwell-44.jar"
 
 # Workflow root - where Cromwell output goes.  This value replaces text WORKFLOW_ROOT in CONFIG_TEMPLATE,

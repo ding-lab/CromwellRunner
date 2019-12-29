@@ -9,7 +9,7 @@ is being isolated in this project to allow for use with arbitrary workflows.
 
 ## Organizational structure
 
-Example workflows are in ./workflow.XXX/ directories.  These provide configuration data and simple scripts which 
+Example workflows are in ./workflows directory.  These provide configuration data and simple scripts which 
 take advantage of functionality in ./src.  Different workflows are provided to illustrate use and provide simpler ways
 to get started.
 

@@ -6,4 +6,5 @@
 
 /usr/bin/java -Dconfig.file=/gscuser/tmooney/server.cromwell.config -jar /opt/cromwell.jar server >/dev/null & 
 
+# This may need to be done by hand because it doesn't seem to propagate to parent
 export CROMWELL_URL=http://localhost:8000
