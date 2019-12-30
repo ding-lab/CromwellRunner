@@ -81,5 +81,7 @@ Get error:
 ```
 The 'general' queue does not support Docker.
 Request aborted by esub. Job not submitted.
-
 ```
+
+Not sure where `general` queue is defined.  Used to be when starting docker (step 0)?
+
