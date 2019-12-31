@@ -9,6 +9,7 @@ Usage: runplan [options] [CASE1 [ CASE2 ... ]]
 
 Options:
 -h: print usage information
+-v: Indicate progress in stderr
 -1: Quit after evaluating one case
 -x TASK: Execute given task.  Values: 'query' (default), 'yaml', 'summary'
 -y YAMLD: output directory of YAML files.  If "-", write YAML to stdout.  Default: ./yaml
@@ -21,10 +22,9 @@ Options:
 -s SUMMARY_OUT: output analysis summary file for task `summary`.  If '-', write to STDOUT
 -c CROMWELL_QUERY: explicit path to cromwell query utility `cq`.  Default "cq" 
 -R RESTART_MAP: file listing workflow IDs for each case when restarting runs.  Requires RESTART_ROOT in PARAMS
--W CWLS: CWL filename.  Used by `cq` for parsing JSON output if it is not the default "tindaisy.cwl"
 
 runplan uses BamMap and parameters file to review, initialize, and summarize completed runs.  This
-script makes use of the PARAMS file (default config/project_config.sh) to get various parameters
+script makes use of the PARAMS file (default Project.config.sh) to get various parameters
 
 runplan performs the following tasks, specified with -x:
 * `query`: return information about inputs to be used for generating YAML file.  This is the default task
@@ -67,18 +67,20 @@ SCRIPT=$(basename $0)
 TASK="query"
 YAMLD="./yaml"
 SUMMARY_OUT="./dat/analysis_summary.dat"
-PARAMS="./config/project_config.sh"
-CROMWELL_QUERY="cq"
-CWLS="tindaisy.cwl"
+PARAMS="Project.config.dat"
+CROMWELL_QUERY="src/cq"
 
 TUMOR_ST='tumor'
 NORMAL_ST='blood_normal'
 
-while getopts ":h1P:x:y:upnwgs:c:R:W:" opt; do
+while getopts ":hv1P:x:y:upnwgs:c:R:" opt; do
   case $opt in
     h)  
       echo "$USAGE"
       exit 0
+      ;;
+    v) # Stop after 1
+      PROGRESS=1
       ;;
     1)  
       JUSTONE=1
@@ -115,9 +117,6 @@ while getopts ":h1P:x:y:upnwgs:c:R:W:" opt; do
       ;;
     R) 
       RESTART_MAP="$OPTARG"
-      ;;
-    W) 
-      CWLS="$OPTARG"
       ;;
     \?)
       >&2 echo "Invalid option: -$OPTARG" 
@@ -235,6 +234,10 @@ function init_params {
 }
 
 init_params
+
+# This is used in output query
+CWLS=$(basename $CWL)
+
 
 # this allows us to get case names in one of three ways:
 # 1: cq CASE1 CASE2 ...
@@ -558,6 +561,9 @@ else
 fi
 
 for CASE in $CASES; do
+    if [ "$PROGRESS" ]; then
+        >&2 echo Processing $CASE 
+    fi
 
 # this goes into called functions
     if [ $TASK == "query" ]; then

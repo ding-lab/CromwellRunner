@@ -14,6 +14,7 @@ Usage:
 
 Options:
 -h: Print this help message
+-v: Indicate progress in stderr
 -1: Stop after one
 -k CASES_FN: file with list of all cases, one per line, used when RID1 not defined. Default: dat/cases.dat
 -q QUERY: type of query, one of 'status', 'logs', 'workflowRoot', 'timing', 'duration', 'output', 'outputs', 'runlog', 'url'.  Default is `status`
@@ -43,7 +44,7 @@ Evaluates the following information for each case
     * workflowRoot - Path to root of cromwell output
     * timing - URL to visualize timing and progress of workflow
     * duration - display duration of run in minutes
-    * output - Output VCF of TinDaisy run associated with tindaisy.cwl.output_vcf
+    * output - Output VCF of TinDaisy run associated with CWL.output_vcf
     * outputs - All outputs of TinDaisy run as specified in input CWL
     * runlog - Output status, start, end times
     * url - print URL of Cromwell server and quit.  This is a hardcoded value, but useful to know for manual queries
@@ -77,11 +78,14 @@ QUERY="status"
 CWL="tindaisy.cwl"
 
 # http://wiki.bash-hackers.org/howto/getopts_tutorial
-while getopts ":h1k:q:s:VUSTDC:L:W:" opt; do
+while getopts ":hv1k:q:s:VUSTDC:L:W:" opt; do
   case $opt in
     h)
       echo "$USAGE"
       exit 0
+      ;;
+    v) # Stop after 1
+      PROGRESS=1
       ;;
     1) # Stop after 1
       JUST_ONCE=1
@@ -205,11 +209,16 @@ function get_workflowRoot {
 # TODO: this should be simplified, can wildcards be used in jq query?
 function get_output {
     WID=$1
+    CWLF=$2
+    if [ -z $CWLF ]; then
+        >&2 echo ERROR: need to pass CWL \(or figure out jq wildcards\)
+        exit 1
+    fi
     R=$( curl $CURL_ARG -s -X GET "$CROMWELL_URL/api/workflows/v1/$WID/outputs" -H "accept: application/json" )
     test_exit_status $SCRIPT
 #    S=$( echo "$R" | jq -r '.outputs."tindaisy.cwl.output_vcf".location' )
 #    S=$( echo "$R" | jq -r '.outputs."tindaisy-postcall.cwl.output_vcf".location' )
-    JQQ=".outputs.\"$CWL.output_vcf\".location" 
+    JQQ=".outputs.\"$CWLF.output_vcf\".location" 
     S=$( echo "$R" | jq -r $JQQ )
     test_exit_status $SCRIPT
     echo "$S"
@@ -292,6 +301,10 @@ for RID in $RIDS; do
     read CASE WID < <( getCaseWID $RID $RUNLOG )
     test_exit_status $SCRIPT
 
+    if [ "$PROGRESS" ]; then
+        >&2 echo Processing $CASE $WID
+    fi
+
     if [ "$ONLY_SUCCESS" ]; then
         STATUS=$( get_status $WID )
         test_exit_status $SCRIPT
@@ -335,7 +348,7 @@ for RID in $RIDS; do
             # URL as provided by tmooney on slack 
             STATUS="$CROMWELL_URL/api/workflows/v1/$WID/timing"
         elif [ "$QUERY" == 'output' ]; then     # this returns output associated with tindaisy.cwl.output_vcf
-            STATUS=$(get_output $WID)
+            STATUS=$(get_output $WID $CWL)
             test_exit_status $SCRIPT
         elif [ "$QUERY" == 'outputs' ]; then    # this returns multiple outputs
             STATUS=$(get_outputs $WID | grep -v -w "null")

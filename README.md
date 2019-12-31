@@ -416,7 +416,6 @@ MMRF_1603       ab08b7c6-79b1-4b82-87e9-0e8dbc55096e    Succeeded
 MMRF_1655       316cad9a-c7d6-4deb-b362-30d45ed9ac21    Succeeded
 MMRF_1725       04347069-d4ad-4f0e-9538-a01515a9260b    Succeeded
 ```
-These will be manually killed as described in README.md, finalized, and compressed
 
 
 Description of how to kill zombie and clean it up:

@@ -75,13 +75,26 @@ bash 2_make_yaml.sh
 
 ## run 3_make_config.sh
 
-## Testing 4_start_runs.sh
+## 4_start_runs.sh
 
-Get error:
-```
-The 'general' queue does not support Docker.
-Request aborted by esub. Job not submitted.
-```
+During testing, 3 or 4 runs were started which may need to be deleted
 
-Not sure where `general` queue is defined.  Used to be when starting docker (step 0)?
+Running production with -J4 -F
+
+Next day there are two jobs apparently unfinished (based on contents of logs directory)
+* C3L-02627 - Failed to instantiate Cromwell System. Shutting down Cromwell.
+    * Restarting with,
+        bash 4_start_runs.sh -J1 -F C3L-02627
+* C3N-02374 - Looks like it succeeded
+    /gscmnt/gc2541/cptac3_analysis/cromwell-workdir/cromwell-executions/tindaisy-postcall.cwl/0074e313-d303-4159-b4e8-31d4840ffdba/call-vep_filter/execution/results/vep_filter/vep_filtered.vcf
+    Zombie succeeded - cq indicates it is finished
+    Look at README.md for details how to deal with
+    After killing job, finalize run and compress data with,
+        src/runtidy -x finalize -p LSCC.postcall.20191228 -m "Succeeded zombie manual cleanup" -F Succeeded C3N-02374
+        src/datatidy -x compress -p LSCC.postcall.20191228 -m "Succeeded zombie manual cleanup" -F Succeeded C3N-02374
+
+
+# Notes on using `cq`
+
+-W $CWL needs to be passed on call to `cq -q output` so that the JSON is correctly parsed (is there wildcards in `jq`?)
 

@@ -93,6 +93,7 @@ SCRIPT_PATH=$(dirname $0)
 TASK="query"
 LOGD="./logs"       # where we find Cromwell run logs
 STASHD="./logs/stashed"     # where we put stashed logs
+CQD="./src"
 
 YAMLD="./yaml"
 CASES_FN="dat/cases.dat"
