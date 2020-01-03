@@ -13,12 +13,13 @@
 # 10  UUID                        ---
 # 11  system
 
-BAMOUT="dat/BamMap.HNSCC.UMich.dat"
+BAMOUT="dat/BamMap.HNSCC.UMich.MGI.dat"
 mkdir -p dat
 
-CATALOG="/diskmnt/Projects/cptac_scratch/CPTAC3.workflow/CPTAC3.catalog/CPTAC3.Catalog.dat"
-BAM_ROOT="/home/mwyczalk_test/Projects/RIS/mnt/Active/CPTAC3.share/cords-align"
+CATALOG="/gscuser/mwyczalk/projects/CPTAC3/CPTAC3.catalog/CPTAC3.Catalog.dat"
+BAM_ROOT="/gscmnt/gc2521/dinglab/mwyczalk/CPTAC3.share/cords-align"
 ES="WGS"
+SYSTEM="MGI"
 
 function process_BAM {
     for CPT_PATH in $BAM_ROOT/CPT*; do
@@ -36,7 +37,7 @@ function process_BAM {
         DIS=$(echo "$BM" | cut -f 3)
         ST=$(echo "$BM" | cut -f 5)
 
-        printf "$SN\t$CASE\t$DIS\t$ES\t$ST\t$CRAM\t$SIZE\tCRAM\tGRCh38_full_analysis_set_plus_decoy_hla\tNA\tstorage1\n"
+        printf "$SN\t$CASE\t$DIS\t$ES\t$ST\t$CRAM\t$SIZE\tCRAM\tGRCh38_full_analysis_set_plus_decoy_hla\tNA\t$SYSTEM\n"
 
     done
 }

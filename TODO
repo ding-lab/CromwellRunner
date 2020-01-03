@@ -1,3 +1,10 @@
+# SomaticSV specific notes
+
+* Think through how datatidy and CQ works for non-tindaisy runs
+
+
+
+# Previous notes
 Implement basic non-db functionality (so that datatidy can be used)
 Improve error handling if database does not exist / is down / is not correctly defined
 Update documentation with description of local database

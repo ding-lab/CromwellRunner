@@ -35,8 +35,8 @@ Define `Project.config.dat`
 Set up environment:
 ```
 tmux new -s C3L-02395
-bash 0_start_docker.sh
-bash 0b_start_server.sh
+bash 00_start_docker.sh
+bash 05_start_server.sh
 conda activate jq
 export CROMWELL_URL=http://localhost:8000
 ```
