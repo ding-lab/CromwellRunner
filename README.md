@@ -20,6 +20,16 @@ Currently scripts here rely on TinDaisy, whose path is defined as `TD_ROOT`
 
 # Below is documentation from pre-compute1 reorganization
 
+## Git organization
+### for production runs
+
+Copy relevant workflow from workflows.
+
+Make notes about project in README.project.md
+
+Define `Project.config.dat`
+
+
 # Quick start - CPTAC3, one case
 
 Set up environment:

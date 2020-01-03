@@ -1,10 +1,3 @@
-Workflow for restarting past runs is based on work here:
-    /gscmnt/gc2737/ding/fernanda/Somatic_MMY/MMRF/MMRF_WXS_restart
-and 
-    /gscuser/mwyczalk/projects/TinDaisy/CromwellRunner/LSCC.postcall.20191228
-
-
-# Notes from README.Project.md from LSCC.postcall.20191228
 This project develops restart functionality for LSCC run.
 
 Notes here will need to be transferred over to workflow-specific README and this 
@@ -126,5 +119,4 @@ Next day there are two jobs apparently unfinished (based on contents of logs dir
 # Notes on using `cq`
 
 -W $CWL needs to be passed on call to `cq -q output` so that the JSON is correctly parsed (is there wildcards in `jq`?)
-
 
