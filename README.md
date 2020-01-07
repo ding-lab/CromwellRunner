@@ -7,6 +7,19 @@ It provides functionality to discover and restart failed jobs, restart runs from
 CromwellRunner was originally developed to manage runs of the TinDaisy variant caller.  Workflow management functionality
 is being isolated in this project to allow for use with arbitrary workflows.
 
+## Utilities
+
+CromwellRunner is a workflow manager for TinDaisy runs.  It consists of the following utilities:
+* `cq` - query cromwell server
+* `datatidy` - manage TinDaisy run results 
+* `rungo` - launch TinDaisy jobs 
+* `runplan` - initialize TinDaisy jobs
+* `runtidy` - Organize TinDaisy job logs
+
+Goal of CromwellRunner is to initialize, launch, inspect, clean up, restart,
+and log TinDaisy runs, particularly for batches of tens and hundreds of runs.
+
+
 ## Organizational structure
 
 Example workflows are in ./workflows directory.  These provide configuration data and simple scripts which 
@@ -17,8 +30,6 @@ to get started.
 
 Currently scripts here rely on TinDaisy, whose path is defined as `TD_ROOT`
 
-
-# Below is documentation from pre-compute1 reorganization
 
 ## Git organization
 ### for production runs
@@ -43,16 +54,18 @@ export PATH="$PATH:./src"
 ```
 
 Create `dat/cases.dat` with cases of interest
-
+```
 mkdir dat
 vi dat/cases.dat
     < manual edits >
 vi config/project_config.sh
+```
 
 Confirm samples are correct with:
+```
 runplan
-
 bash 1_make_yaml.sh
+```
 
  preliminary testing
 bash 2_start_runs.sh -d
@@ -72,39 +85,17 @@ Within a few minutes Cromwell output will start appearing in logs/C3L-02395.out
 * Add discussion of cases.dat
 * Move discussion below of TinDaisy-specific stuff to TinDaisy project.
 
-# Data prep
-
-## Index BAMs
-BAM files and reference need to be indexed.  This is frequently done prior to analysis
-```
-samtools index BAM
-java -jar picard.jar CreateSequenceDictionary R=REF.fa O=REF.dict
-```
-where for instance `REF="all_sequences"`
-
-## dbSnP-COSMIC
-TODO: describe this in more detail.
-
-dbSnP-COSMIC VCF needs to have chromosome names which match the reference, otherwise it will
-silently not match anything.  Note that dbSnP-COSMIC.GRCh38.d1.vd1.20190416.vcf.gz has chrom names like `chr1`
-
-## chrlist
-
-This is a list of all chromosomes of interest, used for pindel.  Can be created from the reference's .fai file, retaining
-only the names of the chromosomes of interest (typically 1-Y)
-
-## Confirm YAML file
-
-It might be good to quickly check the existence of all files in YAML file with the following,
-```
-grep path $YAML | cut -f 2 -d : | xargs ls -l
-```
-
-
 
 # Run procedure
 
 ## Installation
+
+## CromwellRunner dependencies
+
+The following packages are required for CromwellRunner:
+* [`jq`](https://stedolan.github.io/jq/download/)
+* [`GNU Parallel`](https://www.gnu.org/software/parallel/)
+
 
 ### Configure conda environment
 
@@ -118,8 +109,6 @@ This may work:
 conda install jq parallel tmux
 ```
 
-**TODO** move TinDaisy instructions out from this documentation
-
 ### Install TinDaisy and CromwellRunner
 CromwellRunner is a set of scripts and configuration files designed to simplify running TinDaisy.  Both need to be installed.
 
@@ -132,10 +121,6 @@ where `PROJECT_NAME` is an arbitrary name for this particular run or batch.
 ### Configuration
 
 Optionally add the following line to `~/.bashrc` 
-```
-export PATH="$PATH:$TD_ROOT/src"
-```
-where `TD_ROOT` is as defined in `config/project_config.sh` below. This lets `cq` and other utilities be available for command line work
 
 ## Run Preparation
 1. Review `config/CPTAC3-template.yaml`.  This contains configuration files and other parameters for the TinDaisy
