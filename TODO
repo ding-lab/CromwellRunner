@@ -1,7 +1,10 @@
-# SomaticSV specific notes
+# Notes for future development
 
-* Think through how datatidy and CQ works for non-tindaisy runs
-
+* Have an automated way of saving parameters associated with runs, e.g., database versions and such when
+  reporting and staging results.
+  These are specified in YAML files and PARAMS files.  However, not all variables specified in PARAMS
+  are relevant (SomaticSV may not use all variables, which were defined for TinDaisy)
+  Perhaps could extract common lines in YAML files?  (and avoid BAMs)?
 
 
 # Previous notes
