@@ -1,21 +1,28 @@
-source Project.config.sh
-
-if [ $SYSTEM == "MGI" ]; then
-
+#source Project.config.sh
 # Launch docker environment at MGI before running cromwell.
-# Note that we are using a pre-packaged container.  TODO: update this to 
-# the image being used for compute1
 
->&2 echo TODO: upgrade to cromwell-runner image
+if [ "$#" -ne 1 ]; then
+    >&2 echo ERROR: pass SYSTEM argument
+    >&2 echo Usage: 00_start_docker.sh SYSTEM
+    exit 1  # exit code 1 indicates error
+fi
 
-    /gscmnt/gc2560/core/env/v1/bin/gsub -m 32
+SYSTEM=$1
 
-elif [ $SYSTEM == "compute1" ]; then
+if [ "$SYSTEM" == "MGI" ]; then
+
+    >&2 echo Launching docker on MGI
+
+    CMD="bash docker/start_docker.MGI.sh"
+#    >&2 echo Running: $CMD
+    eval $CMD
+
+elif [ "$SYSTEM" == "compute1" ]; then
 
     >&2 echo Launching docker on compute1
 
     CMD="bash docker/start_docker.compute1.sh"
-    >&2 echo Running: $CMD
+#    >&2 echo Running: $CMD
     eval $CMD
 
 else 

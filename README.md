@@ -32,13 +32,14 @@ Define `Project.config.dat`
 
 # Quick start - CPTAC3, one case
 
-Set up environment:
+Set up environment.  This is currently specific to MGI
 ```
 tmux new -s C3L-02395
-bash 00_start_docker.sh
-bash 05_start_server.sh
-conda activate jq
+bash 00_start_docker.sh MGI
+bash 05_start_cromwell_db_server.sh
 export CROMWELL_URL=http://localhost:8000
+conda activate jq
+export PATH="$PATH:./src"
 ```
 
 Create `dat/cases.dat` with cases of interest
@@ -68,10 +69,8 @@ Within a few minutes Cromwell output will start appearing in logs/C3L-02395.out
 
 
 # TODO
-* Add discussion about MutectDemo, whose YAML file is in ./config
-  * this is important - work on this with Fernanda
-* Add ability to process CRAM files.  This will need to read associated secondary files (.bai not required, .crai required)
 * Add discussion of cases.dat
+* Move discussion below of TinDaisy-specific stuff to TinDaisy project.
 
 # Data prep
 
@@ -118,6 +117,8 @@ This may work:
 ```
 conda install jq parallel tmux
 ```
+
+**TODO** move TinDaisy instructions out from this documentation
 
 ### Install TinDaisy and CromwellRunner
 CromwellRunner is a set of scripts and configuration files designed to simplify running TinDaisy.  Both need to be installed.

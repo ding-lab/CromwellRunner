@@ -15,22 +15,27 @@ Prior work on katmai on SomaticSV (CRAM branch) was using a Rabix-based workflow
 so trying to move everything over to MGI and cromwell.  Initial testing of a single run on Cromwell is above.
 Goal here is to have CromwellRunner successfully initialize, launch, and track SomaticSV runs.
 
-
-
 ## Starting runs
 
-Started with -J 3
+Test runs completed successfully after a few tries
+* In future, make sure CWL and scripts have full paths to all executables.  Do not rely on paths
+* Make sure PYTHONPATH is set in script or Dockerfile
 
-### Error 1
-
-```
-Check the content of stderr for potential additional information: /gscmnt/gc2541/cptac3_analysis/cromwell-workdir/cromwell-executions/SomaticSV.cwl/24bb4237-ce71-4135-a3fd-c86a8db3155f/call-SomaticSV.cwl/execution/stderr.
- [First 300 bytes]:/usr/local/somatic_sv_workflow/process_sample.sh: line 94: configManta.py: command not found
-Fatal error 127: . Exiting.
-```
+Starting runs with -J 5
 
 ### Errors
 
-Several runs died because of incorrect paths to scripts (src not appended)
+Jobs ran nicely, about 3 hours each.  The following runs had errors in log files:
+* C3N-03878
+* C3N-03933
 
-Restarting 1/3/20 with -1, just to make sure one completes.  Run takes about 3.5 hours
+Errors seem to be associated with communicating with Cromwell server at successful conclusion of run, e.g.,
+    2020-01-06 07:20:03,92] [error] Failed to summarize metadata
+
+As a result, the result data are available, but may not be reported using `cq`
+
+At conclusion of run, copy of ./logs is saved for safe keeping as logs.20200107.tar.gz
+
+## TODO
+
+Future work will be to finalize SomaticSV runs and make sure CQ works as expected

@@ -4,7 +4,7 @@
 # https://dinglab.wustl.edu/
 
 # TODO: check if server is running / available and report reasonable error message
-# TODO: RUNLOG is required for queries, but is not known here.
+# TODO: implement -d debug output for all queries, based on get_output implementation
 
 read -r -d '' USAGE <<'EOF'
 Cromwell Query: Print out per-case run statistics. Specific to cromwell runs registered with MGI Cromwell database
@@ -14,6 +14,7 @@ Usage:
 
 Options:
 -h: Print this help message
+-d: Print debug output
 -v: Indicate progress in stderr
 -1: Stop after one
 -k CASES_FN: file with list of all cases, one per line, used when RID1 not defined. Default: dat/cases.dat
@@ -26,7 +27,7 @@ Options:
 -D: Do not access database.  Limited functionality: status is unknown, best guesses are made for other queries.  TODO: complete implementation
 -C CROMWELL_URL: define the cromwell URL.  Default: https://genome-cromwell.gsc.wustl.edu
 -L RUNLOG: Run log file. Default is "./logs/runlog.dat".  Can be obtained from environment variable
--W CWL: CWL filename.  Used for parsing JSON output if it is not the default "tindaisy.cwl"
+-W CWL_OUTPUT: ID of principal output of workflow, used for parsing JSON output. Default (for tindaisy) is "tindaisy.cwl.output_vcf"
 
 RID is RunID, and can be either a Case or a WorkflowID.  Examples:
 * `cq` - will return status for all cases defined in `dat/cases.dat`
@@ -44,7 +45,7 @@ Evaluates the following information for each case
     * workflowRoot - Path to root of cromwell output
     * timing - URL to visualize timing and progress of workflow
     * duration - display duration of run in minutes
-    * output - Output VCF of TinDaisy run associated with CWL.output_vcf
+    * output - Principal output of workflow, associated with CWL_OUTPUT
     * outputs - All outputs of TinDaisy run as specified in input CWL
     * runlog - Output status, start, end times
     * url - print URL of Cromwell server and quit.  This is a hardcoded value, but useful to know for manual queries
@@ -54,6 +55,8 @@ Workflow ID associated with given cromwell output file is obtaining by grepping 
 
 CROMWELL_URL can be defined as environment variable, e.g., `export CROMWELL_URL=http://localhost:8000`
 RUNLOG can be defined as environment variable, e.g., `export RUNLOG=/path/to/logs/runlog.dat`
+CWL_OUTPUT is used to find the principal output of workflow, i.e., what is reported with `cq output`.
+  It is a concatenation of the CWL filename and 'id' of variable of interest in 'outputs' section of CWL
 
 Note that this script requires `jq` to be installed: https://stedolan.github.io/jq/download/
 EOF
@@ -75,16 +78,19 @@ fi
 # Defaults
 CASES_FN="dat/cases.dat"
 QUERY="status"
-CWL="tindaisy.cwl"
+CWL_OUTPUT="tindaisy.cwl.output_vcf"
 
 # http://wiki.bash-hackers.org/howto/getopts_tutorial
-while getopts ":hv1k:q:s:VUSTDC:L:W:" opt; do
+while getopts ":hdv1k:q:s:VUSTDC:L:W:" opt; do
   case $opt in
     h)
       echo "$USAGE"
       exit 0
       ;;
-    v) # Stop after 1
+    d) 
+      DEBUG=1
+      ;;
+    v) 
       PROGRESS=1
       ;;
     1) # Stop after 1
@@ -121,7 +127,7 @@ while getopts ":hv1k:q:s:VUSTDC:L:W:" opt; do
       RUNLOG="$OPTARG"
       ;;
     W) 
-      CWL="$OPTARG"
+      CWL_OUTPUT="$OPTARG"
       ;;
     \?)
       >&2 echo "Invalid option: -$OPTARG"
@@ -204,34 +210,59 @@ function get_workflowRoot {
     echo "$S"
 }
 
-# This will return one output location, for tindaisy.cwl.output_vcf
-# or some other output as specified by -W CWL
-# TODO: this should be simplified, can wildcards be used in jq query?
+# This will return principal of workflow as specified by CWL_OUTPUT
 function get_output {
     WID=$1
-    CWLF=$2
-    if [ -z $CWLF ]; then
-        >&2 echo ERROR: need to pass CWL \(or figure out jq wildcards\)
-        exit 1
+    CWLO=$2
+
+    Q="curl $CURL_ARG -s -X GET \"$CROMWELL_URL/api/workflows/v1/$WID/outputs\" -H \"accept: application/json\" "
+    if [ "$DEBUG" ]; then
+        >&2 echo DEBUG: get_output Q = $Q
     fi
-    R=$( curl $CURL_ARG -s -X GET "$CROMWELL_URL/api/workflows/v1/$WID/outputs" -H "accept: application/json" )
+    R=$( eval $Q )
     test_exit_status $SCRIPT
-#    S=$( echo "$R" | jq -r '.outputs."tindaisy.cwl.output_vcf".location' )
-#    S=$( echo "$R" | jq -r '.outputs."tindaisy-postcall.cwl.output_vcf".location' )
-    JQQ=".outputs.\"$CWLF.output_vcf\".location" 
+    if [ "$DEBUG" ]; then
+        >&2 echo DEBUG: get_output R = $R
+    fi
+
+    JQQ=".outputs.\"$CWLO\".location" 
+    if [ "$DEBUG" ]; then
+        >&2 echo DEBUG: get_output JQQ = $JQQ
+    fi
     S=$( echo "$R" | jq -r $JQQ )
     test_exit_status $SCRIPT
+
+    if [ "$DEBUG" ]; then
+        >&2 echo DEBUG: get_output S = $S
+    fi
     echo "$S"
 }
 
 # This will return ALL outputs specified in CWL.  Note that this will consist of multiple lines
 function get_outputs {
     WID=$1
-    R=$( curl $CURL_ARG -s -X GET "$CROMWELL_URL/api/workflows/v1/$WID/outputs" -H "accept: application/json" )
+    Q="curl $CURL_ARG -s -X GET \"$CROMWELL_URL/api/workflows/v1/$WID/outputs\" -H \"accept: application/json\" "
+    if [ "$DEBUG" ]; then
+        >&2 echo DEBUG: get_outputs Q = $Q
+    fi
+
+    R=$( eval $Q )
     test_exit_status $SCRIPT
+    if [ "$DEBUG" ]; then
+        >&2 echo DEBUG: get_outputs R = $R
+    fi
+
     # Return all outputs which are not null
-    S=$( echo "$R" | jq -r '.outputs[] | .location' )
+    JQQ=".outputs[] | .location"
+    if [ "$DEBUG" ]; then
+        >&2 echo DEBUG: get_outputs JQQ = $JQQ
+    fi
+    S=$( echo "$R" | jq -r "$JQQ" )
     test_exit_status $SCRIPT
+
+    if [ "$DEBUG" ]; then
+        >&2 echo DEBUG: get_outputs S = $S
+    fi
     echo "$S"
 }
 
@@ -348,7 +379,7 @@ for RID in $RIDS; do
             # URL as provided by tmooney on slack 
             STATUS="$CROMWELL_URL/api/workflows/v1/$WID/timing"
         elif [ "$QUERY" == 'output' ]; then     # this returns output associated with tindaisy.cwl.output_vcf
-            STATUS=$(get_output $WID $CWL)
+            STATUS=$(get_output $WID $CWL_OUTPUT)
             test_exit_status $SCRIPT
         elif [ "$QUERY" == 'outputs' ]; then    # this returns multiple outputs
             STATUS=$(get_outputs $WID | grep -v -w "null")

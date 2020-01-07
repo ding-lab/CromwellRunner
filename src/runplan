@@ -13,7 +13,7 @@ Options:
 -1: Quit after evaluating one case
 -x TASK: Execute given task.  Values: 'query' (default), 'yaml', 'summary'
 -y YAMLD: output directory of YAML files.  If "-", write YAML to stdout.  Default: ./yaml
--P PARAMS: parameters file which holds varibles for substution in template, read via `source $PARAMS`.  Default: config/project_config.sh
+-P PARAMS: parameters file which holds varibles for substution in template, read via `source $PARAMS`
 -u: Print BAM UUIDs in query
 -p: Print BAM paths in query
 -n: Print BAM sample names in query
@@ -235,10 +235,6 @@ function init_params {
 
 init_params
 
-# This is used in output query
-CWLS=$(basename $CWL)
-
-
 # this allows us to get case names in one of three ways:
 # 1: cq CASE1 CASE2 ...
 # 2: cat cases.dat | cq -
@@ -416,8 +412,14 @@ function init_summary {
     fi 
 }
 
+# Implicitly, this is a summary which is valid only for workflows which take tumor + normal as input
 function do_summary {
     CASE=$1
+
+    if [ -z $CWL_OUTPUT ]; then
+        >&2 echo ERROR: CWL_OUTPUT must be defined in parameters file
+        exit 1
+    fi
 
     # we get details about tumor, normal samples from BamMap for every case
     TUMOR=$(get_BAM $CASE $TUMOR_ST)
@@ -429,6 +431,7 @@ function do_summary {
 
     # Evaluate only runs which have status Succeeded
     STATUS=$( $CROMWELL_QUERY -V -q status $CASE )
+    test_exit_status
     if [ "$STATUS" != "Succeeded" ]; then
         >&2 echo Skipping $CASE because status = $STATUS
         return
@@ -440,8 +443,7 @@ function do_summary {
     NORMAL_UUID=$(echo "$NORMAL" | cut -f 3)
     DIS=$(echo "$TUMOR" | cut -f 4)
 
-    RESULT_FILE=` $CROMWELL_QUERY -V -q output -W $CWLS $CASE `
-
+    RESULT_FILE=$($CROMWELL_QUERY -V -q output -W $CWL_OUTPUT $CASE)
     test_exit_status
     confirm $RESULT_FILE $ONLYWARN  # complain if result file does not exist
 
