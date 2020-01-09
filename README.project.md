@@ -2,9 +2,36 @@
 
 ## Cases to run:
 
-* Test case - whatever is available as things are being copied from MGI
-* C3N-03012
-* C3N-03933
+* Requested by Mohand
+    * C3N-03012 - yes available
+    * C3N-03933 - not yet available
+
+* Random
+    C3N-04278
+    C3N-04275
+    C3N-04273
+
+These are completely done in /gscmnt/gc2521/dinglab/mwyczalk/CPTAC3.share/cords-align
+
+grep -f CPT.list ~/projects/CPTAC3/CPTAC3.catalog/CPTAC3.Catalog.dat | cut -f 2,6  | sort -u | cut -f 1 | uniq -c | sort -nr
+
+C3N-04611
+C3N-04280
+C3N-04278
+C3N-04275
+C3N-04273
+C3N-04152
+C3N-03889
+C3N-03888
+C3N-03876
+C3N-03841
+C3N-03620
+C3N-03612
+C3N-03490
+C3N-03488
+C3N-03487
+C3N-03458
+C3N-03457
 
 
 ## Git strategy

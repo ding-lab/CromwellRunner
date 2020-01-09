@@ -27,7 +27,8 @@ function process_BAM {
         CPT=$(basename $CPT_PATH)
         CRAM="$CPT_PATH/${CPT}.cram"
 
-        SIZE=$(stat --format "%s" $CRAM)
+        # SIZE=$(stat --format "%s" $CRAM)
+        SIZE="unknown"
 
         # Testing indicates greps below are unique (one result per CPT)
         BM=$(grep $CPT $CATALOG | grep $ES | grep hg19)
