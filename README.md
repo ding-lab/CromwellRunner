@@ -43,7 +43,14 @@ Define `Project.config.dat`
 
 # Quick start - CPTAC3, one case
 
-Set up environment.  This is currently specific to MGI
+## Set up project config
+
+Edit README.project.md with relevant details about your project
+
+copy appropriate Project.config.sh from example_workflows to base directory,
+and the config files to ./config
+
+Set up environment
 ```
 tmux new -s C3L-02395
 bash 00_start_docker.sh MGI
@@ -51,27 +58,31 @@ bash 05_start_cromwell_db_server.sh
 export CROMWELL_URL=http://localhost:8000
 export PATH="$PATH:./src"
 ```
-
 Create `config/cases.dat` with cases of interest
+
+## Test and configure
+
+
 
 Confirm samples are correct with:
 ```
 runplan
-bash 1_make_yaml.sh
+bash 20_make_yaml.sh
+bash 30_make_config.sh
 ```
 
- preliminary testing
-bash 2_start_runs.sh -d
+preliminary testing
+bash 40_start_runs.sh -1d
+
 
 If this is a new project, need to create runlog file with,
 runtidy -f1
 
 Finally,
-bash 2_start_runs.sh
+bash 40_start_runs.sh -J5
 
 Examining how it is running:
-Within a few minutes Cromwell output will start appearing in logs/C3L-02395.out
-
+Within a few minutes Cromwell output will start appearing in logs/\*.out
 
 
 # TODO

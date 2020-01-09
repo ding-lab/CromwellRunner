@@ -7,5 +7,11 @@
 CROMWELL="/usr/local/cromwell/cromwell-47.jar"
 CONFIG="/gscuser/tmooney/server.cromwell.config"
 
+echo Starting local instance of cromwell server
 /usr/bin/java -Dconfig.file=$CONFIG -jar $CROMWELL server >/dev/null & 
+
+echo Please run the following:
+echo
+echo export CROMWELL_URL=http://localhost:8000
+echo export PATH="\$PATH:./src"
 

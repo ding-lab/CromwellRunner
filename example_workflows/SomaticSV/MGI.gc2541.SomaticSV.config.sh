@@ -17,7 +17,7 @@ CROMWELL_JAR="/gscuser/mwyczalk/projects/TinDaisy/CromwellRunner/cromwell.jar/44
 # Workflow root - where Cromwell output goes.  This value replaces text WORKFLOW_ROOT in CONFIG_TEMPLATE,
 # and is written to CONFIG_FILE
 WORKFLOW_ROOT="/gscmnt/gc2541/cptac3_analysis"
-CONFIG_TEMPLATE="config/Templates/cromwell-config.template/cromwell-config-db.MGI.template.dat"
+CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.MGI.template.dat"
 
 # Path to BamMap, which is a file which defines sequence data path and other metadata
 # BamMap format is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
