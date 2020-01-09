@@ -43,6 +43,8 @@ Define `Project.config.dat`
 
 # Quick start - CPTAC3, one case
 
+* Add discussion of cases.dat
+
 ## Set up project config
 
 Edit README.project.md with relevant details about your project
@@ -62,8 +64,6 @@ Create `config/cases.dat` with cases of interest
 
 ## Test and configure
 
-
-
 Confirm samples are correct with:
 ```
 runplan
@@ -72,22 +72,41 @@ bash 30_make_config.sh
 ```
 
 preliminary testing
+```
 bash 40_start_runs.sh -1d
-
+```
 
 If this is a new project, need to create runlog file with,
+```
 runtidy -f1
+```
 
 Finally,
+```
 bash 40_start_runs.sh -J5
+```
 
 Examining how it is running:
 Within a few minutes Cromwell output will start appearing in logs/\*.out
 
+## Examine running jobs and finalize when complete
 
-# TODO
-* Add discussion of cases.dat
-* Move discussion below of TinDaisy-specific stuff to TinDaisy project.
+`cq` command will list all jobs, evaluate status
+
+Once all jobs completed with status `Succeeded`, need to finalize and clean up the runs.  Assuming project name is `SomaticSV.HNSCC.evidence`,
+finalize the run (move logs to logs/stashed and make a record of this run in logs/rundata.dat)
+```
+runtidy -x finalize -p SomaticSV.LSCC.evidence
+```
+
+Clean up data
+```
+datatidy -x inputs -p SomaticSV.LSCC.evidence -F Succeeded
+```
+
+Note that running jobs with `-F` flag will stash and compress all results during execution.  This is recommended only for well developed
+production runs, not for testing or development
+
 
 
 # Run procedure

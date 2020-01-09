@@ -27,7 +27,7 @@ Options:
 -D: Do not access database.  Limited functionality: status is unknown, best guesses are made for other queries.  TODO: complete implementation
 -C CROMWELL_URL: define the cromwell URL.  Default: https://genome-cromwell.gsc.wustl.edu
 -L RUNLOG: Run log file. Default is "./logs/runlog.dat".  Can be obtained from environment variable
--W CWL_OUTPUT: ID of principal output of workflow, used for parsing JSON output. Default (for tindaisy) is "tindaisy.cwl.output_vcf"
+-W CWL_OUTPUT: ID of principal output of workflow, used for parsing JSON output. Default is "tindaisy.cwl.output_vcf"
 
 RID is RunID, and can be either a Case or a WorkflowID.  Examples:
 * `cq` - will return status for all cases defined in `config/cases.dat`
@@ -46,7 +46,7 @@ Evaluates the following information for each case
     * timing - URL to visualize timing and progress of workflow
     * duration - display duration of run in minutes
     * output - Principal output of workflow, associated with CWL_OUTPUT
-    * outputs - All outputs of TinDaisy run as specified in input CWL
+    * outputs - All outputs of workflow run as specified in input CWL
     * runlog - Output status, start, end times
     * url - print URL of Cromwell server and quit.  This is a hardcoded value, but useful to know for manual queries
 
@@ -378,7 +378,7 @@ for RID in $RIDS; do
         elif [ "$QUERY" == 'timing' ]; then
             # URL as provided by tmooney on slack 
             STATUS="$CROMWELL_URL/api/workflows/v1/$WID/timing"
-        elif [ "$QUERY" == 'output' ]; then     # this returns output associated with tindaisy.cwl.output_vcf
+        elif [ "$QUERY" == 'output' ]; then     # this returns principal output associated with workflow as defined by CWL_OUTPUT
             STATUS=$(get_output $WID $CWL_OUTPUT)
             test_exit_status $SCRIPT
         elif [ "$QUERY" == 'outputs' ]; then    # this returns multiple outputs

@@ -1,0 +1,22 @@
+# Prune list for tindaisy.cwl runs
+# Define files from each workflow step which are to be kept during `datatidy -x prune`
+# use format like,
+# \*/results/dbsnp_filter/dbsnp_pass.vcf 
+
+\*/results/dbsnp_filter/dbsnp_pass.vcf 
+\*/results/merged/merged.filtered.vcf 
+\*/results/pindel/filter_out/pindel-raw.dat.CvgVafStrand_pass.Homopolymer_pass.vcf 
+\*/results/varscan/filter_indel_out/varscan.out.som_indel.Somatic.hc.vcf 
+\*/results/varscan/filter_snv_out/varscan.out.som_snv.Somatic.hc.somfilter_pass.vcf 
+\*/results/pindel/pindel_out/pindel-raw.dat 
+\*/results/strelka2/strelka_out/results/variants/somatic.snvs.vcf.gz 
+\*/results/strelka/strelka_out/results/passed.somatic.snvs.vcf 
+\*/results/varscan/varscan_out/varscan.out.som_indel.vcf 
+\*/results/varscan/varscan_out/varscan.out.som_snv.vcf 
+\*/results/vaf_length_depth_filters/filtered.vcf 
+\*/results/maf/output.maf 
+\*/results/vep/output_vep.vcf 
+\*/results/vep_filter/vep_filtered.vcf 
+\*/mutect_call_stats.txt 
+\*/mutect_coverage.wig.txt 
+\*/mutect.vcf 

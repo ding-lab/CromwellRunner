@@ -9,4 +9,6 @@ reference:
   class: File
   path: ${REF_PATH}
 
-
+# This is experimental, may be large. Right now, only for testing
+generateEvidenceBam: true
+#dryrun: false

@@ -23,6 +23,8 @@ Optional options
 -F EXPECTED_STATUS: Define expected status of runs 
 -w: output additional detail for query task
 -c CQD: explicit path to cromwell query utility `cq` and `datatidy`
+-P PRUNE_LIST: list of result files to keep when pruning, typically the principal outputs of each workflow step
+    Currently required for prune step, may move it to PARAMs at some point
 
 RID is RunID, and can be either a Case or a WorkflowID.  If RID is - then read
 RID from STDIN.  If RID is not defined, read from CASES_FN file.
@@ -34,12 +36,13 @@ Datatidy performs the following task:
 * Delete and/or compress run data.  In all cases except wipe, CWL outputs will be retained in original path
     * `inputs` - `inputs` subdirectories in all steps deleted.  This takes place for all other tidy levels 
     * `compress` - All data compressed 
-    * `prune` - Retain and compress final output of each step
+    * `prune` - Retain and compress final output of each step.  Requires PRUNE_LIST to be defined
     * `final` - Keep only final CWL outputs of each run
     * `wipe` - Delete everything
 * Uncompress specific paths
     * `uncompress_merge` - extract from compressed_results.tar.gz or pruned_results.tar.gz VCFs which are input into merge step
        does not update DATALOG
+       This is specific to TinDaisy runs and should be made more general, similar to prune
 
 Cromwell workflow output can be large and it is useful to reduce disk usage by
 deleting staged and intermediate data and compressing other output.  The role
@@ -75,6 +78,8 @@ multiple runs for a given case the older ones will be masked.  TODO: allow multi
 to be listed for a given case if they exist.
 
 DATALOG and RUNLOG can be defined as environment variables, e.g., `export DATALOG=/path/to/logs/datalog.dat`
+
+TODO: Describe prune_list
 EOF
 
 source src/cromwell_utils.sh
@@ -100,7 +105,7 @@ else
     CQ="$CQD/cq"
 fi
 
-while getopts ":hd1l:L:k:m:c:x:wF:p:f" opt; do
+while getopts ":hd1l:L:k:m:c:x:wF:p:fP:" opt; do
   case $opt in
     h) 
       echo "$USAGE"
@@ -141,6 +146,9 @@ while getopts ":hd1l:L:k:m:c:x:wF:p:f" opt; do
       ;;
     f) 
       MAKE_DATALOG=1
+      ;;
+    P) 
+      PRUNE_LIST="$OPTARG"
       ;;
     \?)
       >&2 echo "Invalid option: -$OPTARG" 
@@ -386,8 +394,7 @@ function do_prune {
     # we then create pruned_results.tar.gz containing this data
     # Finally, all these files are deleted except for final CWL outputs
     RID=$1
-
-# TODO: allow the particular files to keep during pruning (i.e., RESULTS) to be passed as an argument
+    PRUNE_LIST=$2
 
     WD=$( $CQ -V -q workflowRoot $RID )                               
 
@@ -397,25 +404,11 @@ function do_prune {
         return
     fi
 
-    RESULTS=" \
-        \*/results/dbsnp_filter/dbsnp_pass.vcf \
-        \*/results/merged/merged.filtered.vcf \
-        \*/results/pindel/filter_out/pindel-raw.dat.CvgVafStrand_pass.Homopolymer_pass.vcf \
-        \*/results/varscan/filter_indel_out/varscan.out.som_indel.Somatic.hc.vcf \
-        \*/results/varscan/filter_snv_out/varscan.out.som_snv.Somatic.hc.somfilter_pass.vcf \
-        \*/results/pindel/pindel_out/pindel-raw.dat \
-        \*/results/strelka2/strelka_out/results/variants/somatic.snvs.vcf.gz \
-        \*/results/strelka/strelka_out/results/passed.somatic.snvs.vcf \
-        \*/results/varscan/varscan_out/varscan.out.som_indel.vcf \
-        \*/results/varscan/varscan_out/varscan.out.som_snv.vcf \
-        \*/results/vaf_length_depth_filters/filtered.vcf \
-        \*/results/maf/output.maf \
-        \*/results/vep/output_vep.vcf \
-        \*/results/vep_filter/vep_filtered.vcf \
-        \*/mutect_call_stats.txt \
-        \*/mutect_coverage.wig.txt \
-        \*/mutect.vcf \
-    "
+    # From PRUNE_LIST read all files we wish to keep.  Use format like,
+    # \*/results/dbsnp_filter/dbsnp_pass.vcf 
+    # comments are stripped
+    RESULTS=$(sed '/^[[:blank:]]*#/d;s/#.*//' $PRUNE_LIST)
+
     OUTPUTS=$(get_outputs $RID)
     # Delete all except results of each step
     rmrf_exclude $WD "$OUTPUTS $RESULTS"
@@ -430,14 +423,12 @@ function do_prune {
     write_datalog $RID $TASK
 }
 
+# Note, this is specific for TinDaisy restarts.  TODO: Generalize this along the lines of PRUNE_LIST
 function do_uncompress_merge {
     RID=$1
 
->&2 echo DEBUG: RID = $RID
     CMD=" $CQ -V -q workflowRoot $RID "
->&2 echo DEBUG: CMD = $CMD
     WD=$( $CMD )                               
->&2 echo DEBUG: WD = $WD
 
     TARC="$WD/compressed_results.tar.gz"
     TARP="$WD/pruned_results.tar.gz"
@@ -450,7 +441,6 @@ function do_uncompress_merge {
         >&2 echo ERROR: No TAR file in $WD, nothing to do.  Exiting
         exit 1
     fi
->&2 echo DEBUG: TAR = $TAR
 
     FILES="./call-pindel_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf \
         ./call-varscan_snv_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf \
@@ -549,9 +539,14 @@ for RID in $RIDS; do
         do_compress $RID
         ;;
       "prune")
+        if [ -z $PRUNE_LIST ]; then
+            >&2 echo ERROR: PRUNE_LIST \[ -P \] not defined.  Quitting
+            exit 1
+        fi
+        confirm $PRUNE_LIST
         >&2 echo Processing $IDS_SEEN / $N_IDS [ $(date) ]: $RID 
         delete_inputs $RID 
-        do_prune $RID
+        do_prune $RID $PRUNE_LIST
         ;;
       "final")
         >&2 echo Processing $IDS_SEEN / $N_IDS [ $(date) ]: $RID 
