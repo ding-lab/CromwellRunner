@@ -2,3 +2,5 @@ Master branch is a template for starting variety of different CromwellRunner pro
 Specifically, 
 * Project.config.dat does not exist, since it is copied / edited by user based on template
 * README.project.md is template, with description for user of what to do with it
+* Specific configuration files in ./config does not exist in master
+  * it is expected that production runs will commit these
