@@ -17,7 +17,7 @@ Options:
 -d: Print debug output
 -v: Indicate progress in stderr
 -1: Stop after one
--k CASES_FN: file with list of all cases, one per line, used when RID1 not defined. Default: dat/cases.dat
+-k CASES_FN: file with list of all cases, one per line, used when RID1 not defined. Default: config/cases.dat
 -q QUERY: type of query, one of 'status', 'logs', 'workflowRoot', 'timing', 'duration', 'output', 'outputs', 'runlog', 'url'.  Default is `status`
 -s STEP: define step of interest for use with 'logs' query
 -V: output query result only only (i.e., don't write case and workflow ID)
@@ -30,7 +30,7 @@ Options:
 -W CWL_OUTPUT: ID of principal output of workflow, used for parsing JSON output. Default (for tindaisy) is "tindaisy.cwl.output_vcf"
 
 RID is RunID, and can be either a Case or a WorkflowID.  Examples:
-* `cq` - will return status for all cases defined in `dat/cases.dat`
+* `cq` - will return status for all cases defined in `config/cases.dat`
 * `cq CASE1 CASE2 CASE3` - returns status of runs for three cases.  TODO: discuss how this looked up
 * `cq WID1 WID2` - returns status for two runs with given WorkflowIDs
 
@@ -76,7 +76,7 @@ if [ -z $RUNLOG ]; then
 fi
 
 # Defaults
-CASES_FN="dat/cases.dat"
+CASES_FN="config/cases.dat"
 QUERY="status"
 CWL_OUTPUT="tindaisy.cwl.output_vcf"
 

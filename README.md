@@ -49,17 +49,10 @@ tmux new -s C3L-02395
 bash 00_start_docker.sh MGI
 bash 05_start_cromwell_db_server.sh
 export CROMWELL_URL=http://localhost:8000
-conda activate jq
 export PATH="$PATH:./src"
 ```
 
-Create `dat/cases.dat` with cases of interest
-```
-mkdir dat
-vi dat/cases.dat
-    < manual edits >
-vi config/project_config.sh
-```
+Create `config/cases.dat` with cases of interest
 
 Confirm samples are correct with:
 ```
@@ -89,25 +82,6 @@ Within a few minutes Cromwell output will start appearing in logs/C3L-02395.out
 # Run procedure
 
 ## Installation
-
-## CromwellRunner dependencies
-
-The following packages are required for CromwellRunner:
-* [`jq`](https://stedolan.github.io/jq/download/)
-* [`GNU Parallel`](https://www.gnu.org/software/parallel/)
-
-
-### Configure conda environment
-
-Create a conda environment named `jq` with the following packages:
-* `jq`
-* `parallel`
-* `tmux`
-
-This may work:
-```
-conda install jq parallel tmux
-```
 
 ### Install TinDaisy and CromwellRunner
 CromwellRunner is a set of scripts and configuration files designed to simplify running TinDaisy.  Both need to be installed.
