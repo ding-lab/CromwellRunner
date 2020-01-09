@@ -2,3 +2,11 @@ Example workflows are in this directory.  These can be used for development or a
 
 * tindaisy - variant caller
 * restart - restarting of tindaisy run from before merge step
+* SomaticSV - running SomaticSV pipeline instead of TinDaisy
+
+What's in here:
+* Configuration files and scripts from past successful runs
+  * original README files where appropriate
+* Evolving toward templates to be used for similar runs in the future
+
+
