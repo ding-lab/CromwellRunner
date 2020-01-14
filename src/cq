@@ -157,8 +157,15 @@ function get_status {
         return
     fi
     URL="$CROMWELL_URL/api/workflows/v1/$WID/status"
-    R=$( curl $CURL_ARG -s -X GET $URL -H "accept: application/json" )
+    Q="curl $CURL_ARG -s -X GET $URL -H \"accept: application/json\" "
+    if [ "$DEBUG" ]; then
+        >&2 echo DEBUG: get_status Q = $Q
+    fi
+    R=$( eval $Q )
     test_exit_status $SCRIPT   # This seems like it fails uninformatively if db server not running
+    if [ "$DEBUG" ]; then
+        >&2 echo DEBUG: get_status R = $R
+    fi
 
     # We validate JSON as recommended here: https://github.com/stedolan/jq/issues/1637
     if jq -e . >/dev/null 2>&1 <<<"$R"; then
@@ -177,6 +184,9 @@ function get_status {
     # extract result path from YAML-format result file using `jq` utility, and confirm that it exists
     S=$( echo $R | jq -r '.status' )
     test_exit_status $SCRIPT
+    if [ "$DEBUG" ]; then
+        >&2 echo DEBUG: get_status S = $S
+    fi
     echo $S
 }
 
