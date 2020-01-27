@@ -433,8 +433,12 @@ function do_summary {
     STATUS=$( $CROMWELL_QUERY -V -q status $CASE )
     test_exit_status
     if [ "$STATUS" != "Succeeded" ]; then
-        >&2 echo Skipping $CASE because status = $STATUS
-        return
+        if [ $ONLYWARN ]; then
+            >&2 echo WARNING: $CASE status is $STATUS.  Continuing
+        else
+            >&2 echo Skipping $CASE because status = $STATUS
+            return
+        fi
     fi
 
     TUMOR_SN=$(echo "$TUMOR" | cut -f 2)

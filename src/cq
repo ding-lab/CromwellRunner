@@ -57,6 +57,7 @@ CROMWELL_URL can be defined as environment variable, e.g., `export CROMWELL_URL=
 RUNLOG can be defined as environment variable, e.g., `export RUNLOG=/path/to/logs/runlog.dat`
 CWL_OUTPUT is used to find the principal output of workflow, i.e., what is reported with `cq output`.
   It is a concatenation of the CWL filename and 'id' of variable of interest in 'outputs' section of CWL
+  e.g., tindaisy.cwl.output_vcf
 
 Note that this script requires `jq` to be installed: https://stedolan.github.io/jq/download/
 EOF
@@ -221,6 +222,14 @@ function get_workflowRoot {
 }
 
 # This will return principal of workflow as specified by CWL_OUTPUT
+# TODO: we want to simplify this so user can get the principal output regardless of the CWL used, and without
+# having to pass parameter -W CWL_OUTPUT.  Issues:
+#  * some pipelines have more than one output
+#  * Output name of pipelines is not consistent.  For instance, may be .output or .output_vcf
+#    (though it would be good to standardize this)
+# Not doing full implementation now, but something like this works to select the .location of all outputs:
+#   echo "$R" | jq -r ".outputs[] |  .location" from https://stackoverflow.com/questions/45523425/getting-all-the-values-of-an-array-with-jq
+# If we standardize output name, then could do a search for it like above
 function get_output {
     WID=$1
     CWLO=$2
