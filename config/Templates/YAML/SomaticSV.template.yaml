@@ -9,6 +9,6 @@ reference:
   class: File
   path: ${REF_PATH}
 
-# This is experimental, may be large. Right now, only for testing
+# This generates BAMs on the order of 50Mb
 generateEvidenceBam: true
 #dryrun: false

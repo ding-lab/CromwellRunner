@@ -9,4 +9,6 @@ What's in here:
   * original README files where appropriate
 * Evolving toward templates to be used for similar runs in the future
 
-
+In general, files which are retained in the above example workflow directories are those 
+which are unique or modified for that workflow, and don't generally exist in ..
+Idea is to minimize duplication.
