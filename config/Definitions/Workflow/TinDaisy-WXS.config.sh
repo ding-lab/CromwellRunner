@@ -24,7 +24,7 @@ NORMAL_ST='blood_normal'            # Sample type for normal BAM, for BAMMAP mat
 
 # List of cases to analyze.  This has to be created
 # may want to reconsider the use and implementation of case list
-CASES_FN="dat/cases.dat"
+CASES_FN="config/cases.dat"
 
 # This one seem pretty low-level, since it is created and then consumed within CromwellRunner
 # not sure where this should go - seems specific to CromwellRunner setup
