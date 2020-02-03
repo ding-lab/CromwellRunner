@@ -3,7 +3,10 @@
 # Note that running `runplan` will give back useful information about anticipated runs
 PARAMS="Project.config.sh"
 
-src/runplan -v -x summary -P $PARAMS "$@" 
+CMD="src/runplan -v -x summary -P $PARAMS $@ "
+
+>&2 echo Running: $CMD
+eval $CMD
 
 rc=$?
 if [[ $rc != 0 ]]; then
