@@ -9,6 +9,7 @@ is being isolated in this project to allow for use with arbitrary workflows.
 
 ## Quick start
 
+0. `git clone https://github.com/ding-lab/CromwellRunner.git`
 1. Describe purpose of run in `README.project.md`
 2. `cp config/Definitions/Project.config.sh .` 
    Alternatively, copy an appropriate Project.config.sh from an appropriate subdirectory of `example_workflows`

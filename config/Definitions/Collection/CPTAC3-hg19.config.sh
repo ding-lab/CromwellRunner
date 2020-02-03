@@ -1,0 +1,30 @@
+#
+# Collection config
+#
+# * CPTAC3
+# * GRCh38.d1.vd1
+
+# Dependencies from System configuration
+# * REF_ROOT    -- base directory of reference
+# * DBSNP_ROOT  -- base directory of dbSnP-COSMIC database
+# * VEP_CACHE_ROOT -- base directory of VEP cache
+# * PARAM_ROOT  -- base directory of various TinDaisy parameter files
+
+
+# This path below is for CPTAC3-standard GRCh38 reference
+REF_PATH="$REF_ROOT/Homo_sapiens_assembly19/Homo_sapiens_assembly19.fasta"
+
+# See katmai: /diskmnt/Datasets/dbSNP/SomaticWrapper/README.md for discussion of dbSnP references
+DBSNP_DB="$DBSNP_ROOT/dbsnp.noCOSMIC.vcf.gz"
+
+# VEP Cache is used for VEP annotation and vcf_2_maf.
+# If not defined, online lookups will be used by VEP annotation. These are slower and do not include allele frequency info (MAX_AF) needed by AF filter.
+# For performance reasons, defining vep_cache_gz is suggested for production systems
+VEP_CACHE_VERSION="90"  # Must match the filename below
+ASSEMBLY="GRCh37"       # Must match the filename below
+VEP_CACHE_GZ="$VEP_CACHE_ROOT/vep-cache.90_GRCh37.tar.gz"
+
+REF_NAME="hg19"                     # Reference, as used when matching to BAMMAP
+
+# Defining this turns on pindel parallel
+CHRLIST="$PARAM_ROOT/chrlist/hs37.chrlist.txt"
