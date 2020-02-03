@@ -22,6 +22,8 @@ Options:
 -s SUMMARY_OUT: output analysis summary file for task `summary`.  If '-', write to STDOUT
 -c CROMWELL_QUERY: explicit path to cromwell query utility `cq`.  Default "cq" 
 -R RESTART_MAP: file listing workflow IDs for each case when restarting runs.  Requires RESTART_ROOT in PARAMS
+-U UUID_MAP: optional file listing tumor and normal UUIDs for each case.  This bypasses matching of BamMap by 
+    case, sample type, experimental strategy, and reference.  TSV file with columns CASE, TUMOR_UUID, NORMAL_UUID
 
 runplan uses BamMap and parameters file to review, initialize, and summarize completed runs.  This
 script makes use of the PARAMS file (default Project.config.sh) to get various parameters
@@ -67,13 +69,13 @@ SCRIPT=$(basename $0)
 TASK="query"
 YAMLD="./yaml"
 SUMMARY_OUT="./dat/analysis_summary.dat"
-PARAMS="Project.config.dat"
+PARAMS="Project.config.sh"
 CROMWELL_QUERY="src/cq"
 
 TUMOR_ST='tumor'
 NORMAL_ST='blood_normal'
 
-while getopts ":hv1P:x:y:upnwgs:c:R:" opt; do
+while getopts ":hv1P:x:y:upnwgs:c:R:U:" opt; do
   case $opt in
     h)  
       echo "$USAGE"
@@ -117,6 +119,10 @@ while getopts ":hv1P:x:y:upnwgs:c:R:" opt; do
       ;;
     R) 
       RESTART_MAP="$OPTARG"
+      ;;
+    U) 
+      UUID_MAP="$OPTARG"
+      confirm $UUID_MAP
       ;;
     \?)
       >&2 echo "Invalid option: -$OPTARG" 
@@ -249,10 +255,13 @@ else
     CASES="$@"
 fi
 
+# Usage:
+#   get_BAM CASE ST
 # searches for entries with
 #   experimental strategy = WGS, WXS, RNA-Seq, etc
-#   sample type = as given
-#   case = as given
+#   sample type = as given by ST
+#   case = as given by CASE
+# Alternatively, if sample type is a UUID, search BamMap for this UUID
 # Returns "BAM_path sample_name UUID Disease"
 function get_BAM {
     CASE=$1
@@ -272,8 +281,13 @@ function get_BAM {
     #    10  UUID
     #    11  system
 
-    # REF_NAME is a global
-    LINE_A=$(awk -v c=$CASE -v ref=$REF_NAME -v es=$ES -v st=$ST 'BEGIN{FS="\t";OFS="\t"}{if ($2 == c && $4 == es && $5 == st && $9 == ref) print}' $BAMMAP)
+    # Evaluate if ST is a UUID.  If it is, then just grep the BamMap for this value
+    # From https://stackoverflow.com/questions/38416602/check-if-string-is-uuid
+    if [[ $ST =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then
+        LINE_A=$(grep $ST $BAMMAP)
+    else
+        LINE_A=$(awk -v c=$CASE -v ref=$REF_NAME -v es=$ES -v st=$ST 'BEGIN{FS="\t";OFS="\t"}{if ($2 == c && $4 == es && $5 == st && $9 == ref) print}' $BAMMAP)
+    fi
 
     if [ -z "$LINE_A" ]; then
         if [ $ONLYWARN ]; then
@@ -358,16 +372,44 @@ function init_yaml {
     fi
 }
 
+function get_tumor {
+    if [ -z $UUID_MAP ]; then
+        # we get details about tumor, normal samples from BamMap for every case
+        TUMOR=$(get_BAM $CASE $TUMOR_ST)
+        test_exit_status
+    else
+        TUMOR_UUID=$(grep $CASE $UUID_MAP | cut -f 2)
+        test_exit_status
+        TUMOR=$(get_BAM $CASE $TUMOR_UUID)
+        test_exit_status
+    fi
+    echo "$TUMOR"
+}
+
+function get_normal {
+    if [ -z $UUID_MAP ]; then
+        # we get details about tumor, normal samples from BamMap for every case
+        NORMAL=$(get_BAM $CASE $NORMAL_ST)
+        test_exit_status
+    else
+        NORMAL_UUID=$(grep $CASE $UUID_MAP | cut -f 3)
+        test_exit_status
+        NORMAL=$(get_BAM $CASE $NORMAL_UUID)
+        test_exit_status
+    fi
+    echo "$NORMAL"
+}
+
 function do_yaml {
     CASE=$1
     YAML_FN=$2
 
-    # we get details about tumor, normal samples from BamMap for every case
-    TUMOR=$(get_BAM $CASE $TUMOR_ST)
+    TUMOR=$(get_tumor $CASE)
     test_exit_status
 
-    NORMAL=$(get_BAM $CASE $NORMAL_ST)
+    NORMAL=$(get_normal $CASE)
     test_exit_status
+
     # TUMOR and NORMAL look like this: "BAM_path sample_name UUID Disease"
 
     export TUMOR_BAM=$(echo "$TUMOR" | cut -f 1)
@@ -421,11 +463,10 @@ function do_summary {
         exit 1
     fi
 
-    # we get details about tumor, normal samples from BamMap for every case
-    TUMOR=$(get_BAM $CASE $TUMOR_ST)
+    TUMOR=$(get_tumor $CASE)
     test_exit_status
 
-    NORMAL=$(get_BAM $CASE $NORMAL_ST)
+    NORMAL=$(get_normal $CASE)
     test_exit_status
     # TUMOR and NORMAL look like this: "BAM_path sample_name UUID Disease"
 
@@ -484,13 +525,12 @@ function do_query {
 # If QUERY_DETAIL, write all relevant details
     CASE=$1
 
-    # we get details about tumor, normal samples from BamMap for every case
-    TUMOR=$(get_BAM $CASE $TUMOR_ST)
+    TUMOR=$(get_tumor $CASE)
     test_exit_status
-    NORMAL=$(get_BAM $CASE $NORMAL_ST)
+
+    NORMAL=$(get_normal $CASE)
     test_exit_status
     # TUMOR and NORMAL look like this: "BAM_path sample_name UUID Disease"
-
 
     TUMOR_BAM=$(echo "$TUMOR" | cut -f 1)
     TUMOR_SN=$(echo "$TUMOR" | cut -f 2)

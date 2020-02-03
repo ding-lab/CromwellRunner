@@ -7,6 +7,27 @@ It provides functionality to discover and restart failed jobs, restart runs from
 CromwellRunner was originally developed to manage runs of the TinDaisy variant caller.  Workflow management functionality
 is being isolated in this project to allow for use with arbitrary workflows.
 
+## Quick start
+
+1. Describe purpose of run in `README.project.md`
+2. `cp config/Definitions/Project.config.sh .` 
+   Alternatively, copy an appropriate Project.config.sh from an appropriate subdirectory of `example_workflows`
+3. Edit Project.config.sh
+    a. Define PROJECT with arbitrary name
+    b. Define SYSTEM_CONFIG, COLLECTION_CONFIG, WORKFLOW_CONFIG with values appropriate for this workflow
+      * See config/README.configuration.md
+4. Create file `config/cases.dat` with list of cases which will be processed
+5. yaml
+6. config
+7. bash 40_start_runs.sh -1d
+8. bash 40_start_runs.sh -J 4 -F
+
+TODO: deal more gracefully with this error:
+runtidy ERROR: RUNLOG file ./logs/runlog.dat does not exist, will not create one by default
+        runlog file can be created with `runtidy -f1`
+
+
+
 ## Utilities
 
 CromwellRunner is a workflow manager for TinDaisy runs.  It consists of the following utilities:
@@ -18,7 +39,6 @@ CromwellRunner is a workflow manager for TinDaisy runs.  It consists of the foll
 
 Goal of CromwellRunner is to initialize, launch, inspect, clean up, restart,
 and log TinDaisy runs, particularly for batches of tens and hundreds of runs.
-
 
 ## Organizational structure
 
@@ -107,7 +127,11 @@ datatidy -x inputs -p SomaticSV.LSCC.evidence -F Succeeded
 Note that running jobs with `-F` flag will stash and compress all results during execution.  This is recommended only for well developed
 production runs, not for testing or development
 
+## Other options making YAML file
 
+In certain situations generating YAML files based on case name alone is not appropriate (for instance, when there are multiple tumor WXS samples per case).
+In this situation, passing "-U UUID_MAP" to `runplan` will bypass lookup of samples in BamMap and use the UUID of the tumor and normal obtained
+from UUID_MAP file (TSV with columns CASE, TUMOR_UUID, NORMAL_UUID).
 
 # Run procedure
 
@@ -401,6 +425,20 @@ more precisely per-step.
 Both run_pindel and run_strelka2 have adjustable numbers of threads / CPUs to run at once.
 This can be assessed using `cq -q timing`.  Current testing suggests 5 and 4 threads for pindel and strelka2, respectively,
 seems to make run times roughly uniform.  Mutect and varscan don't seem to have an option to adjust thread counts.
+
+## Stashing and finalizing
+
+Describe what stashing and finalizing is
+
+If runs are not finalized immediately (with rungo -F), they should be stashed later as a separate step.
+```
+runtidy -x finalize -p PDA.TargetedSequencing.20200131
+```
+
+Likewise, run output can be tidied with,
+```
+bash src/datatidy -x compress -F Succeeded -p PDA.TargetedSequencing.20200131
+```
 
 ## Zombie jobs
 **TODO** generalize these notes
