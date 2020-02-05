@@ -12,7 +12,7 @@ LSF_CONF="/opt/lsf9/conf/lsf.conf"
 # LSF_CONF="/opt/ibm/lsfsuite/lsf/conf/lsf.conf"
 
 
-CROMWELL_JAR="/gscuser/mwyczalk/projects/TinDaisy/CromwellRunner/cromwell.jar/44/cromwell-44.jar"
+CROMWELL_JAR="/usr/local/cromwell/cromwell-47.jar"
 
 # Workflow root - where Cromwell output goes.  This value replaces text WORKFLOW_ROOT in CONFIG_TEMPLATE,
 # and is written to CONFIG_FILE
