@@ -1,7 +1,7 @@
 # Generate YAML config files
 
 # Usage:
-# 1_make_yaml.sh -P PARAMS
+# 20_make_yaml.sh -P PARAMS
 
 # All arguments are passed as is to src/runplan
 

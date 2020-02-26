@@ -9,7 +9,14 @@ is being isolated in this project to allow for use with arbitrary workflows.
 
 ## Quick start
 
-0. `git clone https://github.com/ding-lab/CromwellRunner.git`
+### Installation
+```
+git clone https://github.com/ding-lab/TinDaisy
+git clone https://github.com/ding-lab/CromwellRunner.git PROJECT_NAME
+```
+where `PROJECT_NAME` is an arbitrary name for this particular run or batch.
+
+### Configuration
 1. Describe purpose of run in `README.project.md`
 2. `cp config/Definitions/Project.config.sh .` 
    Alternatively, copy an appropriate Project.config.sh from an appropriate subdirectory of `example_workflows`
@@ -17,17 +24,37 @@ is being isolated in this project to allow for use with arbitrary workflows.
     a. Define PROJECT with arbitrary name
     b. Define SYSTEM_CONFIG, COLLECTION_CONFIG, WORKFLOW_CONFIG with values appropriate for this workflow
       * See config/README.configuration.md
+    c. See below (section) for additional details about configuration files.
 4. Create file `config/cases.dat` with list of cases which will be processed
-5. yaml
-6. config
-7. bash 40_start_runs.sh -1d
-8. bash 40_start_runs.sh -J 4 -F
+5. `bash 20_make_yaml.sh`
+    * Running `src/rungo` will provide preview of anticipated runs, i.e., a way to double-check YAML file creation
+6. `bash 30_make_config.sh`
 
-TODO: deal more gracefully with this error:
-runtidy ERROR: RUNLOG file ./logs/runlog.dat does not exist, will not create one by default
-        runlog file can be created with `runtidy -f1`
+### System setup
+1. `tmux new -s TinDaisy`
+2. `bash 00_start_docker.sh SYSTEM`
+    where SYSTEM is MGI or compute1
+    * TODO: consider incorporating https://github.com/ding-lab/importGDC.CPTAC3/blob/Y3/src/start_docker.sh 
+3. `bash 05_start_cromwell_db_server.sh`
+4. `export CROMWELL_URL=http://localhost:8000 && export PATH=$PATH:./src`
+5. If `runlog` and `datalog` files do not exist (and are not using common files), create these with,
+    `bash 35_make_data_run_logs.sh`
 
+### Start runs
+1. Test configuration by starting one "dry run" with, `bash 40_start_runs.sh -1d`
+2. Start all runs, running 4 at a time with automatic finalization when finished, with,
+   `bash 40_start_runs.sh -J 4 -F`
+3. Disconnect from tmux (CTRL-b d) to let jobs run in background
 
+### Test progress of runs
+1. Output of runs is written to `./logs/CASE.out` and run progress may be tracked that way
+2. `cq` (described below) is a utility to query Cromwell database server to track runs and related information. This can be started in a separate terminal
+   using System setup steps 2 and 3 above.  Then, `cq` will provide status of all scheduled runs
+
+### Finalize runs
+1. `bash 50_make_analysis_summary.sh` -- confirm this
+2. If automatic finalization (-J) was not selected when runs were started, or if errors occurred during runtime,
+   runs will need to be finalized using `runtidy` and `datatidy` utilities, as described below.
 
 ## Utilities
 
@@ -47,72 +74,7 @@ Example workflows are in ./workflows directory.  These provide configuration dat
 take advantage of functionality in ./src.  Different workflows are provided to illustrate use and provide simpler ways
 to get started.
 
-## Installation
-
-Currently scripts here rely on TinDaisy, whose path is defined as `TD_ROOT`
-
-
-## Git organization
-### for production runs
-
-Copy relevant workflow from workflows.
-
-Make notes about project in README.project.md
-
-Define `Project.config.dat`
-
-
-# Quick start - CPTAC3, one case
-
-* Add discussion of cases.dat
-
-## Set up project config
-
-Edit README.project.md with relevant details about your project
-
-copy appropriate Project.config.sh from example_workflows to base directory,
-and the config files to ./config
-
-Set up environment
-```
-tmux new -s C3L-02395
-bash 00_start_docker.sh MGI
-bash 05_start_cromwell_db_server.sh
-export CROMWELL_URL=http://localhost:8000
-export PATH="$PATH:./src"
-```
-Create `config/cases.dat` with cases of interest
-
-## Test and configure
-
-Confirm samples are correct with:
-```
-runplan
-bash 20_make_yaml.sh
-bash 30_make_config.sh
-```
-
-preliminary testing
-```
-bash 40_start_runs.sh -1d
-```
-
-If this is a new project, need to create runlog file with,
-```
-runtidy -f1
-```
-
-Finally,
-```
-bash 40_start_runs.sh -J5
-```
-
-Examining how it is running:
-Within a few minutes Cromwell output will start appearing in logs/\*.out
-
-## Examine running jobs and finalize when complete
-
-`cq` command will list all jobs, evaluate status
+## Manually finalize when complete
 
 Once all jobs completed with status `Succeeded`, need to finalize and clean up the runs.  Assuming project name is `SomaticSV.HNSCC.evidence`,
 finalize the run (move logs to logs/stashed and make a record of this run in logs/rundata.dat)
@@ -124,7 +86,6 @@ Clean up data
 ```
 datatidy -x inputs -p SomaticSV.LSCC.evidence -F Succeeded
 ```
-
 Note that running jobs with `-F` flag will stash and compress all results during execution.  This is recommended only for well developed
 production runs, not for testing or development
 
@@ -134,77 +95,52 @@ In certain situations generating YAML files based on case name alone is not appr
 In this situation, passing "-U UUID_MAP" to `runplan` will bypass lookup of samples in BamMap and use the UUID of the tumor and normal obtained
 from UUID_MAP file (TSV with columns CASE, TUMOR_UUID, NORMAL_UUID).
 
-# Run procedure
+# Configuration details
 
-## Installation
+CromwellRunner configuration system provides parameters to,
+* configure YAML files based on case names, BamMap files, and workflow parameters
+* Configure cromwell configuration files
+* launch cromwell instances
+* collect and process results
 
-### Install TinDaisy and CromwellRunner
-CromwellRunner is a set of scripts and configuration files designed to simplify running TinDaisy.  Both need to be installed.
+We divide parameters into four families:
+* Project parameters
+  * parameters which are expected to change with every project, such as project name
+* System parameters
+  * expected to change between e.g. MGI and compute1
+  * path to e.g. TinDaisy installation directory
+  * path to cromwell workflow storage location
+* Collection parameters
+  * Associated with collections such as CPTAC3 and MMRF
+  * Reference dependencies here
+  * External databases
+    * VEP cache defined here
+    * dbSnP-cosmic database defined here
+* Workflow parameters
+  * Will differ depending on e.g. whether this is tindaisy.cwl or tindaisy-postcall.cwl
+  * Defines CWL 
+  * Defines YAML template
+  * Defines details related to finding BAMs in BamMap
 
-```
-git clone https://github.com/ding-lab/TinDaisy
-git clone https://github.com/ding-lab/CromwellRunner.git PROJECT_NAME
-```
-where `PROJECT_NAME` is an arbitrary name for this particular run or batch.
+We want parameter families inasmuch as possible to be independent of one another, so that parameters
+in one group can be varied independently of those in another.  
 
-### Configuration
+In the case of paths to e.g. dbSnP DB, which will differ between system and reference, the system parameters
+will include DBSNP_ROOT, which will yield reference specific path defined in collection as e.g., "DBSNP_ROOT/dbSnP-COSMIC.REF.vcf.gz"
 
-Optionally add the following line to `~/.bashrc` 
+## Configuration directory layout
 
-## Run Preparation
-1. Review `config/CPTAC3-template.yaml`.  This contains configuration files and other parameters for the TinDaisy
-   workflow.  Note the following parameters:
-   * `chrlist: GRCh38.d1.vd1.chrlist.txt` is a list of all chromosomes, used for pindel analysis.  Will change for different references
-   * `assembly` and `vep_cache_version` correspond to VEP database used for annotation
-2. Review `config/project_config.dat`.  For MGI, it has the following definitions
-```
-    * REF_PATH   - /gscmnt/gc2521/dinglab/mwyczalk/somatic-wrapper-data/image.data/A_Reference/GRCh38.d1.vd1.fa
-    * REF_NAME   - short name of reference, for matching to BamMap
-    * TD_ROOT    - /gscuser/mwyczalk/projects/TinDaisy/TinDaisy 
-    * DBSNP_DB   - /gscmnt/gc2521/dinglab/mwyczalk/somatic-wrapper-data/image.data/B_Filter/dbSnP-COSMIC.GRCh38.d1.vd1.20190416.vcf.gz
-                   see katmai:/home/mwyczalk_test/Projects/TinDaisy/sw1.3-compare/README.dbsnp.md for details
-    * VEP_CACHE_GZ - /gscmnt/gc2521/dinglab/mwyczalk/somatic-wrapper-data/image.data/D_VEP/vep-cache.90_GRCh38.tar.gz
-    * WORKFLOW_ROOT - /gscmnt/gc2541/cptac3_analysis
-    * BAMMAP     - BamMap file listing paths to sequence data.  See details below
-```
-   `WORKFLOW_ROOT` defines where output of Cromwell goes, which can be large
-   For Normal Adjacent analyses, also need to define `TUMOR_ST` as `tissue_adjacent` rather than `tumor`
-3. Create file `dat/cases.dat`, which lists all cases we'll be processing
-   Note that entries here will be used to find BAMs in BamMap to populate YAML files
+Configuration file examples used for specific workflows are saved in appropriate projects in ../example_workflows.  Other
+configuration files are saved in various subdirectories of ../example_workflows/Config/ for use as examples.
 
-## Start runs
+These are generally copied to this direcotry (config) to be modified and used for specific runs.  Configuration files in this
+directory are not saved to git, though relevant examples can be copied to ../example_workflows
 
-Start runs.  Here, assuming that will use `parallel` to run N Cromwell instances on MGI at once. Note that order
-here is important so that processes are not stranded after you log out
+Template directory contains cromwell and YAML configuration templates.  These are not generally modified per run by hand.
 
-5. Run `tmux new` on known machine (e.g., `virtual-workstation1`).  
-6. `0_start_docker.sh` - this is required on MGI to start cromwell jobs and run `cq`
-7. `conda activate jq` - as described above
-5. `1_make_yaml.sh` - this will generate start configuration (YAML) files for all cases in `cases.dat` and one Cromwell config file
-8. Optionally edit `2_run_tasks.sh` to define the number of cromwell jobs to run at once: `ARGS="-J N"`
-    * Alternatively, pass `-J N` as argument to `2_` in the next step
-9. Start runs with `2_run_tasks.sh`.  
-   May want to test with `2_run_tasks.sh -1 -d` first, which will do a dry run of one case (see Debugging seciton below).
-   If `parallel` prints a bunch of citation information, run `parallel --citation` - this typically has to be done just once per system
-   You can detach from `tmux` now and jobs will continue
+## Example Workflows
 
-## Check on runs 
-6. Note that as of summer 2019 the default MGI Cromwell database server is not working, and a local service must be launched to
-    query database-connected runs (required for `cq` and other run management tools).  To start and define the server,
-    * `0_start_docker.sh`
-    * `0b_start_server.sh`
-    * `conda activate jq`
-    * `export CROMWELL_URL=http://localhost:8000`
-    * Confirm the URL with, `cq -q url`
-10. `cq` will list status of all runs.  `cq` is a utility in `TinDaisy/src` with a lot of options; run `cq -h` to learn more.  
-
-## Finalize runs
-
-11. Run `3_finalize_runs.sh`
-    Note, this is not required if 2_run_task.sh run with -F flag, which automatically finalizes all runs upon completion
-11. Run `4_make_analysis_summary.sh` to collect all results
-12. Clean run directories with `datatidy` utility.  Note that this may not need to be done for runs which successfully complete
-    which are started with the -F flag, which also compresses all run output and deletes input files
+Example configurations can be found in `./example_workflows`.
 
 # Additional details
 
@@ -321,7 +257,7 @@ A data log file has the following columns:
 
 ## Debugging
 
-`-1` flag to `2_run_tasks.sh` (and most other scripts) will execute just the first case and exit.  `-d` flag is "dry run",
+`-1` flag to `rungo` (and most other scripts) will execute just the first case and exit.  `-d` flag is "dry run",
 and will print out commands without executing them.  Both these flags, often in combination, are useful to test configuration
 files and syntax prior to launching a real run.
 
@@ -381,7 +317,6 @@ cleaning steps for auditing and allocation management purposes.
 * `final` - Keep only final outputs of each run
 * `wipe` - Delete everything
 In all cases except wipe, final results (as defined by CWL workflow output) are retained in original paths.
-
 
 # Additional development notes 
 
@@ -465,7 +400,6 @@ Description of how to kill zombie and clean it up:
 4. `fg` to bring command to foreground
 5. `cq` now indicates 10 jobs are running
 
-### Doing again
 The following script will do the above and write cases to zombies.dat
 ls */*.out | cut -f 2 -d '/' | cut -f 1 -d '.' | cq - | grep Succeeded | cut -f 1 > zombies.dat
     MMRF_2064
