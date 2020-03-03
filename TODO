@@ -19,3 +19,6 @@ Have a sense of "batches" or "generations" of runs.  Currently, when some runs f
     batches, or recognizing that a run has been finalized, will be helpful.
     One idea is to report in `cq` output whether runs have been finalized
 
+
+Do a sanity check in runtidy to see if a UUID was passed instead of a case name
+exit with an error if so
