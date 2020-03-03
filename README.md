@@ -1,18 +1,23 @@
 # CromwellRunner
 
-CromwellRunner is a lightweight interactive workflow manager for managing Cromwell workflows on MGI and RIS compute1 systems at Washington University. 
-For a batch of cases it provides a set of interactive tools to stage, launch, interrogate, and finalize sets of jobs and workflow results.
-It provides functionality to discover and restart failed jobs, restart runs from intermediate results of past runs, and finalize completed runs to reduce disk use.
+CromwellRunner is a lightweight interactive workflow manager for managing
+[Cromwell](https://cromwell.readthedocs.io/en/stable/) workflows on MGI and RIS
+compute1 systems at Washington University.  For a batch of cases it provides a
+set of interactive tools to stage, launch, interrogate, and finalize sets of
+jobs and workflow results.  It provides functionality to discover and restart
+failed jobs, restart runs from intermediate results of past runs, and finalize
+completed runs to reduce disk use.
 
-CromwellRunner was originally developed to manage runs of the TinDaisy variant caller.  Workflow management functionality
-is isolated to this project to allow for use with arbitrary workflows.
+CromwellRunner was originally developed to manage runs of the
+[TinDaisy](https://github.com/ding-lab/TinDaisy) variant caller, but it has
+since been generalized and can be used with arbitrary workflows.
 
 CromwellRunner consists of the following utilities:
 * `cq` - query cromwell server
-* `datatidy` - manage TinDaisy run results 
-* `rungo` - launch TinDaisy jobs 
-* `runplan` - initialize TinDaisy jobs
-* `runtidy` - Organize TinDaisy job logs
+* `datatidy` - manage cromwell run results 
+* `rungo` - launch cromwell jobs 
+* `runplan` - initialize cromwell jobs
+* `runtidy` - Organize cromwell job logs
 
 These utilities are used to initialize, launch, inspect, clean up, restart,
 and log CWL runs, particularly for batches of tens and hundreds of runs.
@@ -26,12 +31,14 @@ git clone https://github.com/ding-lab/TinDaisy
 git clone https://github.com/ding-lab/CromwellRunner.git PROJECT_NAME
 ```
 where `PROJECT_NAME` is an arbitrary name for this particular run or batch.
+TinDaisy project is clones to have its CWL code be accessible, but other 
+workflows can also be used.
 
 ### Configuration
 1. Describe purpose of run in `README.project.md`
 2. `cp config/Definitions/Project.config.sh .` 
    Alternatively, copy an appropriate Project.config.sh from an appropriate subdirectory of `example_workflows`
-3. Edit Project.config.sh
+3. Edit `Project.config.sh`
     a. Define PROJECT with arbitrary name
     b. Define SYSTEM_CONFIG, COLLECTION_CONFIG, WORKFLOW_CONFIG with values appropriate for this workflow
       * See config/README.configuration.md
@@ -42,7 +49,7 @@ where `PROJECT_NAME` is an arbitrary name for this particular run or batch.
 6. `bash 30_make_config.sh`
 
 ### System setup
-1. `tmux new -s TinDaisy`
+1. `tmux new -s CromwellRunner`
 2. `bash 00_start_docker.sh SYSTEM`
     where SYSTEM is MGI or compute1
     * TODO: consider incorporating https://github.com/ding-lab/importGDC.CPTAC3/blob/Y3/src/start_docker.sh 
@@ -80,14 +87,9 @@ Clean up data
 ```
 datatidy -x inputs -p SomaticSV.LSCC.evidence -F Succeeded
 ```
-Note that running jobs with `-F` flag will stash and compress all results during execution.  This is recommended only for well developed
-production runs, not for testing or development
-
-## Other options making YAML file
-
-In certain situations generating YAML files based on case name alone is not appropriate (for instance, when there are multiple tumor WXS samples per case).
-In this situation, passing "-U UUID_MAP" to `runplan` will bypass lookup of samples in BamMap and use the UUID of the tumor and normal obtained
-from UUID_MAP file (TSV with columns CASE, TUMOR_UUID, NORMAL_UUID).
+Note that running jobs with `-F` flag will stash and compress all results
+during execution.  This is recommended only for well developed production runs,
+not for testing or development
 
 # Configuration details
 
@@ -120,14 +122,14 @@ We want parameter families inasmuch as possible to be independent of one another
 in one group can be varied independently of those in another.  
 
 In the case of paths to e.g. dbSnP DB, which will differ between system and reference, the system parameters
-will include DBSNP_ROOT, which will yield reference specific path defined in collection as e.g., "DBSNP_ROOT/dbSnP-COSMIC.REF.vcf.gz"
+will include `DBSNP_ROOT`, which will yield reference specific path defined in collection as e.g., `DBSNP_ROOT/dbSnP-COSMIC.REF.vcf.gz`
 
 ## Example Workflows
 
-The base directory contains sipmple scripts which take advantage of functionality in ./src.  
-Other example configuration files and scripts used for specific workflows are saved in appropriate projects in ../example_workflows.  
+The base directory contains sipmple scripts which take advantage of functionality in `./src`.  
+Other example configuration files and scripts used for specific workflows are saved in appropriate projects in `../example_workflows`.  
 These are generally copied to `./config` to be modified and used for specific runs.  Configuration files in this
-directory are not saved to git, though relevant examples can be copied to ../example_workflows
+directory are not saved to git, though relevant examples can be copied to `../example_workflows`
 
 Template directory contains cromwell and YAML configuration templates.  These are not generally modified per run by hand.
 
@@ -135,7 +137,7 @@ Template directory contains cromwell and YAML configuration templates.  These ar
 
 ## BamMap
 
-A BamMap is a file developed in Ding Lab for CPTAC3 project used by TinDaisy `runplan` to create YAML per-run configuration files.  
+A BamMap is a file developed in Ding Lab for CPTAC3 project used by `runplan` to create YAML per-run configuration files.  
 A BamMap is a catalog of samples, their metadata, and their paths, with one BAM file per line.
 * [Format of BamMap](https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh)
 * [Example of a real BamMap](https://github.com/ding-lab/CPTAC3.catalog/blob/master/MGI.BamMap.dat)
@@ -169,21 +171,37 @@ Non-CPTAC3 data will typically not have a BamMap constructed as above.  It is po
 * `reference` is typically `hg19` or `hg38`, though other values can be used
 * `UUID` is a unique identifier of a specific sample.  It need not be used
 
+## Other options making YAML file
 
-**TODO** provide comprehensive description of all utilities in TinDaisy:
-* `cq` - general purpose query utility
-* `runplan` - create and review run configuration files 
-* `rungo` - start Cromwell runs
-* `runtidy` - manage run output files
-* `datatidy` - manage data output 
+In certain situations generating YAML files based on case name alone is not
+appropriate (for instance, when matching by `case`, `experimental_strategy`,
+and `sample_type` does not provide a unique UUID).  In this situation, passing
+"-U UUID_MAP" to `runplan` will bypass lookup of samples in BamMap and use the
+UUID of the tumor and normal obtained from `UUID_MAP` file (TSV with columns
+`CASE`, `TUMOR_UUID`, `NORMAL_UUID`).
+
+# Cromwell utility details
 
 Cromwell generates two classes of output 
 * Data output in workflowRoot directory, as defined by WORKFLOW_ROOT in config/project_config.sh
 * Run output files (`CASE.*`) in LOGD directory, consisting of Cromwell stdout and stderr
   (possibly log file generated by GNU `parallel`). 
 
-# Cromwell utility details
-## runtidy
+Cromwell runner provides the following utilities to help deal with this output as well
+as run setup, launching, and querying.
+* `cq` - query cromwell server
+* `datatidy` - manage cromwell run results 
+* `rungo` - launch cromwell jobs 
+* `runplan` - initialize cromwell jobs
+* `runtidy` - Organize cromwell job logs
+
+## `cq`
+
+## `rungo`
+
+## `runplan`
+
+## `runtidy`
 
 The utility `runtidy` is concerned with the run output files, which are used to
 obtain a WorkflowID for a given run.  
@@ -219,7 +237,7 @@ runs with some other status, EXPECTED_STATUS must be defined; then, all cases
 must have a status (as obtained from `cq`) same as EXPECTED_STATUS. (This is to
 help prevent inadvertant data loss from stashing running jobs)
 
-## datatidy
+## `datatidy`
 
 Cromwell workflow output (data output in workflow root directory) can be large
 and it is useful to reduce disk usage by deleting staged and intermediate data
@@ -384,17 +402,17 @@ MMRF_1655       316cad9a-c7d6-4deb-b362-30d45ed9ac21    Succeeded
 MMRF_1725       04347069-d4ad-4f0e-9538-a01515a9260b    Succeeded
 ```
 
-
 Description of how to kill zombie and clean it up:
 1. `tmux attach -t MMRF2`
 2. CTRL-Z to pause this, then `ps -eaf | grep MMRF_1795`
-    Look for job with `/usr/bin/java -Xmx10g -jar ...cromwell-44.jar`
+    Look for job with `/usr/bin/java -Xmx10g -jar *cromwell*`
 3. kill 106451 (the first PID listed)
 4. `fg` to bring command to foreground
 5. `cq` now indicates 10 jobs are running
 
 The following script will do the above and write cases to zombies.dat
-ls */*.out | cut -f 2 -d '/' | cut -f 1 -d '.' | cq - | grep Succeeded | cut -f 1 > zombies.dat
+```
+ls logs/*.out | cut -f 2 -d '/' | cut -f 1 -d '.' | cq - | grep Succeeded | cut -f 1 > zombies.dat
     MMRF_2064
     MMRF_2197
     MMRF_2214
@@ -402,17 +420,15 @@ ls */*.out | cut -f 2 -d '/' | cut -f 1 -d '.' | cq - | grep Succeeded | cut -f 
     MMRF_2427
     MMRF_2428
     MMRF_2429
+```
 
 Note that jobs which concluded their cromwell run but which are being finalized or compressed 
 will show up on this list; best to test for zombies twice several minutes apart, or exclude 
 recent files
 
-pause running job
-PID=$(ps -eaf | grep MMRF_2197 | grep cromwell.jar | grep -v compress | tr -s ' ' | cut -f 2 -d ' ')
-kill $PID
-
-Finalize and compress
+### Finalize and compress
+```
 export DATALOG="/gscuser/mwyczalk/projects/TinDaisy/CromwellRunner/cq.datalog/datalog.dat"
-cat zombies3.dat | runtidy -x finalize -p MMRF_WXS_restart -m "Succeeded zombie manual cleanup" -F Succeeded   -
-cat zombies3.dat | datatidy -x compress -p MMRF_WXS_restart -m "Succeeded zombie manual cleanup" -F Succeeded   -
-
+cat zombies.dat | runtidy -x finalize -p MMRF_WXS_restart -m "Succeeded zombie manual cleanup" -F Succeeded   -
+cat zombies.dat | datatidy -x compress -p MMRF_WXS_restart -m "Succeeded zombie manual cleanup" -F Succeeded   -
+```
