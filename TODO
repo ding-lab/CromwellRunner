@@ -22,3 +22,7 @@ Have a sense of "batches" or "generations" of runs.  Currently, when some runs f
 
 Do a sanity check in runtidy to see if a UUID was passed instead of a case name
 exit with an error if so
+
+get from VLD_FilterVCF/src/start_docker.sh
+    https://github.com/ding-lab/VLD_FilterVCF
+

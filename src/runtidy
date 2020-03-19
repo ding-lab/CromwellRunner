@@ -210,6 +210,15 @@ else
     CASES="$@"
 fi
 
+# Test to make sure no cases look like UUIDs
+
+for CASE in $CASES; do
+    if [[ $CASE =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then
+        >&2 echo ERROR: Case $CASE looks like a UUID
+        exit 1
+    fi
+done
+
 if [ ! -f $RUNLOG ]; then
     if [ -z $MAKE_RUNLOG ]; then
         >&2 echo $SCRIPT ERROR: RUNLOG file $RUNLOG does not exist, will not create one by default
