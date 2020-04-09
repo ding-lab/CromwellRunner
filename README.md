@@ -55,7 +55,7 @@ workflows can also be used.
 1. `tmux new -s CromwellRunner`
 2. `bash 00_start_docker.sh SYSTEM`
     where SYSTEM is MGI or compute1
-    * TODO: consider incorporating https://github.com/ding-lab/importGDC.CPTAC3/blob/Y3/src/start_docker.sh 
+    * TODO: consider incorporating [WUDocker](https://github.com/ding-lab/WUDocker) for docker startup
 3. `bash 05_start_cromwell_db_server.sh`
 4. `export CROMWELL_URL=http://localhost:8000 && export PATH=$PATH:./src`
 5. If `runlog` and `datalog` files do not exist (and are not using common files), create these with,
@@ -67,7 +67,8 @@ workflows can also be used.
       This can be done with `bash 40_start_runs.sh -1`.  
 2. Start all runs in a batch, running 4 at a time with automatic finalization when finished, with,
    `bash 40_start_runs.sh -J 4 -F`
-   a. At this time we do not recommend running more than 5-10 jobs at a time.
+   a. At this time we do not recommend running more than 5-10 jobs at a time, in part because running
+      jobs consume a significant amount of disk space which is not cleaned until jobs are finalized.
 3. Disconnect from tmux (CTRL-b d) to let jobs run in background
 
 ### Test progress of runs
