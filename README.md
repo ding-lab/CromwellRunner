@@ -22,8 +22,11 @@ CromwellRunner consists of the following utilities:
 These utilities are used to initialize, launch, inspect, clean up, restart,
 and log CWL runs, particularly for batches of tens and hundreds of runs.
 
-
 ## Quick start
+
+Instructions below show how to run a batch of analyses using the somatic
+variant caller TinDaisy.  In practice, before running a batch of multiple
+cases, it is important to run one case fully to completion first.
 
 ### Installation
 ```
@@ -60,8 +63,11 @@ workflows can also be used.
 
 ### Start runs
 1. Test configuration by starting one "dry run" with, `bash 40_start_runs.sh -1d`
-2. Start all runs, running 4 at a time with automatic finalization when finished, with,
+   a. It is *highly recommended* to run one case fully to completion before starting a batch.
+      This can be done with `bash 40_start_runs.sh -1`.  
+2. Start all runs in a batch, running 4 at a time with automatic finalization when finished, with,
    `bash 40_start_runs.sh -J 4 -F`
+   a. At this time we do not recommend running more than 5-10 jobs at a time.
 3. Disconnect from tmux (CTRL-b d) to let jobs run in background
 
 ### Test progress of runs
