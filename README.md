@@ -53,7 +53,7 @@ workflows can also be used.
 
 ### System setup
 1. `tmux new -s CromwellRunner`
-2. `bash 00_start_docker.sh SYSTEM`
+2. `bash 00_start_docker.sh `
     where SYSTEM is MGI or compute1
     * TODO: consider incorporating [WUDocker](https://github.com/ding-lab/WUDocker) for docker startup
 3. `bash 05_start_cromwell_db_server.sh`
@@ -69,6 +69,8 @@ workflows can also be used.
    `bash 40_start_runs.sh -J 4 -F`
    a. At this time we do not recommend running more than 5-10 jobs at a time, in part because running
       jobs consume a significant amount of disk space which is not cleaned until jobs are finalized.
+   b. If running -F, test first to make sure `cq` returns without an error.  If it does not work, 
+      runs will not be finalized.  
 3. Disconnect from tmux (CTRL-b d) to let jobs run in background
 
 ### Test progress of runs

@@ -255,6 +255,17 @@ if [ $DO_FINALIZE ]; then
     test_exit_status $SCRIPT
 fi
 
+# Check to make sure log files do not exist.  Quit if they do, othewise they will be overwritten
+for CASE in $CASES; do
+    STDOUT_FN="$LOGD/$CASE.out"
+    STDERR_FN="$LOGD/$CASE.err"
+
+    if [ -e $STDOUT_FN ] || [ -e $STDERR_FN ]; then
+        >&2 echo ERROR: Log files $STDOUT_FN and/or $STDERR_FN exist
+        >&2 echo Quitting 
+    fi
+done
+
 
 for CASE in $CASES; do
     NOW=$(date)

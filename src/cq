@@ -5,6 +5,7 @@
 
 # TODO: check if server is running / available and report reasonable error message
 # TODO: implement -d debug output for all queries, based on get_output implementation
+# TODO: Consider geting rid of output, return just 'outputs' - much simpler
 
 read -r -d '' USAGE <<'EOF'
 Cromwell Query: Print out per-case run statistics. Specific to cromwell runs registered with MGI Cromwell database

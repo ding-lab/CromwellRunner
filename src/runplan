@@ -435,9 +435,9 @@ function do_yaml {
 function init_summary {
 # Summary prep and header written
     if [ -z $RESTART_MAP ]; then
-        HEADER=$(printf "# case\tdisease\tresult_path\tresult_format\ttumor_name\ttumor_uuid\tnormal_name\tnormal_uuid\tcromwell_workflow_id\n") 
+        HEADER=$(printf "# case\tdisease\tresult_path\tfile_format\ttumor_name\ttumor_uuid\tnormal_name\tnormal_uuid\tcromwell_workflow_id\n") 
     else
-        HEADER=$(printf "# case\tdisease\tresult_path\tresult_format\ttumor_name\ttumor_uuid\tnormal_name\tnormal_uuid\tcromwell_workflow_id\trestart_dir\n") 
+        HEADER=$(printf "# case\tdisease\tresult_path\tfile_format\ttumor_name\ttumor_uuid\tnormal_name\tnormal_uuid\tcromwell_workflow_id\trestart_dir\n") 
     fi
 
     if [ $SUMMARY_OUT == "-" ]; then
@@ -488,29 +488,45 @@ function do_summary {
     NORMAL_UUID=$(echo "$NORMAL" | cut -f 3)
     DIS=$(echo "$TUMOR" | cut -f 4)
 
-    RESULT_FILE=$($CROMWELL_QUERY -V -q output -W $CWL_OUTPUT $CASE)
+    RESULT_FILES=$($CROMWELL_QUERY -V -q outputs -W $CWL_OUTPUT $CASE)
     test_exit_status
-    confirm $RESULT_FILE $ONLYWARN  # complain if result file does not exist
 
-    WID=` $CROMWELL_QUERY -V -q wid $CASE `
-    test_exit_status
-    FILE_FORMAT="VCF"
+    # Iterate over all result files - there may be more than one
+    for RF in $RESULT_FILES; do
 
-    # If RESTART_MAP is defined, get RESTART_D as RESTART_ROOT/UUID
-    if [ ! -z $RESTART_MAP ]; then
-        RESTART_D=$(get_restartd $CASE $RESTART_MAP)
+        confirm $RF $ONLYWARN  # complain if result file does not exist
+
+        WID=` $CROMWELL_QUERY -V -q wid $CASE `
         test_exit_status
-        OUTLINE=$(printf "$CASE\t$DIS\t$RESULT_FILE\t$FILE_FORMAT\t$TUMOR_SN\t$TUMOR_UUID\t$NORMAL_SN\t$NORMAL_UUID\t$WID\t$RESTART_D\n" )
-    else
-        OUTLINE=$(printf "$CASE\t$DIS\t$RESULT_FILE\t$FILE_FORMAT\t$TUMOR_SN\t$TUMOR_UUID\t$NORMAL_SN\t$NORMAL_UUID\t$WID\n" )
-    fi
 
-    if [ $SUMMARY_OUT == "-" ]; then
-        echo "$OUTLINE"
-    else
-        echo "$OUTLINE" >> $SUMMARY_OUT
-        test_exit_status
-    fi 
+        # https://stackoverflow.com/questions/965053/extract-filename-and-extension-in-bash
+        BASE="${RF##*/}"
+        EXT="${BASE##*.}"
+        if [ "$EXT" == "vcf" ]; then
+            FILE_FORMAT="VCF"
+        elif [ "$EXT" == "maf" ]; then
+            FILE_FORMAT="VCF"
+        else
+            >&2 echo ERROR: Unknown file format $EXT
+            exit 1
+        fi
+
+        # If RESTART_MAP is defined, get RESTART_D as RESTART_ROOT/UUID
+        if [ ! -z $RESTART_MAP ]; then
+            RESTART_D=$(get_restartd $CASE $RESTART_MAP)
+            test_exit_status
+            OUTLINE=$(printf "$CASE\t$DIS\t$RF\t$FILE_FORMAT\t$TUMOR_SN\t$TUMOR_UUID\t$NORMAL_SN\t$NORMAL_UUID\t$WID\t$RESTART_D\n" )
+        else
+            OUTLINE=$(printf "$CASE\t$DIS\t$RF\t$FILE_FORMAT\t$TUMOR_SN\t$TUMOR_UUID\t$NORMAL_SN\t$NORMAL_UUID\t$WID\n" )
+        fi
+
+        if [ $SUMMARY_OUT == "-" ]; then
+            echo "$OUTLINE"
+        else
+            echo "$OUTLINE" >> $SUMMARY_OUT
+            test_exit_status
+        fi 
+    done
 }
 
 function init_query {

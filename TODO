@@ -6,6 +6,13 @@
   are relevant (SomaticSV may not use all variables, which were defined for TinDaisy)
   Perhaps could extract common lines in YAML files?  (and avoid BAMs)?
 
+* use WUdocker for starting image.  Should not run everything in an interactive docker container like step 00, but rather
+  start runs within a non-interactive job, like done in step 25 here:
+    https://github.com/ding-lab/importGDC.CPTAC3.git
+  the reason for this is that compute1 has a 24-hour limit on interactive jobs
+
+* whole datatidy / runtidy log stuff is maddening.  Default instructions don't work.  Make this simple for the case of running first time
+
 
 # Previous notes
 Implement basic non-db functionality (so that datatidy can be used)

@@ -19,7 +19,7 @@ Optional options
 -k CASES_FN: file with list of all cases, one per line, used when CASE1 not defined. Default: config/cases.dat
 -p PROJECT: Project name associated with this analysis
 -m NOTE: A note added to data log file for each case
--x TASK: Execute given task.  Values: 'query' (default), 'original', 'inputs', 'compress', 'prune', 'final', 'wipe', `uncompress_merge`
+-x TASK: Execute given task.  Values: 'query' (default), 'original', 'inputs', 'compress', 'prune', 'final', 'wipe', `uncompress_merge`, `uncompress_421`
 -F EXPECTED_STATUS: Define expected status of runs 
 -w: output additional detail for query task
 -c CQD: explicit path to cromwell query utility `cq` and `datatidy`
@@ -41,6 +41,9 @@ Datatidy performs the following task:
     * `wipe` - Delete everything
 * Uncompress specific paths
     * `uncompress_merge` - extract from compressed_results.tar.gz or pruned_results.tar.gz VCFs which are input into merge step
+    * `uncompress_421` - as above, but for tindaisy-421.cwl workflow
+    Note:
+       TODO: this should be generalized, and should just pass a list of files to extract 
        does not update DATALOG
        This is specific to TinDaisy runs and should be made more general, similar to prune
 
@@ -423,9 +426,9 @@ function do_prune {
     write_datalog $RID $TASK
 }
 
-# Note, this is specific for TinDaisy restarts.  TODO: Generalize this along the lines of PRUNE_LIST
-function do_uncompress_merge {
+function do_uncompress {
     RID=$1
+    FILES="$2"
 
     CMD=" $CQ -V -q workflowRoot $RID "
     WD=$( $CMD )                               
@@ -442,6 +445,29 @@ function do_uncompress_merge {
         exit 1
     fi
 
+    CMD="tar -zxf $TAR -C $WD $FILES"   
+    run_cmd "$CMD" $DRYRUN
+}
+
+function do_uncompress_421 {
+    RID=$1
+
+    FILES=" \
+        ./call-mutect_vaf_length_depth/execution/results/vaf_length_depth_filters/filtered.vcf \
+        ./call-run_varscan/execution/results/varscan/varscan_out/varscan.out.som_snv.vcf \
+        ./call-run_varscan/execution/results/varscan/varscan_out/varscan.out.som_indel.vcf \
+        ./call-pindel_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf \
+        ./call-strelka_indel_vaf_length_depth/execution/results/vaf_length_depth_filters/filtered.vcf \
+        ./call-strelka_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf \
+        ./call-varscan_indel_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf"
+
+    do_uncompress $RID "$FILES"
+}
+
+# Note, this is specific for TinDaisy restarts.  TODO: Generalize this along the lines of PRUNE_LIST
+function do_uncompress_merge {
+    RID=$1
+
     FILES="./call-pindel_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf \
         ./call-varscan_snv_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf \
         ./call-varscan_indel_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf \
@@ -449,8 +475,7 @@ function do_uncompress_merge {
         ./call-strelka_indel_vaf_length_depth/execution/results/vaf_length_depth_filters/filtered.vcf \
         ./call-mutect_vaf_length_depth/execution/results/vaf_length_depth_filters/filtered.vcf"
 
-    CMD="tar -zxf $TAR -C $WD $FILES"   
-    run_cmd "$CMD" $DRYRUN
+    do_uncompress $RID "$FILES"
 }
 
 # Note on deleting: https://www.tecmint.com/delete-all-files-in-directory-except-one-few-file-extensions/
@@ -561,6 +586,10 @@ for RID in $RIDS; do
       "uncompress_merge")
         >&2 echo Processing $IDS_SEEN / $N_IDS [ $(date) ]: $RID 
         do_uncompress_merge $RID 
+        ;;
+      "uncompress_421")
+        >&2 echo Processing $IDS_SEEN / $N_IDS [ $(date) ]: $RID 
+        do_uncompress_421 $RID 
         ;;
       *)
         >&2 echo ERROR: Unknown task $TASK

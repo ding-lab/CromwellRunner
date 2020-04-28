@@ -24,19 +24,19 @@ CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.MGI.templat
 BAMMAP="/gscuser/mwyczalk/projects/CPTAC3/CPTAC3.catalog/BamMap/MGI.BamMap.dat"
 
 # Assume that all references are based here
-REF_ROOT="/gscmnt/gc2521/dinglab/mwyczalk/somatic-wrapper-data/image.data/A_Reference"
+REF_ROOT="/gscmnt/gc7202/dinglab/common/Reference/A_Reference"
 
 # Assume all DBSNP filters are here
-DBSNP_ROOT="/gscmnt/gc2521/dinglab/mwyczalk/somatic-wrapper-data/image.data/B_Filter"
+DBSNP_ROOT="/gscmnt/gc7202/dinglab/common/databases/dbSNP_Filter"
 
 # Assume all VEP caches are here
-VEP_CACHE_ROOT="/gscmnt/gc2521/dinglab/mwyczalk/somatic-wrapper-data/image.data/D_VEP"
+VEP_CACHE_ROOT="/gscmnt/gc7202/dinglab/common/databases/VEP"
 
 # TD_ROOT is needed for CWL
 TD_ROOT="/gscuser/mwyczalk/projects/TinDaisy/TinDaisy"
 # TinDaisy parameters relative to TD_ROOT
 PARAM_ROOT="$TD_ROOT/params"
 
-# Using common datalog file
+# Use common datalog.  This is git tracked
 export DATALOG="/gscuser/mwyczalk/projects/TinDaisy/CromwellRunner/cq.datalog/datalog.dat"
 

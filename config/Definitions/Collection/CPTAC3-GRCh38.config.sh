@@ -21,9 +21,9 @@ DBSNP_DB="$DBSNP_ROOT/dbSnP-COSMIC.GRCh38.d1.vd1.20190416.vcf.gz"
 # VEP Cache is used for VEP annotation and vcf_2_maf.
 # If not defined, online lookups will be used by VEP annotation. These are slower and do not include allele frequency info (MAX_AF) needed by AF filter.
 # For performance reasons, defining vep_cache_gz is suggested for production systems
-VEP_CACHE_VERSION="90"  # Must match the filename below
+VEP_CACHE_VERSION="99"  # Must match the filename below
 ASSEMBLY="GRCh38"       # Must match the filename below
-VEP_CACHE_GZ="$VEP_CACHE_ROOT/vep-cache.90_GRCh38.tar.gz"
+VEP_CACHE_GZ="$VEP_CACHE_ROOT/v99/vep-cache.99_GRCh38.tar.gz"
 
 REF_NAME="hg38"                     # Reference, as used when matching to BAMMAP
 

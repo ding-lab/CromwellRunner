@@ -1,0 +1,115 @@
+# Template for TinDaisy-421 YAML input file
+# The following arguments must be substituted:
+# * NORMAL_BAM
+# * TUMOR_BAM
+# * REF_PATH
+# * PARAM_ROOT -> value is TD_ROOT/params
+# * DBSNP_DB
+# * VEP_CACHE_GZ
+# * VEP_CACHE_VERSION
+# * ASSEMBLY
+# * RESTART_D * for restarting YAML
+
+# Note that you can get a template input file for any workflow with `cwltool --make-template workflow.cwl`
+
+mutect_vcf:  
+    class: File
+    path: ${RESTART_D}/call-mutect_vaf_length_depth/execution/results/vaf_length_depth_filters/filtered.vcf
+varscan_snv_raw:  
+    class: File
+    path: ${RESTART_D}/call-run_varscan/execution/results/varscan/varscan_out/varscan.out.som_snv.vcf
+varscan_indel_raw:  
+    class: File
+    path: ${RESTART_D}/call-run_varscan/execution/results/varscan/varscan_out/varscan.out.som_indel.vcf
+pindel_vcf:  
+    class: File
+    path: ${RESTART_D}/call-pindel_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf
+strelka_indel_vcf:  
+    class: File
+    path: ${RESTART_D}/call-strelka_indel_vaf_length_depth/execution/results/vaf_length_depth_filters/filtered.vcf
+strelka_snv_vcf:  
+    class: File
+    path: ${RESTART_D}/call-strelka_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf
+varscan_indel_vcf:  
+    class: File
+    path: ${RESTART_D}/call-varscan_indel_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf
+
+classification_filter_config:  
+    class: File
+    path: ${PARAM_ROOT}/filter_config/classification_filter_config.ini
+af_filter_config:  
+    class: File
+    path: ${PARAM_ROOT}/filter_config/af_filter_config.ini
+varscan_vcf_filter_config:  
+    class: File
+    path: ${PARAM_ROOT}/filter_config/vcf_filter_config-varscan.ini
+vep_cache_gz:  
+    class: File
+    path: ${VEP_CACHE_GZ}
+
+vep_cache_version: ${VEP_CACHE_VERSION}
+assembly: ${ASSEMBLY}
+
+dbsnp_db:  
+    class: File
+    path: ${DBSNP_DB}
+varscan_config:  
+    class: File
+    path: ${PARAM_ROOT}/caller_config/varscan.WES.ini
+reference_fasta:  
+    class: File
+    path: ${REF_PATH}
+tumor_bam:  
+    class: File
+    path: ${TUMOR_BAM}
+
+# YAML from successful run: /gscuser/mwyczalk/projects/TinDaisy/TD-SW-compare/LSCC.202004/CromwellRunner-runs/tindaisy-421/tindaisy-421.yaml
+# 
+# mutect_vcf:  # type "File"
+#     class: File
+#     path: /gscmnt/gc2541/cptac3_analysis/cromwell-workdir/cromwell-executions/tindaisy.cwl/d722a4fa-bd67-4134-8a60-21eec15c5abd/test/call-mutect_vaf_length_depth/execution/results/vaf_length_depth_filters/filtered.vcf
+# varscan_snv_raw:  # type "File"
+#     class: File
+#     path: /gscmnt/gc2541/cptac3_analysis/cromwell-workdir/cromwell-executions/tindaisy.cwl/d722a4fa-bd67-4134-8a60-21eec15c5abd/test/call-run_varscan/execution/results/varscan/varscan_out/varscan.out.som_snv.vcf
+# varscan_indel_raw:  # type "File"
+#     class: File
+#     path: /gscmnt/gc2541/cptac3_analysis/cromwell-workdir/cromwell-executions/tindaisy.cwl/d722a4fa-bd67-4134-8a60-21eec15c5abd/test/call-run_varscan/execution/results/varscan/varscan_out/varscan.out.som_indel.vcf
+# pindel_vcf:  # type "File"
+#     class: File
+#     path: /gscmnt/gc2541/cptac3_analysis/cromwell-workdir/cromwell-executions/tindaisy.cwl/d722a4fa-bd67-4134-8a60-21eec15c5abd/test/call-pindel_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf
+# strelka_indel_vcf:  # type "File"
+#     class: File
+#     path: /gscmnt/gc2541/cptac3_analysis/cromwell-workdir/cromwell-executions/tindaisy.cwl/d722a4fa-bd67-4134-8a60-21eec15c5abd/test/call-strelka_indel_vaf_length_depth/execution/results/vaf_length_depth_filters/filtered.vcf
+# strelka_snv_vcf:  # type "File"
+#     class: File
+#     path: /gscmnt/gc2541/cptac3_analysis/cromwell-workdir/cromwell-executions/tindaisy.cwl/d722a4fa-bd67-4134-8a60-21eec15c5abd/test/call-strelka_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf
+# varscan_indel_vcf:  # type "File"
+#     class: File
+#     path: /gscmnt/gc2541/cptac3_analysis/cromwell-workdir/cromwell-executions/tindaisy.cwl/d722a4fa-bd67-4134-8a60-21eec15c5abd/test/call-varscan_indel_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf
+# classification_filter_config:  # type "File"
+#     class: File
+#     path: /gscuser/mwyczalk/projects/TinDaisy/TinDaisy/params/filter_config/classification_filter_config.ini
+# af_filter_config:  # type "File"
+#     class: File
+#     path: /gscuser/mwyczalk/projects/TinDaisy/TinDaisy/params/filter_config/af_filter_config.ini
+# varscan_vcf_filter_config:  # type "File"
+#     class: File
+#     path: /gscuser/mwyczalk/projects/TinDaisy/TinDaisy/params/filter_config/vcf_filter_config-varscan.ini
+# vep_cache_gz:  # type "File" (optional)
+#     class: File
+#     path: /gscmnt/gc7202/dinglab/common/databases/VEP/v99/vep-cache.99_GRCh38.tar.gz
+# vep_cache_version: "99"
+# assembly: "GRCh38"
+# dbsnp_db:  # type "File" (optional)
+#     class: File
+#     path: /gscmnt/gc7202/dinglab/common/databases/dbSNP_Filter/dbSnP-COSMIC.GRCh38.d1.vd1.20190416.vcf.gz
+# varscan_config:  # type "File"
+#     class: File
+#     path: /gscuser/mwyczalk/projects/TinDaisy/TinDaisy/params/caller_config/varscan.WES.ini
+# reference_fasta:  # type "File"
+#     class: File
+#     path: /gscmnt/gc7202/dinglab/common/Reference/A_Reference/GRCh38.d1.vd1/GRCh38.d1.vd1.fa
+# tumor_bam:  # type "File"
+#     class: File
+#     path: /gscmnt/gc2619/dinglab_cptac3/GDC_import/data/16477a75-08b9-4c77-9117-30dbb59d9f84/499d2ebb-679e-4720-8b86-3c989769d905_gdc_realn.bam
+
