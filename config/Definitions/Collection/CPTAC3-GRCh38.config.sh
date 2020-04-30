@@ -28,5 +28,5 @@ VEP_CACHE_GZ="$VEP_CACHE_ROOT/v99/vep-cache.99_GRCh38.tar.gz"
 REF_NAME="hg38"                     # Reference, as used when matching to BAMMAP
 
 # Defining this turns on pindel parallel
-CHRLIST="$PARAM_ROOT/GRCh38.d1.vd1.chrlist.txt"
+CHRLIST="$PARAM_ROOT/chrlist/GRCh38.d1.vd1.chrlist.txt"
 

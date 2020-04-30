@@ -22,6 +22,8 @@ CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.MGI.templat
 # Path to BamMap, which is a file which defines sequence data path and other metadata
 # BamMap format is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
 BAMMAP="/gscuser/mwyczalk/projects/CPTAC3/CPTAC3.catalog/BamMap/MGI.BamMap.dat"
+# Catalog file format is defined here: https://github.com/ding-lab/CPTAC3.case.discover/blob/master/src/make_catalog.sh
+CATALOG="/gscuser/mwyczalk/projects/CPTAC3/CPTAC3.catalog/CPTAC3.Catalog.dat"
 
 # Assume that all references are based here
 REF_ROOT="/gscmnt/gc7202/dinglab/common/Reference/A_Reference"

@@ -51,8 +51,13 @@ Output YAML file filename is CASE.yaml.  It is based on YAML_TEMPLATE, with the 
     * ASSEMBLY
     * CHRLIST
     * RESTART_D
-The TUMOR_BAM and NORMAL_BAM are defined by lookup of CASE in BamMap, RESTART_D
-is defined when -R flag is set, remainder defined in PARAMS
+    * TUMOR_BARCODE
+    * NORMAL_BARCODE
+Source of info:
+    * TUMOR_BAM and NORMAL_BAM are defined by lookup of CASE in BamMap
+    * RESTART_D is defined when -R flag is set
+    * TUMOR_BARCODE and NORMAL_BARCODE are defined by lookup of UUID in Catalog file
+    * Remainder defined in PARAMS
 
 Restarting of runs is supported by making available RESTART_D variable in YAML
 template, which provides path to root directory of prior run.
@@ -189,6 +194,9 @@ function init_params {
         complain "CHRLIST not defined in $PARAMS" $ONLYWARN
         CHRLIST="undefined"
     fi
+    if [ -z $CATALOG ]; then
+        complain "CATALOG not defined in $PARAMS" $ONLYWARN
+    fi
 
     # envsubst requires variables to be exported - these are the parameters used for yaml file
     export REF_PATH
@@ -317,6 +325,54 @@ function get_BAM {
     printf "$BAM\t$SN\t$UUID\t$DIS"
 }
 
+# Obtain aliquot name associated with given UUID from Catalog file
+#  Catalog files come from here: https://github.com/ding-lab/CPTAC3.catalog
+#  and aliquot names are column 6
+# TODO: allow aliquot names to be obtained even if Catalog file does not exist
+#  An option is pass a fake catalog file with two columns, UUID and Aliquot, and 
+#  check here how many columns the catalog file has.
+function get_aliquot {
+    UUID=$1
+    CATALOG=$2
+#$ header CPTAC3.Catalog.dat
+#     1  # sample_name
+#     2  case
+#     3  disease
+#     4  experimental_strategy
+#     5  short_sample_type
+#     6  aliquot
+#     7  filename
+#     8  filesize
+#     9  data_format
+#    10  result_type
+#    11  UUID
+#    12  MD5
+#    13  reference
+#    14  sample_type
+
+    LINE_A=$(grep $UUID $CATALOG)
+    if [ -z "$LINE_A" ]; then
+        if [ $ONLYWARN ]; then
+            >&2 echo WARNING: UUID $UUID not found in $CATALOG
+        else
+            >&2 echo ERROR: UUID $UUID not found in $CATALOG
+            exit 1
+        fi
+    elif [ $(echo "$LINE_A" | wc -l) != "1" ]; then
+        if [ $ONLYWARN ]; then
+            >&2 echo WARNING: UUID $UUID has multiple matches in $CATALOG
+            >&2 echo We will choose the first match.  Please review YAML file carefully
+            LINE_A=$(echo "$LINE_A" | head -n 1)
+        else
+            >&2 echo ERROR: UUID $UUID has multiple matches in $CATALOG
+            >&2 echo Not making assumptions about which to choose, YAML will need to be created manually
+            exit 1
+        fi
+    fi
+    ALIQUOT=$(echo "$LINE_A" | cut -f 6)
+    printf "$ALIQUOT"
+}
+
 # Returns base directory of prior run and confirms it exists
 # Error if CASE does not appear in RESTART_MAP exactly once
 function get_restartd {
@@ -422,6 +478,19 @@ function do_yaml {
         export RESTART_D
     fi
 
+    # Get barcode for tumor and normal
+    # If $CATALOG is defined, obtain NORMAL_BARCODE and _TUMOR based on aliquot column using lookup of UUID
+    # if CATALOG not defined, NORMAL_BARCODE = NORMAL and TUMOR_BARCODE = TUMOR
+    if [ ! -z $CATALOG ]; then
+        TUMOR_UUID=$(echo "$TUMOR" | cut -f 3)
+        NORMAL_UUID=$(echo "$NORMAL" | cut -f 3)
+        export TUMOR_BARCODE=$(get_aliquot $TUMOR_UUID $CATALOG) 
+        export NORMAL_BARCODE=$(get_aliquot $NORMAL_UUID $CATALOG) 
+    else
+        export TUMOR_BARCODE="TUMOR"
+        export NORMAL_BARCODE="NORMAL"
+    fi
+        
 # envsubst: https://stackoverflow.com/a/11050943
     YAML=$(envsubst < $YAML_TEMPLATE)
     if [ $YAML_FN == "-" ]; then

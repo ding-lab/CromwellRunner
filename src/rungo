@@ -263,6 +263,7 @@ for CASE in $CASES; do
     if [ -e $STDOUT_FN ] || [ -e $STDERR_FN ]; then
         >&2 echo ERROR: Log files $STDOUT_FN and/or $STDERR_FN exist
         >&2 echo Quitting 
+        exit 1
     fi
 done
 
