@@ -28,7 +28,7 @@ Options:
 -D: Do not access database.  Limited functionality: status is unknown, best guesses are made for other queries.  TODO: complete implementation
 -C CROMWELL_URL: define the cromwell URL.  Default: https://genome-cromwell.gsc.wustl.edu
 -L RUNLOG: Run log file. Default is "./logs/runlog.dat".  Can be obtained from environment variable
--W CWL_OUTPUT: ID of principal output of workflow, used for parsing JSON output. Default is "tindaisy.cwl.output_vcf"
+#-W CWL_OUTPUT: ID of principal output of workflow, used for parsing JSON output. Default is "tindaisy.cwl.output_vcf"
 
 RID is RunID, and can be either a Case or a WorkflowID.  Examples:
 * `cq` - will return status for all cases defined in `config/cases.dat`
@@ -46,7 +46,7 @@ Evaluates the following information for each case
     * workflowRoot - Path to root of cromwell output
     * timing - URL to visualize timing and progress of workflow
     * duration - display duration of run in minutes
-    * output - Principal output of workflow, associated with CWL_OUTPUT
+#    * output - Principal output of workflow, associated with CWL_OUTPUT
     * outputs - All outputs of workflow run as specified in input CWL
     * runlog - Output status, start, end times
     * url - print URL of Cromwell server and quit.  This is a hardcoded value, but useful to know for manual queries
@@ -56,6 +56,8 @@ Workflow ID associated with given cromwell output file is obtaining by grepping 
 
 CROMWELL_URL can be defined as environment variable, e.g., `export CROMWELL_URL=http://localhost:8000`
 RUNLOG can be defined as environment variable, e.g., `export RUNLOG=/path/to/logs/runlog.dat`
+
+# CWL_OUTPUT is deprecated.  Use `cq outputs` instead
 CWL_OUTPUT is used to find the principal output of workflow, i.e., what is reported with `cq output`.
   It is a concatenation of the CWL filename and 'id' of variable of interest in 'outputs' section of CWL
   e.g., tindaisy.cwl.output_vcf
@@ -80,10 +82,10 @@ fi
 # Defaults
 CASES_FN="config/cases.dat"
 QUERY="status"
-CWL_OUTPUT="tindaisy.cwl.output_vcf"
+#CWL_OUTPUT="tindaisy.cwl.output_vcf"
 
 # http://wiki.bash-hackers.org/howto/getopts_tutorial
-while getopts ":hdv1k:q:s:VUSTDC:L:W:" opt; do
+while getopts ":hdv1k:q:s:VUSTDC:L:" opt; do
   case $opt in
     h)
       echo "$USAGE"
@@ -128,9 +130,9 @@ while getopts ":hdv1k:q:s:VUSTDC:L:W:" opt; do
     L) 
       RUNLOG="$OPTARG"
       ;;
-    W) 
-      CWL_OUTPUT="$OPTARG"
-      ;;
+#    W) 
+#      CWL_OUTPUT="$OPTARG"
+#      ;;
     \?)
       >&2 echo "Invalid option: -$OPTARG"
       echo "$USAGE"
@@ -398,9 +400,9 @@ for RID in $RIDS; do
         elif [ "$QUERY" == 'timing' ]; then
             # URL as provided by tmooney on slack 
             STATUS="$CROMWELL_URL/api/workflows/v1/$WID/timing"
-        elif [ "$QUERY" == 'output' ]; then     # this returns principal output associated with workflow as defined by CWL_OUTPUT
-            STATUS=$(get_output $WID $CWL_OUTPUT)
-            test_exit_status $SCRIPT
+#        elif [ "$QUERY" == 'output' ]; then     # this returns principal output associated with workflow as defined by CWL_OUTPUT
+#            STATUS=$(get_output $WID $CWL_OUTPUT)
+#            test_exit_status $SCRIPT
         elif [ "$QUERY" == 'outputs' ]; then    # this returns multiple outputs
             STATUS=$(get_outputs $WID | grep -v -w "null")
             test_exit_status $SCRIPT

@@ -6,14 +6,14 @@
 #   TD_ROOT
 #   WORKFLOW_ROOT
 
-CWL="$TD_ROOT/cwl/workflows/tindaisy.cwl"
+CWL="$TD_ROOT/cwl/workflows/tindaisy-hotspot.cwl"
 # CWL output is used to find the principal output of workflow, i.e., what is reported with `cq output`.
 # It is a concatenation of the CWL filename and 'id' in 'outputs' section of CWL
 # this is no longer being used as `cq outputs` is preferred over `cq output`
 # CWL_OUTPUT="tindaisy.cwl.output_vcf"
 
 # template used for generating YAML files
-YAML_TEMPLATE="config/Templates/YAML/tindaisy.template.yaml"
+YAML_TEMPLATE="config/Templates/YAML/tindaisy-hotspot.template.yaml"
 
 # These parameters used when finding data in BamMap
 ES="WXS"                            # experimental strategy
@@ -33,4 +33,5 @@ CASES_FN="config/cases.dat"
 CONFIG_FILE="dat/cromwell-config-db.dat"
 
 # RESTART_ROOT used when restarting
-RESTART_ROOT="$WORKFLOW_ROOT/cromwell-workdir/cromwell-executions/tindaisy.cwl"
+# this is not a restart
+#RESTART_ROOT="$WORKFLOW_ROOT/cromwell-workdir/cromwell-executions/tindaisy.cwl"

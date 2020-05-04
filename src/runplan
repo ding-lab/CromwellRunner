@@ -527,10 +527,10 @@ function init_summary {
 function do_summary {
     CASE=$1
 
-    if [ -z $CWL_OUTPUT ]; then
-        >&2 echo ERROR: CWL_OUTPUT must be defined in parameters file
-        exit 1
-    fi
+#    if [ -z $CWL_OUTPUT ]; then
+#        >&2 echo ERROR: CWL_OUTPUT must be defined in parameters file
+#        exit 1
+#    fi
 
     TUMOR=$(get_tumor $CASE)
     test_exit_status
@@ -557,7 +557,8 @@ function do_summary {
     NORMAL_UUID=$(echo "$NORMAL" | cut -f 3)
     DIS=$(echo "$TUMOR" | cut -f 4)
 
-    RESULT_FILES=$($CROMWELL_QUERY -V -q outputs -W $CWL_OUTPUT $CASE)
+#    RESULT_FILES=$($CROMWELL_QUERY -V -q outputs -W $CWL_OUTPUT $CASE)
+    RESULT_FILES=$($CROMWELL_QUERY -V -q outputs $CASE)
     test_exit_status
 
     # Iterate over all result files - there may be more than one
