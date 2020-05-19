@@ -1,0 +1,16 @@
+# Template based on `cwltool --make-template tindaisy-proximity-restart.cwl`
+
+input_VCF:  
+    class: File
+    path: ${RESTART_D}/call-canonical_filter/execution/output/HotspotFiltered.vcf
+distance: 5  
+
+assembly: ${ASSEMBLY}
+reference_fasta:  
+    class: File
+    path: ${REF_PATH}
+
+# barcodes replace "TUMOR" and "NORMAL" as sample names in output MAF 
+normal_barcode: ${NORMAL_BARCODE}
+tumor_barcode: ${TUMOR_BARCODE}
+

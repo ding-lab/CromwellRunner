@@ -10,7 +10,7 @@
 
 PARAMS="Project.config.sh"
 
-RESTART_MAP="dat/LSCC.20191104.restart-map.dat"
+RESTART_MAP="dat/restart_map.dat"
 RESTART_ARG="-R $RESTART_MAP"
 
 >&2 echo Writing YAML files

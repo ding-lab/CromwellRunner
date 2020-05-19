@@ -21,7 +21,7 @@ Options:
 -g: Issue warnings rather than quitting for testing
 -s SUMMARY_OUT: output analysis summary file for task `summary`.  If '-', write to STDOUT
 -c CROMWELL_QUERY: explicit path to cromwell query utility `cq`.  Default "cq" 
--R RESTART_MAP: file listing workflow IDs for each case when restarting runs.  Requires RESTART_ROOT in PARAMS
+-R RESTART_MAP: file listing case and workflow IDs for each case when restarting runs.  Requires RESTART_ROOT in PARAMS
 -U UUID_MAP: optional file listing tumor and normal UUIDs for each case.  This bypasses matching of BamMap by 
     case, sample type, experimental strategy, and reference.  TSV file with columns CASE, TUMOR_UUID, NORMAL_UUID
 

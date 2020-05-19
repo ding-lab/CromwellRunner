@@ -8,10 +8,11 @@ source Project.config.sh
 
 export DATALOG
 
-RESTART_MAP="dat/LSCC.20191104.restart-map.dat"
+RESTART_MAP="dat/restart_map.dat"
+RESULT_LIST="dat/uncompress_result_list.dat"
 
 >&2 echo Uncompressing restart files
-cut -f 2 $RESTART_MAP | src/datatidy -x uncompress_421 "$@" -
+cut -f 2 $RESTART_MAP | src/datatidy -x uncompress_restart -P $RESULT_LIST "$@" -
 
 rc=$?
 if [[ $rc != 0 ]]; then

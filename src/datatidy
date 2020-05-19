@@ -19,12 +19,13 @@ Optional options
 -k CASES_FN: file with list of all cases, one per line, used when CASE1 not defined. Default: config/cases.dat
 -p PROJECT: Project name associated with this analysis
 -m NOTE: A note added to data log file for each case
--x TASK: Execute given task.  Values: 'query' (default), 'original', 'inputs', 'compress', 'prune', 'final', 'wipe', `uncompress_merge`, `uncompress_421`
+-x TASK: Execute given task.  Values: 'query' (default), 'original', 'inputs', 'compress', 'prune', 'final', 'wipe', `uncompress_restart`
 -F EXPECTED_STATUS: Define expected status of runs 
 -w: output additional detail for query task
 -c CQD: explicit path to cromwell query utility `cq` and `datatidy`
--P PRUNE_LIST: list of result files to keep when pruning, typically the principal outputs of each workflow step
-    Currently required for prune step, may move it to PARAMs at some point
+-P RESULT_LIST: list of result files to keep when pruning, typically the principal outputs of workflow 
+    Required for prune and uncompress_restart steps.  Example line:
+        ./call-canonical_filter/execution/output/HotspotFiltered.vcf
 
 RID is RunID, and can be either a Case or a WorkflowID.  If RID is - then read
 RID from STDIN.  If RID is not defined, read from CASES_FN file.
@@ -36,16 +37,12 @@ Datatidy performs the following task:
 * Delete and/or compress run data.  In all cases except wipe, CWL outputs will be retained in original path
     * `inputs` - `inputs` subdirectories in all steps deleted.  This takes place for all other tidy levels 
     * `compress` - All data compressed 
-    * `prune` - Retain and compress final output of each step.  Requires PRUNE_LIST to be defined
+    * `prune` - Retain and compress final output of each step.  Requires RESULT_LIST to be defined
     * `final` - Keep only final CWL outputs of each run
     * `wipe` - Delete everything
-* Uncompress specific paths
-    * `uncompress_merge` - extract from compressed_results.tar.gz or pruned_results.tar.gz VCFs which are input into merge step
-    * `uncompress_421` - as above, but for tindaisy-421.cwl workflow
-    Note:
-       TODO: this should be generalized, and should just pass a list of files to extract 
-       does not update DATALOG
-       This is specific to TinDaisy runs and should be made more general, similar to prune
+    * `uncompress_restart` - extract from compressed_results.tar.gz or pruned_results.tar.gz VCFs which are input into restart runs
+       * requires RESULT_LIST to be defined   
+       * does not update DATALOG
 
 Cromwell workflow output can be large and it is useful to reduce disk usage by
 deleting staged and intermediate data and compressing other output.  The role
@@ -151,7 +148,7 @@ while getopts ":hd1l:L:k:m:c:x:wF:p:fP:" opt; do
       MAKE_DATALOG=1
       ;;
     P) 
-      PRUNE_LIST="$OPTARG"
+      RESULT_LIST="$OPTARG"
       ;;
     \?)
       >&2 echo "Invalid option: -$OPTARG" 
@@ -397,7 +394,7 @@ function do_prune {
     # we then create pruned_results.tar.gz containing this data
     # Finally, all these files are deleted except for final CWL outputs
     RID=$1
-    PRUNE_LIST=$2
+    RESULT_LIST=$2
 
     WD=$( $CQ -V -q workflowRoot $RID )                               
 
@@ -407,10 +404,10 @@ function do_prune {
         return
     fi
 
-    # From PRUNE_LIST read all files we wish to keep.  Use format like,
+    # From RESULT_LIST read all files we wish to keep.  Use format like,
     # \*/results/dbsnp_filter/dbsnp_pass.vcf 
     # comments are stripped
-    RESULTS=$(sed '/^[[:blank:]]*#/d;s/#.*//' $PRUNE_LIST)
+    RESULTS=$(sed '/^[[:blank:]]*#/d;s/#.*//' $RESULT_LIST)
 
     OUTPUTS=$(get_outputs $RID)
     # Delete all except results of each step
@@ -449,33 +446,19 @@ function do_uncompress {
     run_cmd "$CMD" $DRYRUN
 }
 
-function do_uncompress_421 {
+function do_uncompress_restart {
     RID=$1
+    RESULT_LIST=$2
 
-    FILES=" \
-        ./call-mutect_vaf_length_depth/execution/results/vaf_length_depth_filters/filtered.vcf \
-        ./call-run_varscan/execution/results/varscan/varscan_out/varscan.out.som_snv.vcf \
-        ./call-run_varscan/execution/results/varscan/varscan_out/varscan.out.som_indel.vcf \
-        ./call-pindel_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf \
-        ./call-strelka_indel_vaf_length_depth/execution/results/vaf_length_depth_filters/filtered.vcf \
-        ./call-strelka_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf \
-        ./call-varscan_indel_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf"
+    RESULTS=$(sed '/^[[:blank:]]*#/d;s/#.*//' $RESULT_LIST)
+#    FILES="./call-pindel_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf \
+#        ./call-varscan_snv_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf \
+#        ./call-varscan_indel_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf \
+#        ./call-strelka_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf \
+#        ./call-strelka_indel_vaf_length_depth/execution/results/vaf_length_depth_filters/filtered.vcf \
+#        ./call-mutect_vaf_length_depth/execution/results/vaf_length_depth_filters/filtered.vcf"
 
-    do_uncompress $RID "$FILES"
-}
-
-# Note, this is specific for TinDaisy restarts.  TODO: Generalize this along the lines of PRUNE_LIST
-function do_uncompress_merge {
-    RID=$1
-
-    FILES="./call-pindel_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf \
-        ./call-varscan_snv_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf \
-        ./call-varscan_indel_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf \
-        ./call-strelka_vaf_length_depth_filters/execution/results/vaf_length_depth_filters/filtered.vcf \
-        ./call-strelka_indel_vaf_length_depth/execution/results/vaf_length_depth_filters/filtered.vcf \
-        ./call-mutect_vaf_length_depth/execution/results/vaf_length_depth_filters/filtered.vcf"
-
-    do_uncompress $RID "$FILES"
+    do_uncompress $RID "$RESULTS"
 }
 
 # Note on deleting: https://www.tecmint.com/delete-all-files-in-directory-except-one-few-file-extensions/
@@ -564,14 +547,14 @@ for RID in $RIDS; do
         do_compress $RID
         ;;
       "prune")
-        if [ -z $PRUNE_LIST ]; then
-            >&2 echo ERROR: PRUNE_LIST \[ -P \] not defined.  Quitting
+        if [ -z $RESULT_LIST ]; then
+            >&2 echo ERROR: RESULT_LIST \[ -P \] not defined.  Quitting
             exit 1
         fi
-        confirm $PRUNE_LIST
+        confirm $RESULT_LIST
         >&2 echo Processing $IDS_SEEN / $N_IDS [ $(date) ]: $RID 
         delete_inputs $RID 
-        do_prune $RID $PRUNE_LIST
+        do_prune $RID $RESULT_LIST
         ;;
       "final")
         >&2 echo Processing $IDS_SEEN / $N_IDS [ $(date) ]: $RID 
@@ -583,13 +566,14 @@ for RID in $RIDS; do
         delete_inputs $RID 
         do_wipe $RID
         ;;
-      "uncompress_merge")
+      "uncompress_restart")
+        if [ -z $RESULT_LIST ]; then
+            >&2 echo ERROR: RESULT_LIST \[ -P \] not defined.  Quitting
+            exit 1
+        fi
+        confirm $RESULT_LIST
         >&2 echo Processing $IDS_SEEN / $N_IDS [ $(date) ]: $RID 
-        do_uncompress_merge $RID 
-        ;;
-      "uncompress_421")
-        >&2 echo Processing $IDS_SEEN / $N_IDS [ $(date) ]: $RID 
-        do_uncompress_421 $RID 
+        do_uncompress_restart $RID $RESULT_LIST
         ;;
       *)
         >&2 echo ERROR: Unknown task $TASK
