@@ -575,7 +575,7 @@ function do_summary {
         if [ "$EXT" == "vcf" ]; then
             FILE_FORMAT="VCF"
         elif [ "$EXT" == "maf" ]; then
-            FILE_FORMAT="VCF"
+            FILE_FORMAT="MAF"
         else
             >&2 echo ERROR: Unknown file format $EXT
             exit 1
