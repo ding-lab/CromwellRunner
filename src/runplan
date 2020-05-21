@@ -157,6 +157,12 @@ function complain {
 
 # init_params reads PARAMS and fills in several 
 # variables used for YAML file creation and query with details
+# TODO:
+# This needs to be modified to be used with other workflows like SomaticSV.
+# For instance, the following parameters are not applicable to SomaticSV workflow
+#   * PARAM_ROOT, DBSNP_DB, VEP_CACHE_GZ, VEP_CACHE_VERSION, ASSEMBLY, CHRLIST, CATALOG
+# It would be good to have a list of variables per-workflow which defines those parameters
+#   which are necessary
 function init_params {
     if [ -z $PARAMS ]; then
         >&2 echo ERROR: Parameter file  not defined \(-p\)
@@ -226,7 +232,6 @@ function init_params {
     else
         confirm $YAML_TEMPLATE $ONLYWARN
     fi
-
 
     # the parameters below, also required, are used for matching BamMap
     if [ -z $ES ]; then
@@ -492,6 +497,7 @@ function do_yaml {
     fi
         
 # envsubst: https://stackoverflow.com/a/11050943
+# alternatives in python: https://stackoverflow.com/questions/6116978/how-to-replace-multiple-substrings-of-a-string
     YAML=$(envsubst < $YAML_TEMPLATE)
     if [ $YAML_FN == "-" ]; then
         echo "$YAML"
