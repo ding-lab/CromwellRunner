@@ -12,8 +12,7 @@
 
 source Project.config.sh
 
-# this should be in System config
-START_DOCKERD="/gscuser/mwyczalk/projects/WUDocker"
+START_DOCKERD="docker/WUDocker"
 
 IMAGE="mwyczalkowski/cromwell-runner"
 MEM=32  # should be high for running Cromwell.  If just querying (cq), default is fine
