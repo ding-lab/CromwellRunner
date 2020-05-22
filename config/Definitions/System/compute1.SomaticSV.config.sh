@@ -12,7 +12,7 @@ CROMWELL_JAR="/usr/local/cromwell/cromwell-47.jar"
 # Workflow root - where Cromwell output goes.  This value replaces text WORKFLOW_ROOT in CONFIG_TEMPLATE,
 # and is written to CONFIG_FILE
 WORKFLOW_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"
-CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.MGI.template.dat"
+CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.compute1.template.dat"
 
 # Path to BamMap, which is a file which defines sequence data path and other metadata
 # BamMap format is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
@@ -22,9 +22,11 @@ BAMMAP="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog/BamMa
 REF_ROOT="/storage1/fs1/dinglab/Active/Resources/References"
 
 # CWL_ROOT is needed for CWL
-CWL_ROOT="/storage1/fs1/home1/Active/home/m.wyczalkowski/Projects/SomaticSV"
+CWL_ROOT="/home/m.wyczalkowski/Projects/SomaticSV"
 
 # Using ad hoc datalog file
 #export DATALOG="/gscuser/mwyczalk/projects/TinDaisy/CromwellRunner/cq.datalog/datalog.dat"
 export DATALOG="./logs/datalog.dat"
 
+# All these volumes will be mounted, with paths in container same as on host
+VOLUME_MAPPING="/storage1/fs1/m.wyczalkowski/Active /storage1/fs1/dinglab/Active /home/m.wyczalkowski/Projects/SomaticSV"

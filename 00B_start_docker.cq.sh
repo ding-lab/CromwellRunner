@@ -17,10 +17,6 @@ START_DOCKERD="docker/WUDocker"
 IMAGE="mwyczalkowski/cromwell-runner"
 MEM=4  # should be high for running Cromwell.  If just querying (cq), default is fine
 
-# this will need to be defined for compute1
-VOLUME_MAPPING=""
-
-# Also need: /storage1/fs1/dinglab/Active/CPTAC3/Common/CPTAC3.catalog
 >&2 echo Launching $IMAGE on $SYSTEM
 CMD="bash $START_DOCKERD/start_docker.sh -I $IMAGE -M $SYSTEM -m $MEM $@ $VOLUME_MAPPING"
 echo Running: $CMD

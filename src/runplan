@@ -220,7 +220,7 @@ function init_params_common {
 #
 # Note adding additional kv parameters will require modifications to this function, 
 # an annoyance that may need to be addressed in the future
-function init_params_params {
+function init_params_kv {
 
     BATCH_PARAM_KV=""
     if [ ! -z $REF_PATH ]; then   
@@ -230,23 +230,18 @@ function init_params_params {
         BARCH_PARAM_KV="$BATCH_PARAM_KV PARAM_ROOT:$PARAM_ROOT"
     fi
     if [ -z $DBSNP_DB ]; then
-        complain "DBSNP_DB not defined in $PARAMS" $ONLYWARN
         BARCH_PARAM_KV="$BATCH_PARAM_KV DBSNP_DB:$DBSNP_DB"
     fi
     if [ -z $VEP_CACHE_GZ ]; then
-        complain "VEP_CACHE_GZ not defined in $PARAMS" $ONLYWARN
         BARCH_PARAM_KV="$BATCH_PARAM_KV VEP_CACHE_GZ:$VEP_CACHE_GZ"
     fi
     if [ -z $VEP_CACHE_VERSION ]; then
-        complain "VEP_CACHE_VERSION not defined in $PARAMS" $ONLYWARN
         BARCH_PARAM_KV="$BATCH_PARAM_KV VEP_CACHE_VERSION:$VEP_CACHE_VERSION"
     fi
     if [ -z $ASSEMBLY ]; then
-        complain "ASSEMBLY not defined in $PARAMS" $ONLYWARN
         BARCH_PARAM_KV="$BATCH_PARAM_KV ASSEMBLY:$ASSEMBLY"
     fi
     if [ -z $CHRLIST ]; then
-        complain "CHRLIST not defined in $PARAMS" $ONLYWARN
         BARCH_PARAM_KV="$BATCH_PARAM_KV CHRLIST:$CHRLIST"
     fi
 }
@@ -501,7 +496,8 @@ function do_yaml {
         TUMOR_BARCODE="TUMOR"
         NORMAL_BARCODE="NORMAL"
     fi
-    PARAM_KV="$PARAM_KV TUMOR_BARCODE=$TUMOR_BARCODE NORMAL_BARCODE=$NORMAL_BARCODE"
+    # note that SomaticSV does not need barcodes, but it is not clear how to define this necessity
+    PARAM_KV="$PARAM_KV TUMOR_BARCODE:$TUMOR_BARCODE NORMAL_BARCODE:$NORMAL_BARCODE"
         
     if [ $YAML_FN != "-" ]; then
         OUT_ARG="-o $YAML_FN"
@@ -513,7 +509,7 @@ function do_yaml {
     fi
 
     CMD="$PYTHON src/TemplateParser.py $DARG $OUT_ARG -t $YAML_TEMPLATE $PARAM_KV"
-    run_cmd $CMD 1
+    run_cmd "$CMD" 1
 }
 
 function init_summary {

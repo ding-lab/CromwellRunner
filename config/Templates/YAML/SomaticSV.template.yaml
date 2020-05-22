@@ -1,13 +1,13 @@
 # YAML input file for SomaticSV
 tumor:
   class: File
-  path: ${TUMOR_BAM}
+  path: TUMOR_BAM
 normal:
   class: File
-  path: ${NORMAL_BAM}
+  path: NORMAL_BAM
 reference:
   class: File
-  path: ${REF_PATH}
+  path: REF_PATH
 
 # This generates BAMs on the order of 50Mb
 generateEvidenceBam: true
