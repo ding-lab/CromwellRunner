@@ -18,7 +18,7 @@ Options:
 -u: Print BAM UUIDs in query
 -p: Print BAM paths in query
 -n: Print BAM sample names in query
--w: Print additional details in query (REF_PATH, TD_ROOT, DBSNP_DB, VEP_CACHE_GZ).  Requires PARAMS 
+-w: Print additional details in query (REF_PATH, CWL_ROOT, DBSNP_DB, VEP_CACHE_GZ).  Requires PARAMS 
 -g: Issue warnings rather than quitting for testing
 -s SUMMARY_OUT: output analysis summary file for task `summary`.  If '-', write to STDOUT
 -c CROMWELL_QUERY: explicit path to cromwell query utility `cq`.  Default "cq" 
@@ -672,7 +672,7 @@ function do_query {
 
     # Spit out additional details if user requests
     if [ "$QUERY_DETAIL" ]; then
-        printf "$CASE\t$DIS\t$TUMOR_INFO\t$NORMAL_INFO\t$REF_PATH\t$TD_ROOT\t$DBSNP_DB\t${VEP_CACHE_GZ}${SUFFIX}\n"
+        printf "$CASE\t$DIS\t$TUMOR_INFO\t$NORMAL_INFO\t$REF_PATH\t$CWL_ROOT\t$DBSNP_DB\t${VEP_CACHE_GZ}${SUFFIX}\n"
     else
         printf "$CASE\t$DIS\t$TUMOR_INFO\t${NORMAL_INFO}${SUFFIX}\n" 
     fi

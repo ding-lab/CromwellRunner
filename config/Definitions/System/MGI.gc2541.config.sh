@@ -34,10 +34,10 @@ DBSNP_ROOT="/gscmnt/gc7202/dinglab/common/databases/dbSNP_Filter"
 # Assume all VEP caches are here
 VEP_CACHE_ROOT="/gscmnt/gc7202/dinglab/common/databases/VEP"
 
-# TD_ROOT is needed for CWL
-TD_ROOT="/gscuser/mwyczalk/projects/TinDaisy/TinDaisy"
-# TinDaisy parameters relative to TD_ROOT
-PARAM_ROOT="$TD_ROOT/params"
+# CWL_ROOT is needed for CWL
+CWL_ROOT="/gscuser/mwyczalk/projects/TinDaisy/TinDaisy"
+# TinDaisy parameters relative to CWL_ROOT
+PARAM_ROOT="$CWL_ROOT/params"
 
 # Use common datalog.  This is git tracked
 export DATALOG="/gscuser/mwyczalk/projects/TinDaisy/CromwellRunner/cq.datalog/datalog.dat"

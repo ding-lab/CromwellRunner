@@ -3,10 +3,10 @@
 # tindaisy.cwl workflow
 # 
 # Dependencies:
-#   TD_ROOT
+#   CWL_ROOT
 #   WORKFLOW_ROOT
 
-CWL="$TD_ROOT/cwl/SomaticSV.cwl"
+CWL="$CWL_ROOT/cwl/SomaticSV.cwl"
 
 # template used for generating YAML files
 YAML_TEMPLATE="config/Templates/YAML/SomaticSV.template.yaml"
