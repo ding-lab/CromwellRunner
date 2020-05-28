@@ -22,11 +22,11 @@ BAMMAP="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog/BamMa
 REF_ROOT="/storage1/fs1/dinglab/Active/Resources/References"
 
 # CWL_ROOT is needed for CWL
-CWL_ROOT="/storage1/fs1/home1/Active/home/m.wyczalkowski/Projects/SomaticSV"
+CWL_ROOT="/home/m.wyczalkowski/Projects/SomaticSV"
 
 # Using common datalog file
-export DATALOG="/storage1/fs1/m.wyczalkowski/Active/cromwell-data/CromwellRunner/datlog.dat"
+export DATALOG="/storage1/fs1/m.wyczalkowski/Active/cromwell-data/CromwellRunner/datalog.dat"
 
 # All these volumes will be mounted, with paths in container same as on host
 # Note that /home is expanded to /storage1/fs1/home1/Active/home
-VOLUME_MAPPING="/storage1/fs1/m.wyczalkowski/Active /storage1/fs1/dinglab/Active /home/m.wyczalkowski"
+VOLUME_MAPPING="/storage1/fs1/m.wyczalkowski/Active /storage1/fs1/dinglab/Active /storage1/fs1/home1/Active/home/m.wyczalkowski:/home/m.wyczalkowski"
