@@ -22,7 +22,7 @@ Options:
 -g: Issue warnings rather than quitting for testing
 -s SUMMARY_OUT: output analysis summary file for task `summary`.  If '-', write to STDOUT
 -c CROMWELL_QUERY: explicit path to cromwell query utility `cq`.  Default "cq" 
--R RESTART_MAP: file listing workflow IDs for each case when restarting runs.  Requires RESTART_ROOT in PARAMS
+-R RESTART_MAP: file listing case and workflow IDs for each case when restarting runs.  Requires RESTART_ROOT in PARAMS
 -U UUID_MAP: optional file listing tumor and normal UUIDs for each case.  This bypasses matching of BamMap by 
     case, sample type, experimental strategy, and reference.  TSV file with columns CASE, TUMOR_UUID, NORMAL_UUID
 
@@ -583,10 +583,10 @@ function do_summary {
         # https://stackoverflow.com/questions/965053/extract-filename-and-extension-in-bash
         BASE="${RF##*/}"
         EXT="${BASE##*.}"
-        if [ "$EXT" == "vcf" ]; then
+        if   [ "$EXT" == "vcf" ]; then
             FILE_FORMAT="VCF"
         elif [ "$EXT" == "maf" ]; then
-            FILE_FORMAT="VCF"
+            FILE_FORMAT="MAF"
         elif [ "$EXT" == "bam" ]; then
             FILE_FORMAT="BAM"
         else
