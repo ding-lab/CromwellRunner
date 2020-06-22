@@ -32,6 +32,10 @@ reference_fasta:
 normal_barcode: ${NORMAL_BARCODE}
 tumor_barcode: ${TUMOR_BARCODE}
 
+canonical_BED:  # type "File"
+    class: File
+    path: /gscuser/mwyczalk/projects/TinDaisy/TinDaisy/params/chrlist/GRCh38.callRegions.bed
+
 # vcf (vaf length depth) filter config
 pindel_vcf_filter_config:
   class: File
@@ -86,87 +90,10 @@ vep_cache_gz:
 vep_cache_version: ${VEP_CACHE_VERSION}
 assembly: ${ASSEMBLY}
 
-# no_delete_temp = true preserves intermediate files from pindel run and parse
-# no_delete_temp: false
-
-no_delete_temp: false
-
-
-# Number of parallel jobs to run.  Goal is to balance run times to have a uniform CPU load
-num_parallel_strelka2: 4
-num_parallel_pindel: 5
-
 chrlist: # Defining this turns on pindel parallel
   class: File
   path: $CHRLIST
 
 
 ### YAML template as generated with cwltool --make-template
-# normal_barcode: a_string  # type "string" (optional)
-# tumor_barcode: a_string  # type "string" (optional)
-# num_parallel_strelka2: 0  # type "int" (optional)
-# num_parallel_pindel: 0  # type "int" (optional)
-# call_regions:  # type "File" (optional)  -> this doesn't seem to do anything
-#     class: File
-#     path: a/file/path
-# chrlist:  # type "File" (optional)
-#     class: File
-#     path: a/file/path
-# strelka_config:  # type "File"
-#     class: File
-#     path: a/file/path
-# mutect_vcf_filter_config:  # type "File"
-#     class: File
-#     path: a/file/path
-# bypass_classification: false  # type "boolean" (optional)
-# bypass_af: false  # type "boolean" (optional)
-# classification_filter_config:  # type "File"
-#     class: File
-#     path: a/file/path
-# af_filter_config:  # type "File"
-#     class: File
-#     path: a/file/path
-# varscan_vcf_filter_config:  # type "File"
-#     class: File
-#     path: a/file/path
-# strelka_vcf_filter_config:  # type "File"
-#     class: File
-#     path: a/file/path
-# centromere_bed:  # type "File" (optional)
-#     class: File
-#     path: a/file/path
-# vep_cache_gz:  # type "File" (optional)
-#     class: File
-#     path: a/file/path
-# vep_cache_version: a_string  # type "string" (optional)
-# assembly: a_string  # type "string" (optional)
-# dbsnp_db:  # type "File" (optional)
-#     class: File
-#     path: a/file/path
-# bypass_dbsnp: false  # type "boolean" (optional)
-# bypass_merge: false  # type "boolean" (optional)
-# pindel_vcf_filter_config:  # type "File"
-#     class: File
-#     path: a/file/path
-# bypass_depth: false  # type "boolean" (optional)
-# bypass_length: false  # type "boolean" (optional)
-# bypass_vaf: false  # type "boolean" (optional)
-# debug: false  # type "boolean" (optional)
-# bypass_homopolymer: false  # type "boolean" (optional)
-# bypass_cvs: false  # type "boolean" (optional)
-# varscan_config:  # type "File"
-#     class: File
-#     path: a/file/path
-# pindel_config:  # type "File"
-#     class: File
-#     path: a/file/path
-# reference_fasta:  # type "File"
-#     class: File
-#     path: a/file/path
-# normal_bam:  # type "File"
-#     class: File
-#     path: a/file/path
-# tumor_bam:  # type "File"
-#     class: File
-#     path: a/file/path
-# no_delete_temp: false  # type "boolean" (optional)
+# can be found TinDaisy/cwl/workflows/template.tindaisy.yaml
