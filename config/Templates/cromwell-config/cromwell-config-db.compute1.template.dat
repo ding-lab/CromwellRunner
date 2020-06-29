@@ -52,6 +52,7 @@ backend {
         check-alive = "bjobs -noheader -o stat ${job_id} | /bin/grep 'PEND\\|RUN'"
         job-id-regex = "Job <(\\d+)>.*"
         root = "WORKFLOW_ROOT/cromwell-workdir/cromwell-executions"
+        exit-code-timeout-seconds = 120  # Prevent running zombies? https://cromwell.readthedocs.io/en/stable/backends/HPC/#exit-code-timeout
       }
     }
   }
