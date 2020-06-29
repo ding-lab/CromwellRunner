@@ -5,7 +5,7 @@
 # and should exit when the docker container exits
 
 CROMWELL="/usr/local/cromwell/cromwell-47.jar"
-CONFIG="/gscuser/tmooney/server.cromwell.config"
+CONFIG="config/server.cromwell.config"
 
 echo Starting local instance of cromwell server
 /usr/bin/java -Dconfig.file=$CONFIG -jar $CROMWELL server >/dev/null & 

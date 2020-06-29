@@ -33,11 +33,11 @@ DBSNP_ROOT="/gscmnt/gc2521/dinglab/mwyczalk/somatic-wrapper-data/image.data/B_Fi
 # Assume all VEP caches are here
 VEP_CACHE_ROOT="/gscmnt/gc2521/dinglab/mwyczalk/somatic-wrapper-data/image.data/D_VEP"
 
-# TD_ROOT is needed for CWL
+# CWL_ROOT is needed for CWL
 # This is modified for SomaticSV
-TD_ROOT="/gscuser/mwyczalk/projects/CWL/somatic_sv_workflow"
-# TinDaisy parameters relative to TD_ROOT
-PARAM_ROOT="$TD_ROOT/params" # N/A for SomaticSV
+CWL_ROOT="/gscuser/mwyczalk/projects/CWL/somatic_sv_workflow"
+# TinDaisy parameters relative to CWL_ROOT
+PARAM_ROOT="$CWL_ROOT/params" # N/A for SomaticSV
 
 # Using ad hoc datalog file
 #export DATALOG="/gscuser/mwyczalk/projects/TinDaisy/CromwellRunner/cq.datalog/datalog.dat"

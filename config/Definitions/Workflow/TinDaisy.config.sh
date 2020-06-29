@@ -3,10 +3,10 @@
 # tindaisy.cwl workflow
 # 
 # Dependencies:
-#   TD_ROOT
+#   CWL_ROOT
 #   WORKFLOW_ROOT
 
-CWL="$TD_ROOT/cwl/workflows/tindaisy.cwl"
+CWL="$CWL_ROOT/cwl/workflows/tindaisy.cwl"
 # CWL output is used to find the principal output of workflow, i.e., what is reported with `cq output`.
 # It is a concatenation of the CWL filename and 'id' in 'outputs' section of CWL
 # this is no longer being used as `cq outputs` is preferred over `cq output`

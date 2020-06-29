@@ -3,13 +3,10 @@
 # tindaisy.cwl workflow
 # 
 # Dependencies:
-#   TD_ROOT
+#   CWL_ROOT
 #   WORKFLOW_ROOT
 
-CWL="$TD_ROOT/cwl/SomaticSV.cwl"
-# CWL output is used to find the principal output of workflow, i.e., what is reported with `cq output`.
-# It is a concatenation of the CWL filename and 'id' in 'outputs' section of CWL
-CWL_OUTPUT="SomaticSV.cwl.output"
+CWL="$CWL_ROOT/cwl/SomaticSV.cwl"
 
 # template used for generating YAML files
 YAML_TEMPLATE="config/Templates/YAML/SomaticSV.template.yaml"

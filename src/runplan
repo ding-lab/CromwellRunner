@@ -10,6 +10,7 @@ Usage: runplan [options] [CASE1 [ CASE2 ... ]]
 Options:
 -h: print usage information
 -v: Indicate progress in stderr
+-d: Print debug information about YAML processing
 -1: Quit after evaluating one case
 -x TASK: Execute given task.  Values: 'query' (default), 'yaml', 'summary'
 -y YAMLD: output directory of YAML files.  If "-", write YAML to stdout.  Default: ./yaml
@@ -17,7 +18,7 @@ Options:
 -u: Print BAM UUIDs in query
 -p: Print BAM paths in query
 -n: Print BAM sample names in query
--w: Print additional details in query (REF_PATH, TD_ROOT, DBSNP_DB, VEP_CACHE_GZ).  Requires PARAMS 
+-w: Print additional details in query (REF_PATH, CWL_ROOT, DBSNP_DB, VEP_CACHE_GZ).  Requires PARAMS 
 -g: Issue warnings rather than quitting for testing
 -s SUMMARY_OUT: output analysis summary file for task `summary`.  If '-', write to STDOUT
 -c CROMWELL_QUERY: explicit path to cromwell query utility `cq`.  Default "cq" 
@@ -40,24 +41,25 @@ runplan performs the following tasks, specified with -x:
 
 If CASE is - then read CASE from STDIN.  If CASE is not defined, read from CASES_FN file.
 
-Output YAML file filename is CASE.yaml.  It is based on YAML_TEMPLATE, with the following variables substituted:
+Output YAML filename is CASE.yaml.  It is based on YAML_TEMPLATE, with the following variables substituted:
     * NORMAL_BAM
     * TUMOR_BAM
     * REF_PATH
-    * PARAM_ROOT
-    * DBSNP_DB
-    * VEP_CACHE_GZ
-    * VEP_CACHE_VERSION
-    * ASSEMBLY
-    * CHRLIST
     * RESTART_D
     * TUMOR_BARCODE
     * NORMAL_BARCODE
+    * PARAM_ROOT            TD
+    * DBSNP_DB              TD
+    * VEP_CACHE_GZ          TD
+    * VEP_CACHE_VERSION     TD
+    * ASSEMBLY              TD
+    * CHRLIST               TD
 Source of info:
+    * TD indicates parameters useful only for TinDaisy
     * TUMOR_BAM and NORMAL_BAM are defined by lookup of CASE in BamMap
     * RESTART_D is defined when -R flag is set
     * TUMOR_BARCODE and NORMAL_BARCODE are defined by lookup of UUID in Catalog file
-    * Remainder defined in PARAMS
+    * Remainder defined in PARAMS file
 
 Restarting of runs is supported by making available RESTART_D variable in YAML
 template, which provides path to root directory of prior run.
@@ -76,18 +78,22 @@ YAMLD="./yaml"
 SUMMARY_OUT="./dat/analysis_summary.dat"
 PARAMS="Project.config.sh"
 CROMWELL_QUERY="src/cq"
+PYTHON="/usr/bin/python"
 
 TUMOR_ST='tumor'
 NORMAL_ST='blood_normal'
 
-while getopts ":hv1P:x:y:upnwgs:c:R:U:" opt; do
+while getopts ":hdv1P:x:y:upnwgs:c:R:U:" opt; do
   case $opt in
     h)  
       echo "$USAGE"
       exit 0
       ;;
-    v) # Stop after 1
+    v) 
       PROGRESS=1
+      ;;
+    d) 
+      TP_DEBUG=1
       ;;
     1)  
       JUSTONE=1
@@ -155,9 +161,9 @@ function complain {
 
 }
 
-# init_params reads PARAMS and fills in several 
-# variables used for YAML file creation and query with details
-function init_params {
+# init_params reads PARAMS and fills in several variables used for BamMap queries
+# Parameters processed here are not passed to TemplateParser.py directly
+function init_params_common {
     if [ -z $PARAMS ]; then
         >&2 echo ERROR: Parameter file  not defined \(-p\)
         >&2 echo "$USAGE"
@@ -166,46 +172,6 @@ function init_params {
     confirm $PARAMS $ONLYWARN
 
     source $PARAMS
-    if [ -z $REF_PATH ]; then
-        complain "REF_PATH not defined in $PARAMS" $ONLYWARN
-        REF_PATH="undefined"   
-    fi
-    if [ -z $PARAM_ROOT ]; then
-        complain "PARAM_ROOT not defined in $PARAMS" $ONLYWARN
-        PARAM_ROOT="undefined"
-    fi
-    if [ -z $DBSNP_DB ]; then
-        complain "DBSNP_DB not defined in $PARAMS" $ONLYWARN
-        DBSNP_DB="undefined"
-    fi
-    if [ -z $VEP_CACHE_GZ ]; then
-        complain "VEP_CACHE_GZ not defined in $PARAMS" $ONLYWARN
-        VEP_CACHE_GZ="undefined"
-    fi
-    if [ -z $VEP_CACHE_VERSION ]; then
-        complain "VEP_CACHE_VERSION not defined in $PARAMS" $ONLYWARN
-        VEP_CACHE_VERSION="undefined"
-    fi
-    if [ -z $ASSEMBLY ]; then
-        complain "ASSEMBLY not defined in $PARAMS" $ONLYWARN
-        ASSEMBLY="undefined"
-    fi
-    if [ -z $CHRLIST ]; then
-        complain "CHRLIST not defined in $PARAMS" $ONLYWARN
-        CHRLIST="undefined"
-    fi
-    if [ -z $CATALOG ]; then
-        complain "CATALOG not defined in $PARAMS" $ONLYWARN
-    fi
-
-    # envsubst requires variables to be exported - these are the parameters used for yaml file
-    export REF_PATH
-    export PARAM_ROOT
-    export DBSNP_DB
-    export VEP_CACHE_GZ
-    export VEP_CACHE_VERSION
-    export ASSEMBLY
-    export CHRLIST
 
     # These parameters used to be passed as arguments, but are now in PARAMS
     if [ -z $BAMMAP ]; then
@@ -227,7 +193,6 @@ function init_params {
         confirm $YAML_TEMPLATE $ONLYWARN
     fi
 
-
     # the parameters below, also required, are used for matching BamMap
     if [ -z $ES ]; then
         complain "ES not defined in $PARAMS" $ONLYWARN
@@ -245,9 +210,48 @@ function init_params {
         complain "REF_NAME not defined in $PARAMS" $ONLYWARN
         REF_NAME="undefined"
     fi
+
 }
 
-init_params
+# PARAMS should already have been read
+# go through and set BATCH_PARAMS_KV for each parameter which has been defined.
+# Note that some of these may not be applicable to different workflows, but any
+# error checking about missing parameters will take place in TemplateParser.py
+#
+# Note adding additional kv parameters will require modifications to this function, 
+# an annoyance that may need to be addressed in the future
+function init_params_kv {
+
+    BATCH_PARAM_KV=""
+    if [ ! -z $REF_PATH ]; then   
+        BATCH_PARAM_KV="$BATCH_PARAM_KV REF_PATH:$REF_PATH"
+    fi
+    if [ ! -z $PARAM_ROOT ]; then
+        BARCH_PARAM_KV="$BATCH_PARAM_KV PARAM_ROOT:$PARAM_ROOT"
+    fi
+    if [ -z $DBSNP_DB ]; then
+        BARCH_PARAM_KV="$BATCH_PARAM_KV DBSNP_DB:$DBSNP_DB"
+    fi
+    if [ -z $VEP_CACHE_GZ ]; then
+        BARCH_PARAM_KV="$BATCH_PARAM_KV VEP_CACHE_GZ:$VEP_CACHE_GZ"
+    fi
+    if [ -z $VEP_CACHE_VERSION ]; then
+        BARCH_PARAM_KV="$BATCH_PARAM_KV VEP_CACHE_VERSION:$VEP_CACHE_VERSION"
+    fi
+    if [ -z $ASSEMBLY ]; then
+        BARCH_PARAM_KV="$BATCH_PARAM_KV ASSEMBLY:$ASSEMBLY"
+    fi
+    if [ -z $CHRLIST ]; then
+        BARCH_PARAM_KV="$BATCH_PARAM_KV CHRLIST:$CHRLIST"
+    fi
+}
+
+# Goal of kv parameter parsing is to build up a string PARAM_KV consisting of "key1:value1" pairs, e.g.,
+# PARAM_KV="TUMOR_BAM:/path/to/file NORMAL_BAM:/path/to/file ..."
+# such a string consists of parameters common to the entire batch and those specific to a particular case
+init_params_common
+init_params_kv
+
 
 # this allows us to get case names in one of three ways:
 # 1: cq CASE1 CASE2 ...
@@ -468,14 +472,16 @@ function do_yaml {
 
     # TUMOR and NORMAL look like this: "BAM_path sample_name UUID Disease"
 
-    export TUMOR_BAM=$(echo "$TUMOR" | cut -f 1)
-    export NORMAL_BAM=$(echo "$NORMAL" | cut -f 1)
+    TUMOR_BAM=$(echo "$TUMOR" | cut -f 1)
+    NORMAL_BAM=$(echo "$NORMAL" | cut -f 1)
+
+    PARAM_KV="$BATCH_PARAM_KV TUMOR_BAM:$TUMOR_BAM NORMAL_BAM:$NORMAL_BAM"
 
     # If RESTART_MAP is defined, get RESTART_D as RESTART_ROOT/UUID
     if [ ! -z $RESTART_MAP ]; then
         RESTART_D=$(get_restartd $CASE $RESTART_MAP)
         test_exit_status
-        export RESTART_D
+        PARAM_KV="$PARAM_KV RESTART_D:$RESTART_D"
     fi
 
     # Get barcode for tumor and normal
@@ -484,21 +490,26 @@ function do_yaml {
     if [ ! -z $CATALOG ]; then
         TUMOR_UUID=$(echo "$TUMOR" | cut -f 3)
         NORMAL_UUID=$(echo "$NORMAL" | cut -f 3)
-        export TUMOR_BARCODE=$(get_aliquot $TUMOR_UUID $CATALOG) 
-        export NORMAL_BARCODE=$(get_aliquot $NORMAL_UUID $CATALOG) 
+        TUMOR_BARCODE=$(get_aliquot $TUMOR_UUID $CATALOG) 
+        NORMAL_BARCODE=$(get_aliquot $NORMAL_UUID $CATALOG) 
     else
-        export TUMOR_BARCODE="TUMOR"
-        export NORMAL_BARCODE="NORMAL"
+        TUMOR_BARCODE="TUMOR"
+        NORMAL_BARCODE="NORMAL"
     fi
+    # note that SomaticSV does not need barcodes, but it is not clear how to define this necessity
+    PARAM_KV="$PARAM_KV TUMOR_BARCODE:$TUMOR_BARCODE NORMAL_BARCODE:$NORMAL_BARCODE"
         
-# envsubst: https://stackoverflow.com/a/11050943
-    YAML=$(envsubst < $YAML_TEMPLATE)
-    if [ $YAML_FN == "-" ]; then
-        echo "$YAML"
+    if [ $YAML_FN != "-" ]; then
+        OUT_ARG="-o $YAML_FN"
     else
-        echo "$YAML" > $YAML_FN
-        >&2 echo Written to $YAML_FN
+        OUT_ARG=""
     fi
+    if [ "$TP_DEBUG" == 1 ]; then
+        DARG="-d"
+    fi
+
+    CMD="$PYTHON src/TemplateParser.py $DARG $OUT_ARG -t $YAML_TEMPLATE $PARAM_KV"
+    run_cmd "$CMD" 1
 }
 
 function init_summary {
@@ -572,10 +583,12 @@ function do_summary {
         # https://stackoverflow.com/questions/965053/extract-filename-and-extension-in-bash
         BASE="${RF##*/}"
         EXT="${BASE##*.}"
-        if [ "$EXT" == "vcf" ]; then
+        if   [ "$EXT" == "vcf" ]; then
             FILE_FORMAT="VCF"
         elif [ "$EXT" == "maf" ]; then
             FILE_FORMAT="MAF"
+        elif [ "$EXT" == "bam" ]; then
+            FILE_FORMAT="BAM"
         else
             >&2 echo ERROR: Unknown file format $EXT
             exit 1
@@ -661,7 +674,7 @@ function do_query {
 
     # Spit out additional details if user requests
     if [ "$QUERY_DETAIL" ]; then
-        printf "$CASE\t$DIS\t$TUMOR_INFO\t$NORMAL_INFO\t$REF_PATH\t$TD_ROOT\t$DBSNP_DB\t${VEP_CACHE_GZ}${SUFFIX}\n"
+        printf "$CASE\t$DIS\t$TUMOR_INFO\t$NORMAL_INFO\t$REF_PATH\t$CWL_ROOT\t$DBSNP_DB\t${VEP_CACHE_GZ}${SUFFIX}\n"
     else
         printf "$CASE\t$DIS\t$TUMOR_INFO\t${NORMAL_INFO}${SUFFIX}\n" 
     fi
