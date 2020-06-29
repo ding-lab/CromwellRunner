@@ -1,17 +1,13 @@
 # Notes for future development
 
-* Have an automated way of saving parameters associated with runs, e.g., database versions and such when
-  reporting and staging results.
-  These are specified in YAML files and PARAMS files.  However, not all variables specified in PARAMS
-  are relevant (SomaticSV may not use all variables, which were defined for TinDaisy)
-  Perhaps could extract common lines in YAML files?  (and avoid BAMs)?
-
-* use WUdocker for starting image.  Should not run everything in an interactive docker container like step 00, but rather
-  start runs within a non-interactive job, like done in step 25 here:
-    https://github.com/ding-lab/importGDC.CPTAC3.git
-  the reason for this is that compute1 has a 24-hour limit on interactive jobs
-
-* whole datatidy / runtidy log stuff is maddening.  Default instructions don't work.  Make this simple for the case of running first time
+* Improve datatidy / runtidy 
+  * make simple for running first time
+  * Consolidate into one call
+  * incorporate pre-staging to write inputs to scratch and post-staging to write outputs back to storage
+* Improve parallel models
+  * use job groups to control number jobs running on LSF systems
+  * See importGDC as model: https://github.com/ding-lab/importGDC.CPTAC3.git
+* Clean up layout to incorporate restarts and de novo runs
 
 
 # Previous notes
