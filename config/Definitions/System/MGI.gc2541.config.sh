@@ -12,7 +12,7 @@ LSFQ="research-hpc"
 # LSF_CONF="/opt/ibm/lsfsuite/lsf/conf/lsf.conf"
 # LSFQ="general"              
 
-LSF_GROUP="/mwyczalk/gdc-download"
+LSF_GROUP="/mwyczalk/cromwell-runner"
 LSF_ARGS="-B \"-g $LSF_GROUP\"  -M -q $LSFQ"
 
 
