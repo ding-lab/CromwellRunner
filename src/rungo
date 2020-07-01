@@ -34,21 +34,35 @@ Optional options
 -L RUNLOG: Run log file used by runtidy if -F defined.  Can be obtained from environment variable
 -l DATALOG: Data log file used by datatidy if -F defined.  Can be obtained from environment variable
 -G CWL_ROOT: write to STDERR contents of `git log -1` and `git remote -v` for git repository at given CWL_ROOT
+-M : use LSF / bsub to submit jobs
+-q LSFQ : bsub queue
+-B LSF_ARGS : arbitrary args to pass to bsub. pass LSF Job Groups this way
 
 If CASE is - then read CASE from STDIN.  If CASE is not defined, read from CASES_FN file.
 
 STDERR and STDOUT of workflow runs, as well as tmp dir and log of parallel, written to LOGD
 YAML files for a given CASE are assumed to be $YAMLD/$CASE.yaml
 
+If LSF [-M] is defined, jobs will be submitted using bsub with docker image 
+mwyczalkowski/cromwell-runner.  Recommend to use job groups
+for controlling number of jobs running at once by passing "-g job-group" as LSF_ARGS:
+https://confluence.gsc.wustl.edu/pages/viewpage.action?pageId=27592450
+
 Cromwell configuration, including database connection, is described 
     https://confluence.ris.wustl.edu/pages/viewpage.action?spaceKey=CI&title=Cromwell
-
 EOF
 
 # Background on `parallel` and details about blocking / semaphores here:
 #    O. Tange (2011): GNU Parallel - The Command-Line Power Tool,
 #    ;login: The USENIX Magazine, February 2011:42-47.
 # [ https://www.usenix.org/system/files/login/articles/105438-Tange.pdf ]
+
+# LSF support is modeled after https://github.com/ding-lab/importGDC.CPTAC3.git
+# Arguments required for LSF bsub call:
+#   -M : LSF - whether to use LSF bsub
+#   -q LSFQ : queue to submit bsub to - differs between MGI and compute1
+#   -B LSF_ARGS : arbitrary args to pass to bsub - pass LSF Job Groups this way
+# In general, if LSF is defined, should use job groups instead of -J to control number of jobs submitted
 
 source src/cromwell_utils.sh
 
@@ -64,7 +78,10 @@ CROMWELL_JAR="/opt/cromwell.jar"
 JAVA="/usr/bin/java"
 CASES_FN="config/cases.dat"
 
-while getopts ":W:y:hd1J:g:eC:D:R:j:k:c:FX:p:L:l:G:" opt; do
+# for now this is hard coded
+LSF_IMAGE="mwyczalkowski/cromwell-runner"
+
+while getopts ":W:y:hd1J:g:eC:D:R:j:k:c:FX:p:L:l:G:Mq:B:" opt; do
   case $opt in
     h) 
       echo "$USAGE"
@@ -130,6 +147,15 @@ while getopts ":W:y:hd1J:g:eC:D:R:j:k:c:FX:p:L:l:G:" opt; do
         >&2 echo ERROR: CWL_ROOT $CWL_ROOT : bad directory name
         exit 1
       fi
+      ;;
+    M)  
+      LSF=1
+      ;;
+    q)  
+      LSFQ="-q $OPTARG"
+      ;;
+    B)  
+      LSF_ARGS="$LSF_ARGS $OPTARG"
       ;;
     \?)
       >&2 echo "Invalid option: -$OPTARG" 
@@ -283,6 +309,11 @@ for CASE in $CASES; do
         RT_CMD="$RUNTIDY -x finalize -m Autofinalizing -p $PROJECT $CASE"
         DT_CMD="$DATATIDY -F Succeeded -x compress -p $PROJECT $CASE"
         CMD="$CMD && $RT_CMD && $DT_CMD"
+    fi
+
+    if [ $LSF ]; then
+        LSF_LOGS="-e $LOGD/${CASE}.LSF.err -o $LOGD/${CASE}.LSF.out"
+        CMD="$BSUB $LSFQ $LSF_ARGS $LSF_LOGS -a \"docker($LSF_IMAGE)\" $CMD "
     fi
 
     if [ $NJOBS != 0 ]; then

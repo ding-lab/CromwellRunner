@@ -3,8 +3,12 @@
 # Compute1 system with Cromwell output to /storage1/fs1/m.wyczalkowski/Active/cromwell-data/
 #
 
-SYSTEM="compute1"  # not yet implemented
+SYSTEM="compute1"  
 LSF_CONF="/opt/ibm/lsfsuite/lsf/conf/lsf.conf"
+LSF_GROUP="/mwyczalk/gdc-download"
+LSFQ="general"              # for MGI, queue is "research-hpc"
+LSF_ARGS="-g $LSF_GROUP -M -q $LSFQ"
+
 
 # This is based on CromwellRunner
 CROMWELL_JAR="/usr/local/cromwell/cromwell-47.jar"

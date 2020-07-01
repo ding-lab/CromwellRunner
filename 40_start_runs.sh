@@ -17,10 +17,7 @@ DB_ARGS="-Djavax.net.ssl.trustStorePassword=changeit -Djavax.net.ssl.trustStore=
 #ARGS="-F"
 ARGS="$ARGS -X -Xmx10g -G $CWL_ROOT -D \"$DB_ARGS\""
 
-# do not process all cases automatically
-#CMD="bash src/rungo $ARGS -c src -p $PROJECT -R $CROMWELL_JAR -W $CWL -C $CONFIG_FILE -k $CASES_FN $@"
-
-CMD="bash src/rungo $ARGS -c src -p $PROJECT -R $CROMWELL_JAR -W $CWL -C $CONFIG_FILE $@"
+CMD="bash src/rungo $ARGS $LSF_ARGS -c src -p $PROJECT -R $CROMWELL_JAR -W $CWL -C $CONFIG_FILE $@"
 >&2 echo Running: $CMD
 eval $CMD
 
