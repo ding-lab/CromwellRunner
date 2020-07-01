@@ -4,12 +4,16 @@
 #
 
 SYSTEM="MGI"
-#SYSTEM="compute1"  # not yet implemented
-
-# LSF_CONF for MGI
 LSF_CONF="/opt/lsf9/conf/lsf.conf"
-# LSF_CONF for compute1
+LSFQ="research-hpc"
+
+# Compute1 options
+# SYSTEM="compute1"  
 # LSF_CONF="/opt/ibm/lsfsuite/lsf/conf/lsf.conf"
+# LSFQ="general"              
+
+LSF_GROUP="/mwyczalk/gdc-download"
+LSF_ARGS="-g $LSF_GROUP -M -q $LSFQ"
 
 
 CROMWELL_JAR="/usr/local/cromwell/cromwell-47.jar"

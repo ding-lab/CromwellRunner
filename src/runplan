@@ -227,22 +227,22 @@ function init_params_kv {
         BATCH_PARAM_KV="$BATCH_PARAM_KV REF_PATH:$REF_PATH"
     fi
     if [ ! -z $PARAM_ROOT ]; then
-        BARCH_PARAM_KV="$BATCH_PARAM_KV PARAM_ROOT:$PARAM_ROOT"
+        BATCH_PARAM_KV="$BATCH_PARAM_KV PARAM_ROOT:$PARAM_ROOT"
     fi
-    if [ -z $DBSNP_DB ]; then
-        BARCH_PARAM_KV="$BATCH_PARAM_KV DBSNP_DB:$DBSNP_DB"
+    if [ ! -z $DBSNP_DB ]; then
+        BATCH_PARAM_KV="$BATCH_PARAM_KV DBSNP_DB:$DBSNP_DB"
     fi
-    if [ -z $VEP_CACHE_GZ ]; then
-        BARCH_PARAM_KV="$BATCH_PARAM_KV VEP_CACHE_GZ:$VEP_CACHE_GZ"
+    if [ ! -z $VEP_CACHE_GZ ]; then
+        BATCH_PARAM_KV="$BATCH_PARAM_KV VEP_CACHE_GZ:$VEP_CACHE_GZ"
     fi
-    if [ -z $VEP_CACHE_VERSION ]; then
-        BARCH_PARAM_KV="$BATCH_PARAM_KV VEP_CACHE_VERSION:$VEP_CACHE_VERSION"
+    if [ ! -z $VEP_CACHE_VERSION ]; then
+        BATCH_PARAM_KV="$BATCH_PARAM_KV VEP_CACHE_VERSION:$VEP_CACHE_VERSION"
     fi
-    if [ -z $ASSEMBLY ]; then
-        BARCH_PARAM_KV="$BATCH_PARAM_KV ASSEMBLY:$ASSEMBLY"
+    if [ ! -z $ASSEMBLY ]; then
+        BATCH_PARAM_KV="$BATCH_PARAM_KV ASSEMBLY:$ASSEMBLY"
     fi
-    if [ -z $CHRLIST ]; then
-        BARCH_PARAM_KV="$BATCH_PARAM_KV CHRLIST:$CHRLIST"
+    if [ ! -z $CHRLIST ]; then
+        BATCH_PARAM_KV="$BATCH_PARAM_KV CHRLIST:$CHRLIST"
     fi
 }
 
@@ -251,7 +251,6 @@ function init_params_kv {
 # such a string consists of parameters common to the entire batch and those specific to a particular case
 init_params_common
 init_params_kv
-
 
 # this allows us to get case names in one of three ways:
 # 1: cq CASE1 CASE2 ...
