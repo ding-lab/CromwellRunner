@@ -13,7 +13,7 @@ LSFQ="research-hpc"
 # LSFQ="general"              
 
 LSF_GROUP="/mwyczalk/gdc-download"
-LSF_ARGS="-g $LSF_GROUP -M -q $LSFQ"
+LSF_ARGS="-B \"-g $LSF_GROUP\"  -M -q $LSFQ"
 
 
 CROMWELL_JAR="/usr/local/cromwell/cromwell-47.jar"
