@@ -299,13 +299,8 @@ for CASE in $CASES; do
     NOW=$(date)
     >&2 echo \[ $NOW \] : Processing case $CASE
 
-    if [ $LSF ]; then
-        STDOUT_FN="$LOGD/$CASE.LSF.out"
-        STDERR_FN="$LOGD/$CASE.LSF.err"
-    else
-        STDOUT_FN="$LOGD/$CASE.out"
-        STDERR_FN="$LOGD/$CASE.err"
-    fi
+    STDOUT_FN="$LOGD/$CASE.out"
+    STDERR_FN="$LOGD/$CASE.err"
 
     CMD=$(get_cromwell_cmd $CWL $CASE $CROMWELL_CONFIG $STDOUT_FN $STDERR_FN)
     test_exit_status $SCRIPT
@@ -319,9 +314,8 @@ for CASE in $CASES; do
     fi
 
     if [ $LSF ]; then
-        # Note that in LSF mode, we actually want to write the std/stdout as reported
-        # here for use by log parsers, since the output of the BSUB command is trivial
-        LSF_LOGS="-e $LOGD/${CASE}.err -o $LOGD/${CASE}.out"
+        # capture stderr/out of bsub submission here:
+        LSF_LOGS="-e $LOGD/${CASE}.LSF.err -o $LOGD/${CASE}.LSF.out"
         CMD="$BSUB $LSFQ $LSF_ARGS $LSF_LOGS -a \"docker($LSF_IMAGE)\" $CMD "
     fi
 
