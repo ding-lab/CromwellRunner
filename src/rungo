@@ -314,7 +314,8 @@ for CASE in $CASES; do
         # finalize and compress run immediately after successful completion
         RT_CMD="$RUNTIDY -x finalize -m Autofinalizing -p $PROJECT $CASE"
         DT_CMD="$DATATIDY -F Succeeded -x compress -p $PROJECT $CASE"
-        CMD="$CMD && $RT_CMD && $DT_CMD"
+        # Wrap multiple commands in one call to bash
+        CMD="/bin/bash -c \"$CMD && $RT_CMD && $DT_CMD\""
     fi
 
     if [ $LSF ]; then
