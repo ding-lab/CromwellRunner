@@ -31,16 +31,19 @@ cases, it is important to run one case fully to completion first.
 ### Installation
 ```
 git clone https://github.com/ding-lab/TinDaisy
-git clone https://github.com/ding-lab/CromwellRunner.git PROJECT_NAME
+git clone --recurse-submodules https://github.com/ding-lab/CromwellRunner.git PROJECT_NAME
 ```
 where `PROJECT_NAME` is an arbitrary name for this particular run or batch.
 TinDaisy project is clones to have its CWL code be accessible, but other 
 workflows can also be used.
 
 ### Configuration
+
+NOTE: if running on MGI, make sure to NOT be inside a docker-interactive section
+
 1. Describe purpose of run in `README.project.md`
-2. `cp config/Definitions/Project.config.sh .` 
-   Alternatively, copy an appropriate Project.config.sh from an appropriate subdirectory of `example_workflows`
+2. `cp example_workflows/TinDaisy.hg19/Project.config.hg19.sh .` 
+   This is just an example file. Please edit to follow your project's specific needs (See step 3). Alternatively, copy another appropriate Project.config.sh from an appropriate subdirectory of `example_workflows`
 3. Edit `Project.config.sh`
     a. Define PROJECT with arbitrary name
     b. Define SYSTEM_CONFIG, COLLECTION_CONFIG, WORKFLOW_CONFIG with values appropriate for this workflow
@@ -52,14 +55,13 @@ workflows can also be used.
 6. `bash 30_make_config.sh`
 
 ### System setup
-1. `tmux new -s CromwellRunner`
-2. `bash 00_start_docker.sh `
+1. `bash 00A_start_docker.Cromwell.sh`
     where SYSTEM is MGI or compute1
     * TODO: consider incorporating [WUDocker](https://github.com/ding-lab/WUDocker) for docker startup
-3. `bash 05_start_cromwell_db_server.sh`
-4. `export CROMWELL_URL=http://localhost:8000 && export PATH=$PATH:./src`
+2. `bash 05_start_cromwell_db_server.sh`
+3. `export CROMWELL_URL=http://localhost:8000 && export PATH=$PATH:./src`
 5. If `runlog` and `datalog` files do not exist (and are not using common files), create these with,
-    `bash 35_make_data_run_logs.sh`
+    `bash 10_make_data_run_logs.sh`
 
 ### Start runs
 1. Test configuration by starting one "dry run" with, `bash 40_start_runs.sh -1d`
@@ -71,12 +73,11 @@ workflows can also be used.
       jobs consume a significant amount of disk space which is not cleaned until jobs are finalized.
    b. If running -F, test first to make sure `cq` returns without an error.  If it does not work, 
       runs will not be finalized.  
-3. Disconnect from tmux (CTRL-b d) to let jobs run in background
 
 ### Test progress of runs
 1. Output of runs is written to `./logs/CASE.out` and run progress may be tracked that way
 2. `cq` (described below) is a utility to query Cromwell database server to track runs and related information. This can be started in a separate terminal
-   using System setup steps 2 and 3 above.  Then, `cq` will provide status of all scheduled runs
+   using System setup steps 1 and 2 above.  Then, `cq` will provide status of all scheduled runs
 
 ### Finalize runs
 1. `bash 50_make_analysis_summary.sh` -- confirm this
@@ -188,6 +189,16 @@ and `sample_type` does not provide a unique UUID).  In this situation, passing
 "-U UUID_MAP" to `runplan` will bypass lookup of samples in BamMap and use the
 UUID of the tumor and normal obtained from `UUID_MAP` file (TSV with columns
 `CASE`, `TUMOR_UUID`, `NORMAL_UUID`).
+
+## canonical_BED (defined in config/Templates/YAML/tindaisy.template.yaml)
+
+BED file that defines the canonical chromosomes for your particular reference.
+You can create your own from your reference's .fai file as follows:
+
+`awk -F "\t" '{print $1"\t""0""\t"$2}' yourReference.fa.fai > TinDaisy/params/chrlist/yourReference.Regions.bed`
+
+`while read chr; do cat TinDaisy/params/chrlist/yourReference.Regions.bed | awk '$1=="'$chr'"' >> TinDaisy/params/chrlist/yourReference.callRegions.bed; done < TinDaisy/params/chrlist/yourReference.chrlist.txt`
+
 
 # Cromwell utility details
 
