@@ -6,14 +6,15 @@
 #   CWL_ROOT
 #   WORKFLOW_ROOT
 
-CWL="$CWL_ROOT/cwl/workflows/tindaisy.cwl"
+CWL="$CWL_ROOT/cwl/workflows/tindaisy-hotspot-proximity.cwl"
 # CWL output is used to find the principal output of workflow, i.e., what is reported with `cq output`.
 # It is a concatenation of the CWL filename and 'id' in 'outputs' section of CWL
 # this is no longer being used as `cq outputs` is preferred over `cq output`
 # CWL_OUTPUT="tindaisy.cwl.output_vcf"
 
 # template used for generating YAML files
-YAML_TEMPLATE="config/Templates/YAML/tindaisy.template.yaml"
+# This is being specified in Project.config.sh now
+#YAML_TEMPLATE="config/Templates/YAML/tindaisy.template.yaml"
 
 # These parameters used when finding data in BamMap
 ES="WXS"                            # experimental strategy

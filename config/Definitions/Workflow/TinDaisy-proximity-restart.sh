@@ -9,7 +9,8 @@
 CWL="$TD_ROOT/cwl/workflows/tindaisy-proximity-restart.cwl"
 
 # template used for generating YAML files
-YAML_TEMPLATE="config/Templates/YAML/tindaisy-proximity-restart.template.yaml"
+# This is being specified in Project.config.sh now
+#YAML_TEMPLATE="config/Templates/YAML/tindaisy-proximity-restart.template.yaml"
 
 # These parameters used when finding data in BamMap
 ES="WXS"                            # experimental strategy

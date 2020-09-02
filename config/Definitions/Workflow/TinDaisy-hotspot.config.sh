@@ -13,7 +13,8 @@ CWL="$CWL_ROOT/cwl/workflows/tindaisy-hotspot.cwl"
 # CWL_OUTPUT="tindaisy.cwl.output_vcf"
 
 # template used for generating YAML files
-YAML_TEMPLATE="config/Templates/YAML/tindaisy-hotspot.template.yaml"
+# This is being specified in Project.config.sh now
+#YAML_TEMPLATE="config/Templates/YAML/tindaisy-hotspot.template.yaml"
 
 # These parameters used when finding data in BamMap
 ES="WXS"                            # experimental strategy

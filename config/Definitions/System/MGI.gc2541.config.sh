@@ -39,7 +39,7 @@ DBSNP_ROOT="/gscmnt/gc7202/dinglab/common/databases/dbSNP_Filter"
 VEP_CACHE_ROOT="/gscmnt/gc7202/dinglab/common/databases/VEP"
 
 # CWL_ROOT is needed for CWL
-CWL_ROOT="/gscuser/mwyczalk/projects/TinDaisy/TinDaisy"
+CWL_ROOT="/gscuser/mwyczalk/projects/TinDaisy/TinDaisy.stable"
 # TinDaisy parameters relative to CWL_ROOT
 PARAM_ROOT="$CWL_ROOT/params"
 
