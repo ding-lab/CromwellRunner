@@ -255,7 +255,7 @@ function check_expected_status {
     # get case and WorkflowID, based on runlog parser in cromwell_utils.sh
     read MYCASE MYWID < <( getCaseWID $RID $RUNLOG )
     STATUS=$( $CQ -V -q status $MYWID )                               
-    if [ $STATUS != $ES ]; then
+    if [ "$STATUS" != "$ES" ]; then
         >&2 echo ERROR: Status of run $RID \( $STATUS \) differs from expected \( $ES \)
         >&2 echo "      " Tasks which delete data require all runs to have expected status \(-F\)
         >&2 echo "      " No run data has been altered
