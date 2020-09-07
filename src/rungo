@@ -294,13 +294,31 @@ for CASE in $CASES; do
     fi
 done
 
+# LSF log issues
+# We want the file LOGD/CASE.out to contain the verbose output of Cromwell for parsing by `cq`
+# and the LSF-generated output to got to LOGD/CASE.LSF.out
+# Log output for bsub submissions is defined something like,
+#   CMD="java cromwell.jar > STDOUT"
+#   bsub -o LSFOUT "CMD"
+# Have been getting inconsistencies in how to make this work, with commit b895ce057 breaking things
+# in some cases.  Refer to pre-b895ce057 approach as LOG A, post-b895ce057 as LOG B
+# LOG A works on MGI for TinDaisy.  Need to understand better situations where LOG B required (compute1?)
 
 for CASE in $CASES; do
     NOW=$(date)
     >&2 echo \[ $NOW \] : Processing case $CASE
 
-    STDOUT_FN="$LOGD/$CASE.out"
-    STDERR_FN="$LOGD/$CASE.err"
+# LOG A
+    if [ $LSF ]; then
+        STDOUT_FN="$LOGD/$CASE.LSF.out"
+        STDERR_FN="$LOGD/$CASE.LSF.err"
+    else
+        STDOUT_FN="$LOGD/$CASE.out"
+        STDERR_FN="$LOGD/$CASE.err"
+    fi
+# LOG B
+#    STDOUT_FN="$LOGD/$CASE.out"
+#    STDERR_FN="$LOGD/$CASE.err"
 
     CMD=$(get_cromwell_cmd $CWL $CASE $CROMWELL_CONFIG $STDOUT_FN $STDERR_FN)
     test_exit_status $SCRIPT
@@ -314,8 +332,16 @@ for CASE in $CASES; do
     fi
 
     if [ $LSF ]; then
+
+        # LOG A
+        # Note that in LSF mode, we actually want to write the std/stdout as reported
+        # here for use by log parsers, since the output of the BSUB command is trivial
+        LSF_LOGS="-e $LOGD/${CASE}.err -o $LOGD/${CASE}.out"
+
+        # LOG B
         # capture stderr/out of bsub submission here:
-        LSF_LOGS="-e $LOGD/${CASE}.LSF.err -o $LOGD/${CASE}.LSF.out"
+        # LSF_LOGS="-e $LOGD/${CASE}.LSF.err -o $LOGD/${CASE}.LSF.out"
+
         CMD="$BSUB $LSFQ $LSF_ARGS $LSF_LOGS -a \"docker($LSF_IMAGE)\" $CMD "
     fi
 
