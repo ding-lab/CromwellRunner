@@ -192,26 +192,27 @@ function get_cromwell_cmd {
         STDERR_REDIRECT="2> $STDERR_FN"
     fi
     
-    CMD="$JAVA $JAVA_OPTS -Dconfig.file=$CROMWELL_CONFIG $DB_ARGS -jar $CROMWELL_JAR run -t cwl -i $YAML $CWL > $STDOUT_FN $STDERR_REDIRECT"
+    CMD="$JAVA $JAVA_OPTS -Dconfig.file=$CROMWELL_CONFIG $DB_ARGS -jar $CROMWELL_JAR run -t cwl -i $YAML $CWL >> $STDOUT_FN $STDERR_REDIRECT"
 
     echo "$CMD"
 }
 
 # -G CWL_ROOT: write to STDERR contents of `git log -1` and `git remote -v` for git repository at given CWL_ROOT
+# This is written to log file of every run
 function write_git {
     CWL_ROOT=$1
 
-    >&2 echo "## Details of git project CWL_ROOT $CWL_ROOT"
-    >&2 echo "## git log -1 "
-    >&2 echo "`git -C $CWL_ROOT log -1`"
-    >&2 echo "## git remote -v"
-    >&2 echo "`git -C $CWL_ROOT remote -v` "
-    >&2 echo "## end of git details"
+    echo "## Details of git project CWL_ROOT $CWL_ROOT"
+    echo "## git log -1 "
+    echo "`git -C $CWL_ROOT log -1`"
+    echo "## git remote -v"
+    echo "`git -C $CWL_ROOT remote -v` "
+    echo "## end of git details"
 }
 
-if [ $CWL_ROOT ]; then
-    write_git $CWL_ROOT
-fi
+#if [ $CWL_ROOT ]; then
+#    write_git $CWL_ROOT
+#fi
 
 
 if [ -z $CWL ]; then
@@ -283,6 +284,10 @@ if [ $DO_FINALIZE ]; then
 fi
 
 # Check to make sure log files do not exist.  Quit if they do, othewise they will be overwritten
+# Write git details to every log output file
+if [ $CWL_ROOT ]; then
+    >&2 echo Writing git log of $CWL_ROOT to $LOGD/CASE.out
+fi
 for CASE in $CASES; do
     STDOUT_FN="$LOGD/$CASE.out"
     STDERR_FN="$LOGD/$CASE.err"
@@ -291,6 +296,14 @@ for CASE in $CASES; do
         >&2 echo ERROR: Log files $STDOUT_FN and/or $STDERR_FN exist
         >&2 echo Quitting 
         exit 1
+    fi
+
+    # Now write git info to log file
+    if [ $CWL_ROOT ]; then
+        write_git $CWL_ROOT > $STDOUT_FN
+    fi
+    if [ $JUSTONE ]; then
+        break
     fi
 done
 
