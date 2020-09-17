@@ -1,0 +1,72 @@
+include required(classpath("application"))
+
+# Specific to MGI:
+# -M memory_kb 
+# -q research-hpc
+#
+# Compute1
+# -M memory_mb 
+# -q general
+
+
+backend {
+  default = "LSF"
+  providers {
+    LSF {
+      actor-factory = "cromwell.backend.impl.sfs.config.ConfigBackendLifecycleActorFactory"
+      config {
+        runtime-attributes = """
+        Int cpu = 1
+        Int? memory_kb
+        Int? memory_mb
+        String? docker
+        """
+        submit = """
+        bsub \
+        -J ${job_name} \
+        -cwd ${cwd} \
+        -o /dev/null \
+        -e ${err + ".%J.lsf"} \
+        ${"-M " + memory_kb} \
+        ${"-n " + cpu} \
+        ${"-R \"select[mem>" + memory_mb + "] rusage[mem=" + memory_mb + "]\""} \
+        /bin/bash ${script}
+        """
+        submit-docker = """
+        LSF_DOCKER_VOLUMES=${cwd}:${docker_cwd} \
+        bsub \
+        -J ${job_name} \
+        -cwd ${cwd} \
+        -o /dev/null \
+        -e ${err + ".%J.lsf"} \
+        ${"-a \"docker(" + docker + ")\""} \
+        -q research-hpc \
+        ${"-M " + memory_kb} \
+        ${"-n " + cpu} \
+        ${"-R \"select[mem>" + memory_mb + "] rusage[mem=" + memory_mb + "]\""} \
+        /bin/bash ${script}
+        """
+
+        kill = "bkill ${job_id}"
+        docker-kill = "bkill ${job_id}"
+        check-alive = "bjobs -noheader -o stat ${job_id} | /bin/grep 'PEND\\|RUN'"
+        job-id-regex = "Job <(\\d+)>.*"
+      }
+    }
+  }
+}
+database {
+  profile = "slick.jdbc.MySQLProfile$"
+  db {
+    driver = "com.mysql.jdbc.Driver"
+    url = "jdbc:mysql://genome-cromwell.gsc.wustl.edu/cromwell?rewriteBatchedStatements=true&useSSL=false"
+    user = "cromwell"
+    password = "kc11-18da-L18K"
+    connectionTimeout = 5000
+    numThreads = 5
+  }
+}
+webservice {
+  port = 8000
+  interface = 127.0.0.1
+}

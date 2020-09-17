@@ -1,5 +1,14 @@
 include required(classpath("application"))
 
+# Specific to MGI:
+# -M memory_kb 
+# -q research-hpc
+#
+# Compute1
+# -M memory_mb 
+# -q general
+
+
 backend {
   default = "LSF"
   providers {
@@ -12,19 +21,17 @@ backend {
         Int? memory_mb
         String? docker
         """
-
         submit = """
         bsub \
         -J ${job_name} \
         -cwd ${cwd} \
         -o /dev/null \
         -e ${err + ".%J.lsf"} \
-        ${"-M " + memory_kb} \
+        ${"-M " + memory_mb} \
         ${"-n " + cpu} \
         ${"-R \"select[mem>" + memory_mb + "] rusage[mem=" + memory_mb + "]\""} \
         /bin/bash ${script}
         """
-
         submit-docker = """
         LSF_DOCKER_VOLUMES=${cwd}:${docker_cwd} \
         bsub \
@@ -33,8 +40,8 @@ backend {
         -o /dev/null \
         -e ${err + ".%J.lsf"} \
         ${"-a \"docker(" + docker + ")\""} \
-        -q research-hpc \
-        ${"-M " + memory_kb} \
+        -q general \
+        ${"-M " + memory_mb} \
         ${"-n " + cpu} \
         ${"-R \"select[mem>" + memory_mb + "] rusage[mem=" + memory_mb + "]\""} \
         /bin/bash ${script}
