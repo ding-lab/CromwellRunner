@@ -5,7 +5,6 @@
 
 # TODO: check if server is running / available and report reasonable error message
 # TODO: implement -d debug output for all queries, based on get_output implementation
-# TODO: Consider geting rid of output, return just 'outputs' - much simpler
 
 read -r -d '' USAGE <<'EOF'
 Cromwell Query: Print out per-case run statistics. Specific to cromwell runs registered with MGI Cromwell database
@@ -18,7 +17,7 @@ Options:
 -d: Print debug output
 -v: Indicate progress in stderr
 -1: Stop after one
--k CASES_FN: file with list of all cases, one per line, used when RID1 not defined. Default: config/cases.dat
+-k CASES_FN: file with list of all cases, one per line, used when RID1 not defined. Default: dat/cases.dat
 -q QUERY: type of query, one of 'status', 'logs', 'workflowRoot', 'timing', 'duration', 'output', 'outputs', 'runlog', 'url'.  Default is `status`
 -s STEP: define step of interest for use with 'logs' query
 -V: output query result only only (i.e., don't write case and workflow ID)
@@ -26,12 +25,12 @@ Options:
 -S: retain only cases where Status is Succeeded
 -T: Skip cases where logs are stashed 
 -D: Do not access database.  Limited functionality: status is unknown, best guesses are made for other queries.  TODO: complete implementation
--C CROMWELL_URL: define the cromwell URL.  Default: https://genome-cromwell.gsc.wustl.edu
+-C CROMWELL_URL: define the cromwell URL.  Default: http://localhost:8000
 -L RUNLOG: Run log file. Default is "./logs/runlog.dat".  Can be obtained from environment variable
 #-W CWL_OUTPUT: ID of principal output of workflow, used for parsing JSON output. Default is "tindaisy.cwl.output_vcf"
 
 RID is RunID, and can be either a Case or a WorkflowID.  Examples:
-* `cq` - will return status for all cases defined in `config/cases.dat`
+* `cq` - will return status for all cases defined in `dat/cases.dat`
 * `cq CASE1 CASE2 CASE3` - returns status of runs for three cases.  TODO: discuss how this looked up
 * `cq WID1 WID2` - returns status for two runs with given WorkflowIDs
 
@@ -70,7 +69,8 @@ SCRIPT=$(basename $0)
 
 # read default from environment variable if possible, otherwise use default
 if [ -z $CROMWELL_URL ]; then
-    CROMWELL_URL="https://genome-cromwell.gsc.wustl.edu"
+#    CROMWELL_URL="https://genome-cromwell.gsc.wustl.edu"
+    CROMWELL_URL="http://localhost:8000"
 fi
 CURL_ARG="-k"   # arguments passed to all cromwell db calls 
 
@@ -80,7 +80,7 @@ if [ -z $RUNLOG ]; then
 fi
 
 # Defaults
-CASES_FN="config/cases.dat"
+CASES_FN="dat/cases.dat"
 QUERY="status"
 #CWL_OUTPUT="tindaisy.cwl.output_vcf"
 

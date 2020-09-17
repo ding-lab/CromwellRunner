@@ -18,7 +18,7 @@ Optional options
 -1: stop after one case processed.
 -0: do not process any cases, exit after initialization
 -x TASK: Execute given task.  Values: 'query' (default), 'register', 'stash', 'finalize'
--k CASES_FN: file with list of all cases, one per line, used when CASE1 not defined. Default: config/cases.dat
+-k CASES_FN: file with list of all cases, one per line, used when CASE1 not defined. Default: dat/cases.dat
 -g LOGD: directory where runtime output (CASE.out, CASE.err, CASE.log ) can be found.  Default "./logs"
 -T STASHD: root directory where we write archived logs.  Default "./logs/stashed"
 -L RUNLOG: Run log file. Default is "./logs/runlog.dat".  Has to exist unless -f is set.  Can be obtained from environment variable
@@ -96,7 +96,7 @@ STASHD="./logs/stashed"     # where we put stashed logs
 CQD="./src"
 
 YAMLD="./yaml"
-CASES_FN="config/cases.dat"
+CASES_FN="dat/cases.dat"
 QUIET=1
 
 # read default from environment variable if possible, otherwise use default

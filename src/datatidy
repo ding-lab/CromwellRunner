@@ -16,7 +16,7 @@ Optional options
 -l DATALOG: Data log file.  Default: is "./logs/datalog.dat". Must exist unless -f is set. Can be obtained from environment variable
 -L RUNLOG: Run log file. Default is "./logs/runlog.dat".  Can be obtained from environment variable
 -f: Create data log file if it does not exist
--k CASES_FN: file with list of all cases, one per line, used when CASE1 not defined. Default: config/cases.dat
+-k CASES_FN: file with list of all cases, one per line, used when CASE1 not defined. Default: dat/cases.dat
 -p PROJECT: Project name associated with this analysis
 -m NOTE: A note added to data log file for each case
 -x TASK: Execute given task.  Values: 'query' (default), 'original', 'inputs', 'compress', 'prune', 'final', 'wipe', `uncompress_restart`
@@ -87,7 +87,7 @@ source src/cromwell_utils.sh
 SCRIPT=$(basename $0)
 SCRIPT_PATH=$(dirname $0)
 
-CASES_FN="config/cases.dat"
+CASES_FN="dat/cases.dat"
 NOTE=""
 TASK="query"
 

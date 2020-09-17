@@ -29,4 +29,4 @@ CONFIG_FILE="dat/cromwell-config-db.dat"
 
 # List of cases to analyze.  This has to be created
 # may want to reconsider the use and implementation of case list
-CASES_FN="config/cases.dat"
+CASES_FN="dat/cases.dat"

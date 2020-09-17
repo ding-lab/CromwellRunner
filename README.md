@@ -49,7 +49,7 @@ NOTE: if running on MGI, make sure to NOT be inside a docker-interactive section
     b. Define SYSTEM_CONFIG, COLLECTION_CONFIG, WORKFLOW_CONFIG with values appropriate for this workflow
       * See config/README.configuration.md
     c. See below (section) for additional details about configuration files.
-4. Create file `config/cases.dat` with list of cases which will be processed
+4. Create file `dat/cases.dat` with list of cases which will be processed
 5. `bash 20_make_yaml.sh`
     * Running `src/rungo` will provide preview of anticipated runs, i.e., a way to double-check YAML file creation
 6. `bash 30_make_config.sh`
