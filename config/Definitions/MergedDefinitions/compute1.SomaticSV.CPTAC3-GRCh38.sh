@@ -1,6 +1,7 @@
 # This file is created essentially as,
 # cat config/Definitions/System/compute1.SomaticSV.config.sh config/Definitions/Collection/CPTAC3-GRCh38.config.sh config/Definitions/Workflow/SomaticSV.config.sh > compute1.SomaticSV.CPTAC3-GRCh38.sh
-# with some internal formatting added
+# with some internal formatting added.  Moving to a merged file with internal structure which follows
+# the system / collection / workflow divisions for simplicity of having one configuration file
 
 ###############################################################################################
 # System config: config/Definitions/System/compute1.SomaticSV.config.sh
@@ -14,7 +15,7 @@ LSFQ="general"              # for MGI, queue is "research-hpc"
 LSF_ARGS="-B \"-g $LSF_GROUP\"  -M -q $LSFQ"
 
 
-# This is based on CromwellRunner
+# This is in CromwellRunner container
 CROMWELL_JAR="/usr/local/cromwell/cromwell-47.jar"
 
 # Workflow root - where Cromwell output goes.  This value replaces text WORKFLOW_ROOT in CONFIG_TEMPLATE,
@@ -33,8 +34,13 @@ BAMMAP="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog/BamMa
 REF_ROOT="/storage1/fs1/dinglab/Active/Resources/References"
 
 # CWL_ROOT is needed for CWL.  It is the container path to where project is installed
+# This is also used in rungo to get git status of project for tracking purposes
 CWL_ROOT="/home/m.wyczalkowski/Projects/SomaticSV"
-#CWL_ROOT="/usr/local/SomaticSV"
+
+# path to CromwellRunner and its scripts.  We map local path to absolute path in container
+# so all scripts know where to find these
+CQ_ROOT_H="."
+CQ_ROOT_C="/usr/local/CromwellRunner"
 
 # Using common datalog file
 export DATALOG="/storage1/fs1/m.wyczalkowski/Active/cromwell-data/CromwellRunner/datalog.dat"
@@ -46,15 +52,13 @@ VOLUME_MAPPING=" \
 /storage1/fs1/m.wyczalkowski/Active \
 /storage1/fs1/dinglab/Active \
 /storage1/fs1/home1/Active/home/m.wyczalkowski:/home/m.wyczalkowski \
+$CQ_ROOT_H:$CQ_ROOT_C \
 /scratch1/fs1/dinglab/m.wyczalkowski/cromwell-data"
 
 ###############################################################################################
 # Collection Config: config/Definitions/Collection/CPTAC3-GRCh38.config.sh
 ###############################################################################################
 #
-# IMPORTANT: TinDaisy-specific parameters are defined in CPTAC3-GRCh38.TinDaisy.config.sh
-# this is for SomaticSV 
-# It has a generic name because it is not specialized to any workflow
 
 # This path below is for CPTAC3-standard GRCh38 reference
 REF_PATH="$REF_ROOT/GRCh38.d1.vd1/GRCh38.d1.vd1.fa"

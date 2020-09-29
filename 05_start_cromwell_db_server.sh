@@ -4,14 +4,10 @@
 # Only one server should be running at once.  It should be run after `gsub` (after 0_start_docker.sh)
 # and should exit when the docker container exits
 
-CROMWELL="/usr/local/cromwell/cromwell-47.jar"
-CONFIG="config/server.cromwell.config"
+source Project.config.sh
+bash cromwell-server/spawn_cromwell_server.sh $SYSTEM
 
-echo Starting local instance of cromwell server
-/usr/bin/java -Dconfig.file=$CONFIG -jar $CROMWELL server >/dev/null & 
-
-echo Please run the following:
-echo
-echo export CROMWELL_URL=http://localhost:8000
-echo export PATH="\$PATH:./src"
+#echo Please run the following:
+#echo
+#echo export PATH="\$PATH:./src"
 
