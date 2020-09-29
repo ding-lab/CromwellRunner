@@ -17,7 +17,7 @@ Optional options
 -h: print usage information
 -d: dry run: print commands but do not run
 -1 : stop after one case processed.
--k CASES_FN: file with list of all cases, one per line, used when CASE1 not defined. Default: dat/cases.dat
+-k CASES_FN: file with list of all cases, one per line, used when CASE1 not defined. Default: config/cases.dat
 -y YAMLD: directory with YAML input files (named CASE.yaml).  Default "./yaml"
 -g LOGD: directory where runtime output (CASE.out, CASE.err, CASE.log ) written.  Default "./logs"
 -J N: run N tasks in parallel.  If 0, disable parallel mode. Default 0
@@ -76,7 +76,7 @@ LOGD="./logs"
 DB_ARGS="-Djavax.net.ssl.trustStorePassword=changeit -Djavax.net.ssl.trustStore=/gscmnt/gc2560/core/genome/cromwell/cromwell.truststore"
 CROMWELL_JAR="/opt/cromwell.jar"
 JAVA="/usr/bin/java"
-CASES_FN="dat/cases.dat"
+CASES_FN="config/cases.dat"
 BSUB="bsub"
 
 # for now this is hard coded
@@ -192,27 +192,26 @@ function get_cromwell_cmd {
         STDERR_REDIRECT="2> $STDERR_FN"
     fi
     
-    CMD="$JAVA $JAVA_OPTS -Dconfig.file=$CROMWELL_CONFIG $DB_ARGS -jar $CROMWELL_JAR run -t cwl -i $YAML $CWL >> $STDOUT_FN $STDERR_REDIRECT"
+    CMD="$JAVA $JAVA_OPTS -Dconfig.file=$CROMWELL_CONFIG $DB_ARGS -jar $CROMWELL_JAR run -t cwl -i $YAML $CWL > $STDOUT_FN $STDERR_REDIRECT"
 
     echo "$CMD"
 }
 
 # -G CWL_ROOT: write to STDERR contents of `git log -1` and `git remote -v` for git repository at given CWL_ROOT
-# This is written to log file of every run
 function write_git {
     CWL_ROOT=$1
 
-    echo "## Details of git project CWL_ROOT $CWL_ROOT"
-    echo "## git log -1 "
-    echo "`git -C $CWL_ROOT log -1`"
-    echo "## git remote -v"
-    echo "`git -C $CWL_ROOT remote -v` "
-    echo "## end of git details"
+    >&2 echo "## Details of git project CWL_ROOT $CWL_ROOT"
+    >&2 echo "## git log -1 "
+    >&2 echo "`git -C $CWL_ROOT log -1`"
+    >&2 echo "## git remote -v"
+    >&2 echo "`git -C $CWL_ROOT remote -v` "
+    >&2 echo "## end of git details"
 }
 
-#if [ $CWL_ROOT ]; then
-#    write_git $CWL_ROOT
-#fi
+if [ $CWL_ROOT ]; then
+    write_git $CWL_ROOT
+fi
 
 
 if [ -z $CWL ]; then
@@ -284,10 +283,6 @@ if [ $DO_FINALIZE ]; then
 fi
 
 # Check to make sure log files do not exist.  Quit if they do, othewise they will be overwritten
-# Write git details to every log output file
-if [ $CWL_ROOT ]; then
-    >&2 echo Writing git log of $CWL_ROOT to $LOGD/CASE.out
-fi
 for CASE in $CASES; do
     STDOUT_FN="$LOGD/$CASE.out"
     STDERR_FN="$LOGD/$CASE.err"
@@ -297,41 +292,15 @@ for CASE in $CASES; do
         >&2 echo Quitting 
         exit 1
     fi
-
-    # Now write git info to log file
-    if [ $CWL_ROOT ]; then
-        write_git $CWL_ROOT > $STDOUT_FN
-    fi
-    if [ $JUSTONE ]; then
-        break
-    fi
 done
 
-# LSF log issues
-# We want the file LOGD/CASE.out to contain the verbose output of Cromwell for parsing by `cq`
-# and the LSF-generated output to got to LOGD/CASE.LSF.out
-# Log output for bsub submissions is defined something like,
-#   CMD="java cromwell.jar > STDOUT"
-#   bsub -o LSFOUT "CMD"
-# Have been getting inconsistencies in how to make this work, with commit b895ce057 breaking things
-# in some cases.  Refer to pre-b895ce057 approach as LOG A, post-b895ce057 as LOG B
-# LOG A works on MGI for TinDaisy.  Need to understand better situations where LOG B required (compute1?)
 
 for CASE in $CASES; do
     NOW=$(date)
     >&2 echo \[ $NOW \] : Processing case $CASE
 
-# LOG A
-    if [ $LSF ]; then
-        STDOUT_FN="$LOGD/$CASE.LSF.out"
-        STDERR_FN="$LOGD/$CASE.LSF.err"
-    else
-        STDOUT_FN="$LOGD/$CASE.out"
-        STDERR_FN="$LOGD/$CASE.err"
-    fi
-# LOG B
-#    STDOUT_FN="$LOGD/$CASE.out"
-#    STDERR_FN="$LOGD/$CASE.err"
+    STDOUT_FN="$LOGD/$CASE.out"
+    STDERR_FN="$LOGD/$CASE.err"
 
     CMD=$(get_cromwell_cmd $CWL $CASE $CROMWELL_CONFIG $STDOUT_FN $STDERR_FN)
     test_exit_status $SCRIPT
@@ -340,21 +309,14 @@ for CASE in $CASES; do
         # finalize and compress run immediately after successful completion
         RT_CMD="$RUNTIDY -x finalize -m Autofinalizing -p $PROJECT $CASE"
         DT_CMD="$DATATIDY -F Succeeded -x compress -p $PROJECT $CASE"
-        # Wrap multiple commands in one call to bash
-        CMD="/bin/bash -c \"$CMD && $RT_CMD && $DT_CMD\""
+        CMD="$CMD && $RT_CMD && $DT_CMD"
     fi
+        # Wrap all commands in one call to bash
+    CMD="/bin/bash -c \"$CMD\""
 
     if [ $LSF ]; then
-
-        # LOG A
-        # Note that in LSF mode, we actually want to write the std/stdout as reported
-        # here for use by log parsers, since the output of the BSUB command is trivial
-        LSF_LOGS="-e $LOGD/${CASE}.err -o $LOGD/${CASE}.out"
-
-        # LOG B
         # capture stderr/out of bsub submission here:
-        # LSF_LOGS="-e $LOGD/${CASE}.LSF.err -o $LOGD/${CASE}.LSF.out"
-
+        LSF_LOGS="-e $LOGD/${CASE}.LSF.err -o $LOGD/${CASE}.LSF.out"
         CMD="$BSUB $LSFQ $LSF_ARGS $LSF_LOGS -a \"docker($LSF_IMAGE)\" $CMD "
     fi
 

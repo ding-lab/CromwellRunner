@@ -2,12 +2,23 @@
 
 * Improve datatidy / runtidy 
   * make simple for running first time
-  * Consolidate into one call
-  * incorporate pre-staging to write inputs to scratch and post-staging to write outputs back to storage
-* Improve parallel models
-  * use job groups to control number jobs running on LSF systems
-  * See importGDC as model: https://github.com/ding-lab/importGDC.CPTAC3.git
+  * Consolidate into one call 
+    * cq-tidy - 
+        * script which delegates to datatidy and runtidy
+        * responsible for setting up datalog / runlog
+* incorporate pre-staging to write inputs to scratch and post-staging to write outputs back to storage
+    * post-staging could be responsibility of datatidy
+        * post-staging could be just -x compress, but with a different output directory and without deletion
+    * pre-staging would be in runplan, since that is responsible for writing YAML
+        * directories staged based on case name
+        * how to deal with commmon large files (reference?)
+        * This script would presumably be responsible for cleaning up after successful completion?
 * Clean up layout to incorporate restarts and de novo runs
+* Fix cleanup in LSF
+  * currently, -F does not work when submitted 
+  * Simpler alternative is already implemented, where the job `bsub /bin/bash -c "cmd1 && cmd2"` is submitted.
+    See notes in /gscuser/mwyczalk/projects/CromwellRunner/TinDaisy/10_TCGA-TCGT.20200622
+    Getting different errors, continue debugging
 
 
 # Previous notes

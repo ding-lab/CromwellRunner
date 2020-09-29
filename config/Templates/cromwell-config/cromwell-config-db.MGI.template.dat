@@ -67,7 +67,7 @@ database {
     url = "jdbc:mysql://genome-cromwell.gsc.wustl.edu/cromwell?rewriteBatchedStatements=true&useSSL=true"
     user = "cromwell"
     password = "kc11-18da-L18K"
-    connectionTimeout = 60000
+    connectionTimeout = 180000
     maxConnections = 10
     numThreads = 10
   }
