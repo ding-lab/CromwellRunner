@@ -37,6 +37,8 @@ Optional options
 -M : use LSF / bsub to submit jobs
 -q LSFQ : bsub queue
 -B LSF_ARGS : arbitrary args to pass to bsub. pass LSF Job Groups this way
+-S SYSTEM: spawns Cromwell server prior to starting Cromwell run by calling `cromwell-server/spawn_cromwell_server.sh`
+    SYSTEM is one of MGI or compute1 (required because these have different configuration files)
 
 If CASE is - then read CASE from STDIN.  If CASE is not defined, read from CASES_FN file.
 
@@ -50,6 +52,11 @@ https://confluence.gsc.wustl.edu/pages/viewpage.action?pageId=27592450
 
 Cromwell configuration, including database connection, is described 
     https://confluence.ris.wustl.edu/pages/viewpage.action?spaceKey=CI&title=Cromwell
+
+Cromwell server may be spawned when finalizing runs so that `cq` can report on status of runs
+It is important that run status is known before any data deleted.  Script for starting
+server and configuration files hard-coded in `cromwell-server/spawn_cromwell_server.sh`
+
 EOF
 
 # Background on `parallel` and details about blocking / semaphores here:
@@ -78,11 +85,13 @@ CROMWELL_JAR="/opt/cromwell.jar"
 JAVA="/usr/bin/java"
 CASES_FN="config/cases.dat"
 BSUB="bsub"
+SPAWN_CROMWELL="cromwell-server/spawn_cromwell_server.sh"
+
 
 # for now this is hard coded
 LSF_IMAGE="mwyczalkowski/cromwell-runner"
 
-while getopts ":W:y:hd1J:g:eC:D:R:j:k:c:FX:p:L:l:G:Mq:B:" opt; do
+while getopts ":W:y:hd1J:g:eC:D:R:j:k:c:FX:p:L:l:G:Mq:B:S:" opt; do
   case $opt in
     h) 
       echo "$USAGE"
@@ -157,6 +166,9 @@ while getopts ":W:y:hd1J:g:eC:D:R:j:k:c:FX:p:L:l:G:Mq:B:" opt; do
       ;;
     B)  
       LSF_ARGS="$LSF_ARGS $OPTARG"
+      ;;
+    S)  
+      SPAWN_SYSTEM="$OPTARG"
       ;;
     \?)
       >&2 echo "Invalid option: -$OPTARG" 
@@ -310,6 +322,13 @@ for CASE in $CASES; do
         RT_CMD="$RUNTIDY -x finalize -m Autofinalizing -p $PROJECT $CASE"
         DT_CMD="$DATATIDY -F Succeeded -x compress -p $PROJECT $CASE"
         CMD="$CMD && $RT_CMD && $DT_CMD"
+
+        # Start Cromwell Server prior to Cromwell run so that it is running and available when
+        # finalizing run
+        if [ "$SPAWN_SYSTEM" ]; then
+            SPAWN_CMD="$SPAWN $SPAWN_SYSTEM"
+            CMD="$SPAWN_CMD && $CMD"
+        fi
     fi
         # Wrap all commands in one call to bash
     CMD="/bin/bash -c \"$CMD\""

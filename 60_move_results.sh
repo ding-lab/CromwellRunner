@@ -1,5 +1,5 @@
-
-# Need to move all data from scratch volume to storage volume
+# script specific to compute 1 to move all data from scratch volume to storage volume
+# at the end of the run
 # Also, update dat/analysis_summary.dat file
 # write dat/analysis_summary.unstaged.dat
 
