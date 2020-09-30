@@ -11,7 +11,7 @@
 PARAMS="Project.config.sh"
 
 >&2 echo Writing YAML files
-CMD="src/runplan -x yaml -P $PARAMS $@ "
+CMD="bash src/runplan -x yaml -P $PARAMS $@ "
 
 >&2 echo Running: $CMD
 eval $CMD

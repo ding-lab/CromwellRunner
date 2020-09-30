@@ -17,7 +17,7 @@ Optional options
 -h: print usage information
 -d: dry run: print commands but do not run
 -1 : stop after one case processed.
--k CASES_FN: file with list of all cases, one per line, used when CASE1 not defined. Default: config/cases.dat
+-k CASES_FN: file with list of all cases, one per line, used when CASE1 not defined. Default: dat/cases.dat
 -y YAMLD: directory with YAML input files (named CASE.yaml).  Default "./yaml"
 -g LOGD: directory where runtime output (CASE.out, CASE.err, CASE.log ) written.  Default "./logs"
 -J N: run N tasks in parallel.  If 0, disable parallel mode. Default 0
@@ -34,6 +34,7 @@ Optional options
 -L RUNLOG: Run log file used by runtidy if -F defined.  Can be obtained from environment variable
 -l DATALOG: Data log file used by datatidy if -F defined.  Can be obtained from environment variable
 -G CWL_ROOT: write to STDERR contents of `git log -1` and `git remote -v` for git repository at given CWL_ROOT
+   This must be path visible on host prior to docker volume mapping
 -M : use LSF / bsub to submit jobs
 -q LSFQ : bsub queue
 -B LSF_ARGS : arbitrary args to pass to bsub. pass LSF Job Groups this way
@@ -83,9 +84,9 @@ LOGD="./logs"
 DB_ARGS="-Djavax.net.ssl.trustStorePassword=changeit -Djavax.net.ssl.trustStore=/gscmnt/gc2560/core/genome/cromwell/cromwell.truststore"
 CROMWELL_JAR="/opt/cromwell.jar"
 JAVA="/usr/bin/java"
-CASES_FN="config/cases.dat"
+CASES_FN="dat/cases.dat"
 BSUB="bsub"
-SPAWN_CROMWELL="cromwell-server/spawn_cromwell_server.sh"
+SPAWN_CROMWELL="bash cromwell-server/spawn_cromwell_server.sh"
 
 
 # for now this is hard coded
@@ -326,7 +327,7 @@ for CASE in $CASES; do
         # Start Cromwell Server prior to Cromwell run so that it is running and available when
         # finalizing run
         if [ "$SPAWN_SYSTEM" ]; then
-            SPAWN_CMD="$SPAWN $SPAWN_SYSTEM"
+            SPAWN_CMD="$SPAWN_CROMWELL $SPAWN_SYSTEM"
             CMD="$SPAWN_CMD && $CMD"
         fi
     fi

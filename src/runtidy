@@ -179,10 +179,10 @@ done
 shift $((OPTIND-1))
 
 if [ -z $CQD ]; then
-    CQ="cq"
+    CQ="bash cq"
     DATATIDY="datatidy"
 else
-    CQ="$CQD/cq"
+    CQ="bash $CQD/cq"
     DATATIDY="$CQD/datatidy"
 fi
 
@@ -367,6 +367,7 @@ fi
 for CASE in $CASES; do
 
     STATUS=$( $CQ -V -q status $CASE )
+    test_exit_status $SCRIPT
     case "$TASK" in
       "query")
         do_query $CASE  

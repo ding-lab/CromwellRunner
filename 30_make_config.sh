@@ -22,4 +22,4 @@ source $PARAMS
 >&2 echo Writing Cromwell config file to $CONFIG_FILE
 
 mkdir -p $(dirname $CONFIG_FILE)
-src/make_config.sh $CONFIG_TEMPLATE $WORKFLOW_ROOT > $CONFIG_FILE
+bash src/make_config.sh $CONFIG_TEMPLATE $WORKFLOW_ROOT > $CONFIG_FILE

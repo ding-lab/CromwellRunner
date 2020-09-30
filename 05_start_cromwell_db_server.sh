@@ -7,7 +7,6 @@
 source Project.config.sh
 bash cromwell-server/spawn_cromwell_server.sh $SYSTEM
 
-#echo Please run the following:
-#echo
-#echo export PATH="\$PATH:./src"
+echo Suggestion:
+echo export PATH="\$PATH:./src"
 

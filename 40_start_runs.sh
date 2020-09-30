@@ -18,7 +18,7 @@ DB_ARGS="-Djavax.net.ssl.trustStorePassword=changeit -Djavax.net.ssl.trustStore=
 #ARGS="-F"
 
 # spawning cromwell server (-S) happens only if -F is defined by user
-ARGS="$ARGS -X -Xmx10g -G $CWL_ROOT -D \"$DB_ARGS\" -c $CQ_ROOT_C -S $SYSTEM"
+ARGS="$ARGS -X -Xmx10g -G $CWL_ROOT_C -D \"$DB_ARGS\" -c $CQ_ROOT_C -S $SYSTEM"
 
 CMD="bash src/rungo $ARGS $LSF_ARGS -c src -p $PROJECT -R $CROMWELL_JAR -W $CWL -C $CONFIG_FILE $@"
 >&2 echo Running: $CMD
