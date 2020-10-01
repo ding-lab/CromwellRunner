@@ -100,9 +100,9 @@ if [ -z $RUNLOG ]; then
 fi
 
 if [ -z $CQD ]; then
-    CQ="src/cq"
+    CQ="bash src/cq"
 else
-    CQ="$CQD/cq"
+    CQ="bash $CQD/cq"
 fi
 
 while getopts ":hd1l:L:k:m:c:x:wF:p:fP:" opt; do

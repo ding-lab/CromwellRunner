@@ -180,10 +180,10 @@ shift $((OPTIND-1))
 
 if [ -z $CQD ]; then
     CQ="bash cq"
-    DATATIDY="datatidy"
+    DATATIDY="bash datatidy"
 else
     CQ="bash $CQD/cq"
-    DATATIDY="$CQD/datatidy"
+    DATATIDY="bash $CQD/datatidy"
 fi
 
 # note about adding new tasks or modifying existing ones:

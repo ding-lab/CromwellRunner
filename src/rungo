@@ -245,11 +245,11 @@ CMD="mkdir -p $LOGD"
 run_cmd "$CMD" $DRYRUN
 
 if [ -z $CQD ]; then
-    RUNTIDY="runtidy $RUNTIDY_ARG"
-    DATATIDY="datatidy $DATATIDY_ARG"
+    RUNTIDY="bash runtidy $RUNTIDY_ARG"
+    DATATIDY="bash datatidy $DATATIDY_ARG"
 else
-    RUNTIDY="$CQD/runtidy -c $CQD $RUNTIDY_ARG"
-    DATATIDY="$CQD/datatidy -c $CQD $DATATIDY_ARG"
+    RUNTIDY="bash $CQD/runtidy -c $CQD $RUNTIDY_ARG"
+    DATATIDY="bash $CQD/datatidy -c $CQD $DATATIDY_ARG"
 fi
 
 # Used for `parallel` job groups 
