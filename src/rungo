@@ -313,7 +313,13 @@ for CASE in $CASES; do
 
     # Now write git info to log file
     if [ $CWL_ROOT ]; then
-        write_git $CWL_ROOT > $STDOUT_FN
+        if [ "$DRYRUN" == "d" ]; then
+            >&2 echo Dryrun: write_git \$CWL_ROOT \> \$STDOUT_FN
+        else
+#            >&2 echo Running: write_git \$CWL_ROOT \> \$STDOUT_FN
+            write_git $CWL_ROOT > $STDOUT_FN
+            test_exit_status 
+        fi
     fi
     if [ $JUSTONE ]; then
         break
