@@ -1,5 +1,8 @@
 # CromwellRunner
 
+*TODO*: discuss Cromwell Server
+
+
 CromwellRunner is a lightweight interactive workflow manager for managing
 [Cromwell](https://cromwell.readthedocs.io/en/stable/) workflows on MGI and RIS
 compute1 systems at Washington University.  For a batch of cases it provides a
@@ -462,9 +465,12 @@ parallel.  This is the perferred setup on MGI and compute1 systems at Wash U.
 
 Background: https://confluence.gsc.wustl.edu/pages/viewpage.action?pageId=27592450
 
-We'll be using the following LSF Group Name:
+On MGI we'll be using the following LSF Group Name:
     LSF_GROUP="/mwyczalk/cromwell-runner"
 This is defined in the system configuration file (e.g., `config/Definitions/System/MGI.gc2541.config.sh`)
+
+Note that on compute1,
+    LSF_GROUP="/m.wyczalkowski/cromwell-runner"
 
 #### Setup
 Do this just once for each new LSF group on each system
