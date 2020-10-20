@@ -1,6 +1,12 @@
 # CromwellRunner
 
-*TODO*: discuss Cromwell Server
+*TODO*: Add the following discussions
+
+* Cromwell Server - A way of getting status about current and past Cromwell runs
+  Runs locally because of database integrity issues
+* Compute1 issues
+  * scratch1 space - faster and more reliable than storage1, but requires move step at end
+* Creating a YAML template with `cwltool --make-template`
 
 
 CromwellRunner is a lightweight interactive workflow manager for managing
@@ -112,7 +118,7 @@ CromwellRunner configuration system provides parameters to,
 * launch cromwell instances
 * collect and process results
 
-We divide parameters into four families:
+We divide parameters into four families (some of these are specific to TinDaisy, but meant to be general):
 * Project parameters
   * parameters which are expected to change with every project, such as project name
 * System parameters

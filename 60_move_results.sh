@@ -1,11 +1,13 @@
 # script specific to compute 1 to move all data from scratch volume to storage volume
 # at the end of the run
+# Note that only data in scratch which corresponds to an actual result in analysis_summary is moved
 # Also, update dat/analysis_summary.dat file
-# write dat/analysis_summary.unstaged.dat
+# and write to dat/analysis_summary.final.dat
 
-#SCRATCH_ROOT=/scratch1/fs1/dinglab/m.wyczalkowski/cromwell-data
+# TODO
+# Test to make sure all data exists as expected before moving
+
 SCRATCH_BASE=/scratch1/fs1/dinglab/m.wyczalkowski/cromwell-data/cromwell-workdir/cromwell-executions/SomaticSV.cwl
-#DEST_ROOT=/storage1/fs1/m.wyczalkowski/Active/cromwell-data
 DEST_BASE=/storage1/fs1/m.wyczalkowski/Active/cromwell-data/cromwell-workdir/cromwell-executions/SomaticSV.cwl
 
 
@@ -25,6 +27,7 @@ function test_exit_status {
 AS="dat/analysis_summary.dat"
 AS_DEST="dat/analysis_summary.final.dat"
 
+# Loop over all UUID in analysis summary file
 UUIDS=$(grep "$SCRATCH_BASE" $AS | cut -f 9 | sort -u)
 
 for UUID in $UUIDS ; do

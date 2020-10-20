@@ -77,7 +77,7 @@ TASK="query"
 YAMLD="./yaml"
 SUMMARY_OUT="./dat/analysis_summary.dat"
 PARAMS="Project.config.sh"
-CROMWELL_QUERY="src/cq"
+CROMWELL_QUERY="bash src/cq"
 PYTHON="/usr/bin/python"
 
 TUMOR_ST='tumor'

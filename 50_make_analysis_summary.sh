@@ -3,7 +3,7 @@
 # Note that running `runplan` will give back useful information about anticipated runs
 PARAMS="Project.config.sh"
 
-CMD="src/runplan -v -x summary -P $PARAMS $@ "
+CMD="bash src/runplan -v -x summary -P $PARAMS $@ "
 
 >&2 echo Running: $CMD
 eval $CMD
