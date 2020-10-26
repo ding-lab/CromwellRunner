@@ -86,7 +86,7 @@ CROMWELL_JAR="/opt/cromwell.jar"
 JAVA="/usr/bin/java"
 CASES_FN="dat/cases.dat"
 BSUB="bsub"
-SPAWN_CROMWELL="bash cromwell-server/spawn_cromwell_server.sh -C -s 10" # confirm that server is not running and wait 10 sec before returning
+SPAWN_CROMWELL="bash cromwell-server/spawn_cromwell_server.sh -C -s 60" # confirm that server is not running and wait 10 sec before returning
 
 
 # for now this is hard coded

@@ -1,0 +1,99 @@
+# TinDaisy2 template
+# * complete workflow tindaisy2.cwl 
+# * production optimizations
+
+# YAML template as generated with cwltool --make-template
+
+# No reference- or collection-specific (e.g. CPTAC3) definitons
+
+# Template for TinDaisy YAML input file
+# The following arguments must be substituted:
+# * NORMAL_BAM
+# * TUMOR_BAM
+# * REF_PATH
+# * PARAM_ROOT -> value is $TD_ROOT/params
+# * VEP_CACHE_GZ
+# * VEP_CACHE_VERSION
+# * ASSEMBLY
+# * CHRLIST
+# * NORMAL_BARCODE
+# * TUMOR_BARCODE
+
+# New in TinDaisy2
+# * CLINVAR_ANNOTATION
+# * CALL_REGIONS
+# * CANONICAL_BED
+
+# Remove the following:
+# * DBSNP_DB
+
+# New in TinDaisy2
+custom_filename:  # type "File" (optional)
+    class: File
+    path: CLINVAR_ANNOTATION
+    #path: /gscmnt/gc7202/dinglab/common/databases/ClinVar/GRCh38/20200706/clinvar_20200706.vcf.gz
+rescue_clinvar: true  
+rescue_cosmic: true  
+call_regions:  # type "File" (optional)
+    class: File
+    #path: /gscuser/mwyczalk/projects/TinDaisy/TinDaisy/params/chrlist/GRCh38.callRegions.bed.gz
+    path: CALL_REGIONS
+canonical_BED:  # type "File"
+    class: File
+    #path: /gscuser/mwyczalk/projects/TinDaisy/TinDaisy/params/chrlist/GRCh38.callRegions.bed
+    path: CANONICAL_BED
+
+# from TinDaisy
+normal_bam:
+  class: File
+  path: NORMAL_BAM
+tumor_bam:
+  class: File
+  path: TUMOR_BAM
+reference_fasta:
+  class: File
+  path: REF_PATH
+
+# barcodes replace "TUMOR" and "NORMAL" as sample names in output MAF 
+normal_barcode: NORMAL_BARCODE
+tumor_barcode: TUMOR_BARCODE
+
+# Caller config.  Note mutect does not have a caller config file
+pindel_config:
+  class: File
+  path: PARAM_ROOT/caller_config/pindel.WES.ini
+strelka_config:
+  class: File
+  path: PARAM_ROOT/caller_config/strelka.WES.ini
+varscan_config:
+  class: File
+  path: PARAM_ROOT/caller_config/varscan.WES.ini
+
+# Other filter config
+classification_config:
+  class: File
+  path: PARAM_ROOT/filter_config/classification_filter_config.ini
+af_config:
+  class: File
+  path: PARAM_ROOT/filter_config/af_filter_config.ini
+
+# Data files
+centromere_bed: 
+  class: File
+  path: PARAM_ROOT/centromere/ucsc-centromere.GRCh38.bed
+
+# VEP Cache is used for VEP annotation and vcf_2_maf.
+# If not defined, online lookups will be used by VEP annotation. These are slower and do not include allele frequency info (MAX_AF) needed by AF filter.
+# For performance reasons, defining vep_cache_gz is suggested for production systems
+
+vep_cache_gz:
+  class: File
+  path: VEP_CACHE_GZ
+
+vep_cache_version: VEP_CACHE_VERSION
+assembly: ASSEMBLY
+
+chrlist: # Defining this turns on pindel parallel
+  class: File
+  path: CHRLIST
+

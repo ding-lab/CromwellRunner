@@ -49,13 +49,17 @@ Output YAML filename is CASE.yaml.  It is based on YAML_TEMPLATE, with the follo
     * TUMOR_BARCODE
     * NORMAL_BARCODE
     * PARAM_ROOT            TD
-    * DBSNP_DB              TD
+    * DBSNP_DB              TD, not TD2
     * VEP_CACHE_GZ          TD
     * VEP_CACHE_VERSION     TD
     * ASSEMBLY              TD
     * CHRLIST               TD
+    * CLINVAR_ANNOTATION    TD2
+    * CALL_REGIONS          TD2
+    * CANONICAL_BED         TD2
+
 Source of info:
-    * TD indicates parameters useful only for TinDaisy
+    * TD indicates parameters useful only for TinDaisy, TD2 are for TinDaisy2
     * TUMOR_BAM and NORMAL_BAM are defined by lookup of CASE in BamMap
     * RESTART_D is defined when -R flag is set
     * TUMOR_BARCODE and NORMAL_BARCODE are defined by lookup of UUID in Catalog file
@@ -244,6 +248,16 @@ function init_params_kv {
     if [ ! -z $CHRLIST ]; then
         BATCH_PARAM_KV="$BATCH_PARAM_KV CHRLIST:$CHRLIST"
     fi
+    if [ ! -z $CLINVAR_ANNOTATION ]; then
+        BATCH_PARAM_KV="$BATCH_PARAM_KV CLINVAR_ANNOTATION:$CLINVAR_ANNOTATION"
+    fi
+    if [ ! -z $CALL_REGIONS ]; then
+        BATCH_PARAM_KV="$BATCH_PARAM_KV CALL_REGIONS:$CALL_REGIONS"
+    fi
+    if [ ! -z $CANONICAL_BED ]; then
+        BATCH_PARAM_KV="$BATCH_PARAM_KV CANONICAL_BED:$CANONICAL_BED"
+    fi
+
 }
 
 # Goal of kv parameter parsing is to build up a string PARAM_KV consisting of "key1:value1" pairs, e.g.,
