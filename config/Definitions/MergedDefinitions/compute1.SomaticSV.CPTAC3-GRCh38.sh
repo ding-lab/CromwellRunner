@@ -11,7 +11,8 @@
 SYSTEM="compute1"  
 LSF_CONF="/opt/ibm/lsfsuite/lsf/conf/lsf.conf"
 LSF_GROUP="/m.wyczalkowski/cromwell-runner"
-LSFQ="general"              # for MGI, queue is "research-hpc"
+#LSFQ="general"              # for MGI, queue is "research-hpc"
+LSFQ="dinglab"              # for MGI, queue is "research-hpc"
 LSF_ARGS="-B \"-g $LSF_GROUP\"  -M -q $LSFQ"
 
 
@@ -28,9 +29,7 @@ CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.compute1.te
 
 # Path to BamMap, which is a file which defines sequence data path and other metadata
 # BamMap format is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
-#BAMMAP="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog/BamMap/storage1.BamMap.dat"
-# using version with "deprecated" samples removed
-BAMMAP="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog/BamMap/storage1.BamMap.no-deprecated.dat"
+BAMMAP="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog/BamMap/storage1.BamMap.dat"
 
 # Assume that all references are based here
 REF_ROOT="/storage1/fs1/dinglab/Active/Resources/References"
