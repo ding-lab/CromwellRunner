@@ -77,7 +77,10 @@ NOTE: if running on MGI, make sure to NOT be inside a docker-interactive section
    a. It is *highly recommended* to run one case fully to completion before starting a batch.
       This can be done with `bash 40_start_runs.sh -1`.  
 2. Start all runs in a batch, running 4 at a time with automatic finalization when finished, with,
-   `bash 40_start_runs.sh -J 4 -F`
+   `bash 40_start_runs.sh -F -S compute1`  
+TODO: Update this.  Finalization requires -S flag.  Using job groups to control how many jobs running at once.
+Parallel (-J) is no longer recommended
+
    a. At this time we do not recommend running more than 5-10 jobs at a time, in part because running
       jobs consume a significant amount of disk space which is not cleaned until jobs are finalized.
    b. If running -F, test first to make sure `cq` returns without an error.  If it does not work, 

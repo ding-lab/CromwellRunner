@@ -2,7 +2,7 @@
 # Project config
 #
 
-PROJECT="13_CCRCC4.TD2-test"
+PROJECT="UCEC.Discovery.22"
 
 # From ../12
 #SYSTEM_CONFIG="config/Definitions/System/MGI.gc2541.config.sh"
@@ -12,5 +12,6 @@ PROJECT="13_CCRCC4.TD2-test"
 #The above were used to create merged config file below
 
 # Merged config
-MERGED_CONFIG="config/Definitions/MergedDefinitions/MGI.gc2541.TinDaisy2.CPTAC3-GRCh38.sh"
+#MERGED_CONFIG="config/Definitions/MergedDefinitions/MGI.gc2541.TinDaisy2.CPTAC3-GRCh38.sh"
+MERGED_CONFIG="config/Definitions/MergedDefinitions/compute1.SomaticSV.CPTAC3-GRCh38.sh"
 source $MERGED_CONFIG
