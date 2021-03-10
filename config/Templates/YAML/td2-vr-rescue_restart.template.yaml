@@ -1,0 +1,98 @@
+# TinDaisy2 VAF Rescue restart template
+# * complete workflow tindaisy2.cwl 
+# * production optimizations
+
+# YAML template as generated with cwltool --make-template
+
+# No reference- or collection-specific (e.g. CPTAC3) definitons
+
+# Template for TinDaisy YAML input file
+# The following arguments must be substituted:
+# * NORMAL_BAM
+# * TUMOR_BAM
+# * REF_PATH
+# * PARAM_ROOT -> value is $TD_ROOT/params
+# * VEP_CACHE_GZ
+# * VEP_CACHE_VERSION
+# * ASSEMBLY
+# * CHRLIST
+# * NORMAL_BARCODE
+# * TUMOR_BARCODE
+
+# New in TinDaisy2
+# * CLINVAR_ANNOTATION
+# * CALL_REGIONS
+# * CANONICAL_BED
+
+# For VAF Rescue restart
+# * RESTART_D
+# * VAF_RESCUE_BED
+
+# New in TinDaisy2
+clinvar_annotation:  # type "File" (optional)
+    class: File
+    path: CLINVAR_ANNOTATION
+    #path: /gscmnt/gc7202/dinglab/common/databases/ClinVar/GRCh38/20200706/clinvar_20200706.vcf.gz
+rescue_clinvar: true  
+rescue_cosmic: true  
+call_regions:  # type "File" (optional)
+    class: File
+    #path: /gscuser/mwyczalk/projects/TinDaisy/TinDaisy/params/chrlist/GRCh38.callRegions.bed.gz
+    path: CALL_REGIONS
+canonical_BED:  # type "File"
+    class: File
+    #path: /gscuser/mwyczalk/projects/TinDaisy/TinDaisy/params/chrlist/GRCh38.callRegions.bed
+    path: CANONICAL_BED
+
+tumor_bam:
+  class: File
+  path: TUMOR_BAM
+reference_fasta:
+  class: File
+  path: REF_PATH
+
+# barcodes replace "TUMOR" and "NORMAL" as sample names in output MAF 
+normal_barcode: NORMAL_BARCODE
+tumor_barcode: TUMOR_BARCODE
+
+# Other filter config
+classification_config:
+  class: File
+  path: PARAM_ROOT/filter_config/classification_filter_config.ini
+af_config:
+  class: File
+  path: PARAM_ROOT/filter_config/af_filter_config.ini
+
+# VEP Cache is used for VEP annotation and vcf_2_maf.
+# If not defined, online lookups will be used by VEP annotation. These are slower and do not include allele frequency info (MAX_AF) needed by AF filter.
+# For performance reasons, defining vep_cache_gz is suggested for production systems
+
+vep_cache_gz:
+  class: File
+  path: VEP_CACHE_GZ
+
+vep_cache_version: VEP_CACHE_VERSION
+assembly: ASSEMBLY
+
+Pindel_VCF:  # type "File"
+    class: File
+    path: RESTART_D/call-parse_pindel/execution/results/pindel/filter_out/pindel-raw.dat.CvgVafStrand_pass.Homopolymer_pass.vcf
+Varscan_Indel_VCF:  # type "File"
+    class: File
+    path: RESTART_D/call-varscan_indel_vcf_remap/execution/varscan-remapped.vcf
+Varscan_SNV_VCF:  # type "File"
+    class: File
+    path: RESTART_D/call-varscan_snv_vcf_remap/execution/varscan-remapped.vcf
+Mutect_VCF:  # type "File"
+    class: File
+    path: RESTART_D/call-mutect/execution/mutect.vcf
+Strelka_Indel_VCF:  # type "File"
+    class: File
+    path: RESTART_D/call-run_strelka2/execution/results/strelka2/strelka_out/results/variants/somatic.indels.vcf.gz
+Strelka_SNV_VCF:  # type "File"
+    class: File
+    path: RESTART_D/call-run_strelka2/execution/results/strelka2/strelka_out/results/variants/somatic.snvs.vcf.gz
+
+VAFRescueBED:  # type "File"
+    class: File
+    path: VAF_RESCUE_BED

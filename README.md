@@ -7,6 +7,7 @@
 * Compute1 issues
   * scratch1 space - faster and more reliable than storage1, but requires move step at end
 * Creating a YAML template with `cwltool --make-template`
+* Guidance on now to restart runs
 
 
 CromwellRunner is a lightweight interactive workflow manager for managing

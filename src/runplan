@@ -57,6 +57,7 @@ Output YAML filename is CASE.yaml.  It is based on YAML_TEMPLATE, with the follo
     * CLINVAR_ANNOTATION    TD2
     * CALL_REGIONS          TD2
     * CANONICAL_BED         TD2
+    * VAF_RESCUE_BED        TD2 VAF Rescue
 
 Source of info:
     * TD indicates parameters useful only for TinDaisy, TD2 are for TinDaisy2
@@ -257,6 +258,9 @@ function init_params_kv {
     if [ ! -z $CANONICAL_BED ]; then
         BATCH_PARAM_KV="$BATCH_PARAM_KV CANONICAL_BED:$CANONICAL_BED"
     fi
+    if [ ! -z $VAF_RESCUE_BED ]; then
+        BATCH_PARAM_KV="$BATCH_PARAM_KV VAF_RESCUE_BED:$VAF_RESCUE_BED"
+    fi
 
 }
 
@@ -396,7 +400,8 @@ function get_restartd {
     CASE=$1
     RESTART_MAP=$2
 
-    UUID=$(grep $CASE $RESTART_MAP | cut -f 2)
+    CMD="grep \"$CASE[[:space:]]\" $RESTART_MAP"
+    UUID=$(eval $CMD | cut -f 2)
 
     if [ -z "$UUID" ]; then
         if [ $ONLYWARN ]; then

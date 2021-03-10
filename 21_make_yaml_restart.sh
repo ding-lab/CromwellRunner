@@ -14,7 +14,7 @@ RESTART_MAP="dat/restart_map.dat"
 RESTART_ARG="-R $RESTART_MAP"
 
 >&2 echo Writing YAML files
-CMD="src/runplan -x yaml -P $PARAMS $RESTART_ARG $@ "
+CMD="bash src/runplan -x yaml -P $PARAMS $RESTART_ARG $@ "
 
 >&2 echo Running: $CMD
 eval $CMD
