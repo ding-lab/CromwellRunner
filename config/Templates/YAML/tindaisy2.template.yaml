@@ -28,7 +28,7 @@
 # * DBSNP_DB
 
 # New in TinDaisy2
-custom_filename:  # type "File" (optional)
+clinvar_annotation:  # type "File" (optional)
     class: File
     path: CLINVAR_ANNOTATION
     #path: /gscmnt/gc7202/dinglab/common/databases/ClinVar/GRCh38/20200706/clinvar_20200706.vcf.gz
