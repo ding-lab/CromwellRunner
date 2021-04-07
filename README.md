@@ -103,12 +103,12 @@ Parallel (-J) is no longer recommended
 Once all jobs completed with status `Succeeded`, need to finalize and clean up the runs.  Assuming project name is `SomaticSV.HNSCC.evidence`,
 finalize the run (move logs to logs/stashed and make a record of this run in logs/rundata.dat)
 ```
-runtidy -x finalize -p SomaticSV.LSCC.evidence -m "Manual cleanup" -F Succeeded RID
+bash src/runtidy -x finalize -p SomaticSV.LSCC.evidence -m "Manual cleanup" -F Succeeded RID
 ```
 
 Clean up data
 ```
-datatidy -x compress -p SomaticSV.LSCC.evidence -F Succeeded -m "Manual cleanup" -F Succeeded RID
+bash src/datatidy -x compress -p SomaticSV.LSCC.evidence -F Succeeded -m "Manual cleanup" RID
 ```
 Note that running jobs (rungo) with `-F` flag will stash and compress all results
 during execution.  This is recommended only for well developed production runs,
