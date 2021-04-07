@@ -1,4 +1,4 @@
-TinDaisy configuration system provides parameters to,
+Configuration files provide parameters to,
 * configure YAML files based on case names, BamMap files, and workflow parameters
 * Configure cromwell configuration files
 * launch cromwell instances

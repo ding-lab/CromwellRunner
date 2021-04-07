@@ -20,7 +20,8 @@ completed runs to reduce disk use.
 
 CromwellRunner was originally developed to manage runs of the
 [TinDaisy](https://github.com/ding-lab/TinDaisy) variant caller, but it has
-since been generalized and can be used with arbitrary workflows.
+since been generalized and can be used with arbitrary workflows.  It is used
+regularly for [SomaticSV](https://github.com/ding-lab/SomaticSV.git) runs in addition to TinDaisy.
 
 CromwellRunner consists of the following utilities:
 * `cq` - query cromwell server
@@ -30,7 +31,7 @@ CromwellRunner consists of the following utilities:
 * `runtidy` - Organize cromwell job logs
 
 These utilities are used to initialize, launch, inspect, clean up, restart,
-and log CWL runs, particularly for batches of tens and hundreds of runs.
+and log Cromwell runs, particularly for batches of tens and hundreds of runs.
 
 ## Quick start
 
@@ -39,53 +40,65 @@ variant caller TinDaisy.  In practice, before running a batch of multiple
 cases, it is important to run one case fully to completion first.
 
 ### Installation
+
+First, clone the relevant workflow.  For TinDaisy,
 ```
 git clone https://github.com/ding-lab/TinDaisy
+```
+and for SomaticSV,
+```
+git clone https://github.com/ding-lab/SomaticSV.git
+```
+Note that this has to be done just once.  The path to this workflow is `CWL_ROOT_H` in
+the configuration file, below.
+
+Next, clone the CromwellRunner project.  This is typically done once for each batch
+of analyses:
+```
 git clone --recurse-submodules https://github.com/ding-lab/CromwellRunner.git PROJECT_NAME
 ```
 where `PROJECT_NAME` is an arbitrary name for this particular run or batch.
-TinDaisy project is clones to have its CWL code be accessible, but other 
-workflows can also be used.
 
 ### Configuration
 
-NOTE: if running on MGI, make sure to NOT be inside a docker-interactive section
-
 1. Describe purpose of run in `README.project.md`
-2. `cp example_workflows/TinDaisy.hg19/Project.config.hg19.sh .` 
-   This is just an example file. Please edit to follow your project's specific needs (See step 3). Alternatively, copy another appropriate Project.config.sh from an appropriate subdirectory of `example_workflows`
-3. Edit `Project.config.sh`
+2. Edit `Project.config.sh`
     a. Define PROJECT with arbitrary name
-    b. Define SYSTEM_CONFIG, COLLECTION_CONFIG, WORKFLOW_CONFIG with values appropriate for this workflow
+    b. Define MERGED_CONFIG with values appropriate for this workflow
       * See config/README.configuration.md
     c. See below (section) for additional details about configuration files.
-4. Create file `dat/cases.dat` with list of cases which will be processed
-5. `bash 20_make_yaml.sh`
+3. Create file `dat/cases.dat` with list of cases which will be processed
+4. `bash 20_make_yaml.sh`
     * Running `src/rungo` will provide preview of anticipated runs, i.e., a way to double-check YAML file creation
-6. `bash 30_make_config.sh`
+5. `bash 30_make_config.sh`
 
 ### System setup
-1. `bash 00A_start_docker.Cromwell.sh`
-    where SYSTEM is MGI or compute1
-    * TODO: consider incorporating [WUDocker](https://github.com/ding-lab/WUDocker) for docker startup
+1. `bash 00_start_docker.sh"
+   This will start a docker container which contains the executables necessary to launch Cromwell
 2. `bash 05_start_cromwell_db_server.sh`
-3. `export CROMWELL_URL=http://localhost:8000 && export PATH=$PATH:./src`
-5. If `runlog` and `datalog` files do not exist (and are not using common files), create these with,
-    `bash 10_make_data_run_logs.sh`
+   This starts an instance of Cromwell in server mode, allowing us to query running Cromwell workflows
+3. `bash 10_make_data_run_logs.sh`
+   Creates runlog.dat files which track details of runs which were run with CromwellRunner.  Necessary
+   for correlating case ID and workflow ID.  Note that Cromwell must be running in server mode for this
+   to succeed; it may take up to a minute to get started so if this fails might wait a bit and try again
 
 ### Start runs
 1. Test configuration by starting one "dry run" with, `bash 40_start_runs.sh -1d`
    a. It is *highly recommended* to run one case fully to completion before starting a batch.
       This can be done with `bash 40_start_runs.sh -1`.  
-2. Start all runs in a batch, running 4 at a time with automatic finalization when finished, with,
-   `bash 40_start_runs.sh -F -S compute1`  
-TODO: Update this.  Finalization requires -S flag.  Using job groups to control how many jobs running at once.
-Parallel (-J) is no longer recommended
-
-   a. At this time we do not recommend running more than 5-10 jobs at a time, in part because running
+2. Confirm / configure LSF job groups, which control how many jobs run at a time
+   a. At this time, the following job groups are defined:
+        compute1: LSF_GROUP="/m.wyczalkowski/cromwell-runner"
+        MGI: LSF_GROUP="/mwyczalk/cromwell-runner"
+   b. Check number of jobs which can run at a time (and which are running) with,
+        `bjgroup -s $LSF_GROUP`
+   c. Change number of jobs which can run at a time (given by N) with,
+        `bgmod -L N $LSF_GROUP`
+   d. We do not recommend running more than 5-10 jobs at a time, in part because running
       jobs consume a significant amount of disk space which is not cleaned until jobs are finalized.
-   b. If running -F, test first to make sure `cq` returns without an error.  If it does not work, 
-      runs will not be finalized.  
+2. Start all runs in a batch with automatic finalization when finished, with,
+   `bash 40_start_runs.sh -F -S SYSTEM`  
+   a. SYSTEM is `MGI` or `compute1` (TODO: update script so SYSTEM is read from config file)
 
 ### Test progress of runs
 1. Output of runs is written to `./logs/CASE.out` and run progress may be tracked that way
@@ -96,6 +109,8 @@ Parallel (-J) is no longer recommended
 1. `bash 50_make_analysis_summary.sh` -- confirm this
 2. If automatic finalization (-J) was not selected when runs were started, or if errors occurred during runtime,
    runs will need to be finalized using `runtidy` and `datatidy` utilities, as described below.
+3. On compute1, results are written to scratch volume for performance and reliability.  These need to be 
+   copied to storage1 for long term safe keeping with `60_move_results.sh`
 
 
 ## Manually finalize when complete
@@ -103,12 +118,12 @@ Parallel (-J) is no longer recommended
 Once all jobs completed with status `Succeeded`, need to finalize and clean up the runs.  Assuming project name is `SomaticSV.HNSCC.evidence`,
 finalize the run (move logs to logs/stashed and make a record of this run in logs/rundata.dat)
 ```
-bash src/runtidy -x finalize -p SomaticSV.LSCC.evidence -m "Manual cleanup" -F Succeeded RID
+bash src/runtidy -x finalize -p BATCH_NAME -m "Manual cleanup" -F Succeeded RID
 ```
 
 Clean up data
 ```
-bash src/datatidy -x compress -p SomaticSV.LSCC.evidence -F Succeeded -m "Manual cleanup" RID
+bash src/datatidy -x compress -p BATCH_NAME -F Succeeded -m "Manual cleanup" RID
 ```
 Note that running jobs (rungo) with `-F` flag will stash and compress all results
 during execution.  This is recommended only for well developed production runs,

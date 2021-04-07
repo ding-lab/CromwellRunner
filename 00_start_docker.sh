@@ -11,7 +11,7 @@ source Project.config.sh
 START_DOCKERD="docker/WUDocker"
 
 IMAGE="mwyczalkowski/cromwell-runner"
-MEM=4  # should be high for running Cromwell.  If just querying (cq), default is fine
+MEM=4  
 
 >&2 echo Launching $IMAGE on $SYSTEM
 CMD="bash $START_DOCKERD/start_docker.sh -I $IMAGE -M $SYSTEM -m $MEM $@ $VOLUME_MAPPING"
