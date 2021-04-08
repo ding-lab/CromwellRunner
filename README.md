@@ -115,19 +115,25 @@ where `PROJECT_NAME` is an arbitrary name for this particular run or batch.
 
 ## Manually finalize when complete
 
-Once all jobs completed with status `Succeeded`, need to finalize and clean up the runs.  Assuming project name is `SomaticSV.HNSCC.evidence`,
-finalize the run (move logs to logs/stashed and make a record of this run in logs/rundata.dat)
-```
-bash src/runtidy -x finalize -p BATCH_NAME -m "Manual cleanup" -F Succeeded RID
+Once all jobs completed with status `Succeeded`, need to finalize and clean up
+the runs to free up disk space.  Failed jobs will also need to cleaned up in this way.
+Note that starting runs with `-F` flag will stash and compress all results
+during execution, so this step is not necessary for succeeded runs. 
+
+Given a specific PROJECT (as defined in `Project.config.sh`), finalize the run
+(move logs to logs/stashed and make a record of this run in logs/rundata.dat) 
+
+``` 
+bash src/runtidy -x finalize -p BATCH_NAME -m "Manual cleanup" -F Succeeded RID 
 ```
 
 Clean up data
 ```
 bash src/datatidy -x compress -p BATCH_NAME -F Succeeded -m "Manual cleanup" RID
 ```
-Note that running jobs (rungo) with `-F` flag will stash and compress all results
-during execution.  This is recommended only for well developed production runs,
-not for testing or development
+Note that failed jobs can be deleted wholesale (-x wipe), restarted from scratch if
+the errors are transient, or restarted from some intermediate step (much faster, see below).
+
 
 # Configuration details
 
