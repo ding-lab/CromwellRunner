@@ -86,6 +86,7 @@ where `PROJECT_NAME` is an arbitrary name for this particular run or batch.
 1. Test configuration by starting one "dry run" with, `bash 40_start_runs.sh -1d`
    a. It is *highly recommended* to run one case fully to completion before starting a batch.
       This can be done with `bash 40_start_runs.sh -1`.  
+<<<<<<< HEAD
 2. Confirm / configure LSF job groups, which control how many jobs run at a time
    a. At this time, the following job groups are defined:
         compute1: LSF_GROUP="/m.wyczalkowski/cromwell-runner"
@@ -99,6 +100,20 @@ where `PROJECT_NAME` is an arbitrary name for this particular run or batch.
 2. Start all runs in a batch with automatic finalization when finished, with,
    `bash 40_start_runs.sh -F -S SYSTEM`  
    a. SYSTEM is `MGI` or `compute1` (TODO: update script so SYSTEM is read from config file)
+=======
+2. Start all runs in a batch, running 4 at a time with automatic finalization when finished, with,
+```
+   bgmod -L 2 /mwyczalk/cromwell-runner
+   bash 40_start_runs.sh -F -S compute1`  
+```
+  Note that finalization (-F) requires -S flag (to spawn cromwell server to allow finalization to work).  
+  Using job groups to control how many jobs running at once.
+
+   a. At this time we do not recommend running more than 5-10 jobs at a time, in part because running
+      jobs consume a significant amount of disk space which is not cleaned until jobs are finalized.
+   b. If running -F, test first to make sure `cq` returns without an error.  If it does not work, 
+      runs will not be finalized.  Note, -S spawns a server so -F works
+>>>>>>> 16_CCRCC_ITH
 
 ### Test progress of runs
 1. Output of runs is written to `./logs/CASE.out` and run progress may be tracked that way
