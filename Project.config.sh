@@ -2,7 +2,7 @@
 # Project config
 #
 
-PROJECT="UCEC.Discovery.22"
+PROJECT="SomaticCNV-dev"
 
 # From ../12
 #SYSTEM_CONFIG="config/Definitions/System/MGI.gc2541.config.sh"
@@ -13,5 +13,6 @@ PROJECT="UCEC.Discovery.22"
 
 # Merged config
 #MERGED_CONFIG="config/Definitions/MergedDefinitions/MGI.gc2541.TinDaisy2.CPTAC3-GRCh38.sh"
-MERGED_CONFIG="config/Definitions/MergedDefinitions/compute1.SomaticSV.CPTAC3-GRCh38.sh"
+#MERGED_CONFIG="config/Definitions/MergedDefinitions/compute1.SomaticSV.CPTAC3-GRCh38.sh"
+MERGED_CONFIG="config/Definitions/MergedDefinitions/compute1.SomaticCNV.CPTAC3-GRCh38.sh"
 source $MERGED_CONFIG

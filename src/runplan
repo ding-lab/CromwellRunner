@@ -41,6 +41,9 @@ runplan performs the following tasks, specified with -x:
 
 If CASE is - then read CASE from STDIN.  If CASE is not defined, read from CASES_FN file.
 
+Note, we have some embedded assumptions about workflow inputs here which should ideally be separated out
+for each workflow.  For now, deal with a superset of substituted variables.
+
 Output YAML filename is CASE.yaml.  It is based on YAML_TEMPLATE, with the following variables substituted:
     * NORMAL_BAM
     * TUMOR_BAM
@@ -58,6 +61,8 @@ Output YAML filename is CASE.yaml.  It is based on YAML_TEMPLATE, with the follo
     * CALL_REGIONS          TD2
     * CANONICAL_BED         TD2
     * VAF_RESCUE_BED        TD2 VAF Rescue
+    * MAP_PATH              SomaticCNV only
+    * GENE_BED_PATH         SomaticCNV only
 
 Source of info:
     * TD indicates parameters useful only for TinDaisy, TD2 are for TinDaisy2
@@ -260,6 +265,16 @@ function init_params_kv {
     fi
     if [ ! -z $VAF_RESCUE_BED ]; then
         BATCH_PARAM_KV="$BATCH_PARAM_KV VAF_RESCUE_BED:$VAF_RESCUE_BED"
+    fi
+
+#    * MAP_PATH              SomaticCNV only
+#    * GENE_BED_PATH         SomaticCNV only
+# Adding SomaticCNV-specific variables
+    if [ ! -z $MAP_PATH ]; then
+        BATCH_PARAM_KV="$BATCH_PARAM_KV MAP_PATH:$MAP_PATH"
+    fi
+    if [ ! -z $GENE_BED_PATH ]; then
+        BATCH_PARAM_KV="$BATCH_PARAM_KV GENE_BED_PATH:$GENE_BED_PATH"
     fi
 
 }
