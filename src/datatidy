@@ -24,6 +24,7 @@ Optional options
 -w: output additional detail for query task
 -c CQD: explicit path to cromwell query utility `cq` and `datatidy`
 -P RESULT_LIST: list of result files to keep when pruning, typically the principal outputs of workflow 
+    If passed to `compress` step, this lists the files to be deleted prior to compressing
     Required for prune and uncompress_restart steps.  Example line:
         ./call-canonical_filter/execution/output/HotspotFiltered.vcf
 
@@ -320,6 +321,15 @@ function register_original {
 # │   ├── execution
 # │   ├── inputs
 # │   └── tmp.0d4e401f
+# 
+# In some cases (scatter / gather) the inputs may be structured as,
+# ├── call-uniquereads_normal
+# │   ├── shard-0
+# │   ├── shard-1
+# │   └── shard-N
+# │       ├── execution
+# │       ├── inputs
+# │       └── tmp.0d4e401f
 
 # Remove inputs directory for all steps
 function delete_inputs {
@@ -330,7 +340,8 @@ function delete_inputs {
         exit 1
     fi
 
-    CMD="rm -rf $WD/*/inputs"
+    >&2 echo -- Deleting inputs directories
+    CMD="rm -rf $WD/*/inputs $WD/*/shard-*/inputs"
     run_cmd "$CMD" $DRYRUN
 }
 
@@ -365,10 +376,12 @@ function rmrf_exclude {
 }
 
 function do_compress {
+    # First, optionally remove all files listed in RESULT_LIST
     # compress all results to file compressed_results.tar.gz, then remove all 
     # results except final output and compressed_results.tar.gz
     # If the output file already exists skip compressing again, since data loss may occur
     RID=$1
+    RL=$2
 
     WD=$( $CQ -V -q workflowRoot $RID )                               
 
@@ -377,12 +390,41 @@ function do_compress {
         >&2 echo WARNING: File $WD/$TAR exists.  Will not overwrite, skipping compress task
         return
     fi
+    # From RESULT_LIST read all files we wish to delete prior to compression
+    # comments are stripped
+    if [ ! -z $RL ]; then
+        confirm $RL
 
+        >&2 echo -- Deleting files specified by $RL
+
+        RESULTS=$(sed '/^[[:blank:]]*#/d;s/#.*//' $RL)
+
+        # Make a list to full path of files to be deleted prior to compress
+        # (example is BAM files from staging step)
+        # If one of these files does not exist print a warning but continue
+        RM_FILES=""
+        for F in $RESULTS; do
+            FILE="$WD/$F"
+            if [ ! -e $FILE ]; then
+                >&2 echo WARNING: file to be deleted not found: $FILE
+                >&2 echo Continuing
+            else
+                RM_FILES="$RM_FILES $FILE"
+            fi
+        done
+
+        CMD="rm -rf $RM_FILES"
+        run_cmd "$CMD" $DRYRUN
+    fi
+
+    # Now compress
     # https://stackoverflow.com/questions/18681595/tar-a-directory-but-dont-store-full-absolute-paths-in-the-archive
     # The `touch` is to avoid error like "tar: .: file changed as we read it" per https://stackoverflow.com/questions/20318852/tar-file-changed-as-we-read-it 
+    >&2 echo -- Compressing results
     CMD="touch $WD/$TAR && tar -zcf $WD/$TAR -C $WD --exclude $TAR ."   
     run_cmd "$CMD" $DRYRUN
     
+    >&2 echo -- Removing data
     OUTPUTS=$(get_outputs $RID)
     rmrf_exclude $WD "$OUTPUTS $WD/compressed_results.tar.gz"
 
@@ -544,7 +586,7 @@ for RID in $RIDS; do
       "compress")
         >&2 echo Processing $IDS_SEEN / $N_IDS [ $(date) ]: $RID 
         delete_inputs $RID 
-        do_compress $RID
+        do_compress $RID $RESULT_LIST
         ;;
       "prune")
         if [ -z $RESULT_LIST ]; then

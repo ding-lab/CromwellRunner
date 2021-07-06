@@ -40,6 +40,7 @@ Optional options
 -B LSF_ARGS : arbitrary args to pass to bsub. pass LSF Job Groups this way
 -S SYSTEM: spawns Cromwell server prior to starting Cromwell run by calling `cromwell-server/spawn_cromwell_server.sh`
     SYSTEM is one of MGI or compute1 (required because these have different configuration files)
+-P RESULT_LIST: list of files which are deleted prior to compressing data by `datatidy` during finalization after a run
 
 If CASE is - then read CASE from STDIN.  If CASE is not defined, read from CASES_FN file.
 
@@ -92,7 +93,7 @@ SPAWN_CROMWELL="bash cromwell-server/spawn_cromwell_server.sh -C -s 60" # confir
 # for now this is hard coded
 LSF_IMAGE="mwyczalkowski/cromwell-runner"
 
-while getopts ":W:y:hd1J:g:eC:D:R:j:k:c:FX:p:L:l:G:Mq:B:S:" opt; do
+while getopts ":W:y:hd1J:g:eC:D:R:j:k:c:FX:p:L:l:G:Mq:B:S:P:" opt; do
   case $opt in
     h) 
       echo "$USAGE"
@@ -170,6 +171,9 @@ while getopts ":W:y:hd1J:g:eC:D:R:j:k:c:FX:p:L:l:G:Mq:B:S:" opt; do
       ;;
     S)  
       SPAWN_SYSTEM="$OPTARG"
+      ;;
+    P)  # DATALOG
+      DATATIDY_ARG="$DATATIDY_ARG -P $OPTARG"
       ;;
     \?)
       >&2 echo "Invalid option: -$OPTARG" 

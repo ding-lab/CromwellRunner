@@ -27,7 +27,7 @@ CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.compute1.te
 BAMMAP="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog/BamMap/storage1.BamMap.dat"
 
 # Assume that all references are based here
-REF_ROOT="/storage1/fs1/dinglab/Active/Resources/References"
+REF_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Analysis/WGS_CNV_Somatic/Datasets"
 
 # CWL_ROOT is needed for CWL.  It is the container path to where project is installed
 # This is also used in rungo to get git status of project for tracking purposes
@@ -62,8 +62,9 @@ $HOME_MAP \
 ###############################################################################################
 #
 
-# This path below is for CPTAC3-standard GRCh38 reference
-REF_PATH="$REF_ROOT/GRCh38.d1.vd1/GRCh38.d1.vd1.fa"
+# This is a per-chromosome reference in a .tar.gz file
+# /storage1/fs1/dinglab/Active/Projects/CPTAC3/Analysis/WGS_CNV_Somatic/Datasets/inputs/hg38/GRCh38.d1.vd1-per_chrom_fa.tar.gz
+REF_PATH="$REF_ROOT/inputs/hg38/GRCh38.d1.vd1-per_chrom_fa.tar.gz"
 
 REF_NAME="hg38"                     # Reference, as used when matching to BAMMAP
 
