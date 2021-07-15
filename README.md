@@ -233,11 +233,27 @@ Non-CPTAC3 data will typically not have a BamMap constructed as above.  It is po
 ## Other options making YAML file
 
 In certain situations generating YAML files based on case name alone is not
-appropriate (for instance, when matching by `case`, `experimental_strategy`,
-and `sample_type` does not provide a unique UUID).  In this situation, passing
-"-U UUID_MAP" to `runplan` will bypass lookup of samples in BamMap and use the
-UUID of the tumor and normal obtained from `UUID_MAP` file (TSV with columns
-`CASE`, `TUMOR_UUID`, `NORMAL_UUID`).
+appropriate - for instance, when matching by `case`, `experimental_strategy`,
+and `sample_type` does not provide a unique UUID.  This may happen for
+heterogeneity studies.  In this situation, passing "-U UUID_MAP" to `runplan`
+will bypass lookup of samples in BamMap and use the UUID of the tumor and
+normal obtained from `UUID_MAP` file.
+
+A `UUID_MAP` file has the columns:
+* `CASE`
+* `TUMOR_UUID`
+* `NORMAL_UUID`
+
+There are two ways of dealing with this situation:
+* One run per case
+    * case name is unchanged
+* Multiple runs per case
+    * case name is modified to be unique
+    * note that `dat/cases.dat` has to be changed to reflect the list of modified case names
+
+The script `src/make_UUID_MAP.sh` generates UUID_MAP files for the second situation.  Review
+the script carefully before running
+
 
 ## canonical_BED (defined in config/Templates/YAML/tindaisy.template.yaml)
 

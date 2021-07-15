@@ -330,7 +330,8 @@ function do_stash {
     CMD="mkdir -p $OUTD"
     run_cmd "$CMD" "$DRYRUN" $QUIET 
 
-    CMD="mv $LOGD/$CASE.* $OUTD"
+    #CMD="mv $LOGD/$CASE.* $OUTD"
+    CMD="mv $LOGD/${CASE}.err $LOGD/${CASE}.out $LOGD/${CASE}.LSF.err $LOGD/${CASE}.LSF.out $OUTD"
     run_cmd "$CMD" "$DRYRUN" $QUIET
 
     CMD="$YAML_CMD $YAMLD/$CASE.yaml $OUTD"
