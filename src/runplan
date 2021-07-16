@@ -616,12 +616,17 @@ function do_summary {
         # https://stackoverflow.com/questions/965053/extract-filename-and-extension-in-bash
         BASE="${RF##*/}"
         EXT="${BASE##*.}"
+# Not sure this lookup is that helpful
         if   [ "$EXT" == "vcf" ]; then
             FILE_FORMAT="VCF"
         elif [ "$EXT" == "maf" ]; then
             FILE_FORMAT="MAF"
         elif [ "$EXT" == "bam" ]; then
             FILE_FORMAT="BAM"
+        elif [ "$EXT" == "seg" ]; then
+            FILE_FORMAT="SEG"
+        elif [ "$EXT" == "cnv" ]; then
+            FILE_FORMAT="CNV"
         else
             >&2 echo ERROR: Unknown file format $EXT
             exit 1
