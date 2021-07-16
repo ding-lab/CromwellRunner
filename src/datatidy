@@ -37,7 +37,7 @@ Datatidy performs the following task:
 * `original` - Registers run data, marking it as "original" in data log
 * Delete and/or compress run data.  In all cases except wipe, CWL outputs will be retained in original path
     * `inputs` - `inputs` subdirectories in all steps deleted.  This takes place for all other tidy levels 
-    * `compress` - All data compressed 
+    * `compress` - All data compressed .  Delete any files listed in RESULT_LIST
     * `prune` - Retain and compress final output of each step.  Requires RESULT_LIST to be defined
     * `final` - Keep only final CWL outputs of each run
     * `wipe` - Delete everything
@@ -383,7 +383,12 @@ function do_compress {
     RID=$1
     RL=$2
 
+# printing DO_COMPRESS DEBUG to understand better why sometimes results are not preserved
+>&2 echo DO_COMPRESS DEBUG: RID = $RID  RL = $RL
+
     WD=$( $CQ -V -q workflowRoot $RID )                               
+>&2 echo DO_COMPRESS DEBUG: WD = $WD
+ls -l $WD 1>&2      # print out directory listing  for DO_COMPRESS DEBUG
 
     TAR="compressed_results.tar.gz"
     if [ -f "$WD/$TAR" ]; then
