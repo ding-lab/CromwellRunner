@@ -42,7 +42,7 @@ Optional options
     SYSTEM is one of MGI or compute1 (required because these have different configuration files)
 -P RESULT_LIST: list of files which are deleted prior to compressing data by `datatidy` during finalization after a run
 
-If CASE is - then read CASE from STDIN.  If CASE is not defined, read from CASES_FN file.
+If CASE is - then read CASE from STDIN.  If CASE is not defined, read from first column of CASES_FN file.
 
 STDERR and STDOUT of workflow runs, as well as tmp dir and log of parallel, written to LOGD
 YAML files for a given CASE are assumed to be $YAMLD/$CASE.yaml
@@ -87,6 +87,8 @@ CROMWELL_JAR="/opt/cromwell.jar"
 JAVA="/usr/bin/java"
 CASES_FN="dat/cases.dat"
 BSUB="bsub"
+
+# this needs to be modified.  Possibly, get rid of this
 SPAWN_CROMWELL="bash cromwell-server/spawn_cromwell_server.sh -C -s 60" # confirm that server is not running and wait 10 sec before returning
 
 
@@ -267,7 +269,7 @@ MYID=$(date +%Y%m%d%H%M%S)
 # Note that if no cases defined, assume CASE='-'
 if [ "$#" == 0 ]; then
     confirm $CASES_FN
-    CASES=$(cat $CASES_FN)
+    CASES=$(cat $CASES_FN | cut -f 1)
 elif [ "$1" == "-" ] ; then
     CASES=$(cat - )
 else

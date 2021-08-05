@@ -18,7 +18,7 @@ RESULT_LIST="config/Templates/prune_list/SomaticCNV.stage_files_delete.dat"
 ARGS="-P $RESULT_LIST"
 
 # -F - finalize and compress jobs immediately upon completion
-ARGS="$ARGS -F"
+#ARGS="$ARGS -F"
 
 # spawning cromwell server (-S) happens only if -F is defined by user
 ARGS="$ARGS -X -Xmx10g -G $CWL_ROOT_H -D \"$DB_ARGS\" -c $CQ_ROOT_C -S $SYSTEM"

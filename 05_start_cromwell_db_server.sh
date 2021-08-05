@@ -5,8 +5,8 @@
 # and should exit when the docker container exits
 
 source Project.config.sh
-bash cromwell-server/spawn_cromwell_server.sh $SYSTEM
 
-echo Suggestion:
-echo export PATH="\$PATH:./src"
+CMD="bash src/spawn_cromwell_server.sh $CONFIG_FILE"
+>&2 echo Running $CMD
+eval $CMD
 

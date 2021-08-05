@@ -29,7 +29,7 @@ Optional options
         ./call-canonical_filter/execution/output/HotspotFiltered.vcf
 
 RID is RunID, and can be either a Case or a WorkflowID.  If RID is - then read
-RID from STDIN.  If RID is not defined, read from CASES_FN file.
+RID from STDIN.  If RID is not defined, read from first column of CASES_FN file.
 
 Datatidy performs the following task:
 * `query` - Evaluate and print for each run data directory. Values in brackets printed with -w
@@ -172,7 +172,7 @@ shift $((OPTIND-1))
 # Note that if no Run IDs defined, assume RIDS='-'
 if [ "$#" == 0 ]; then
     confirm $CASES_FN
-    RIDS=$(cat $CASES_FN)
+    RIDS=$(cat $CASES_FN | cut -f 1)
 elif [ "$1" == "-" ] ; then
     RIDS=$(cat - )
 else

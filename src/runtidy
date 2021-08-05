@@ -77,7 +77,7 @@ help prevent inadvertant data loss from stashing running jobs)
 
 All runs regardless of status are processed for `register` and `query` tasks.
 
-If CASE is - then read CASE from STDIN.  If CASE is not defined, read from CASES_FN file.
+If CASE is - then read CASE from STDIN.  If CASE is not defined, read from first column of CASES_FN file.
 `runtidy` script does not WorkflowIDs as arguments to define runs
 
 This script relies on `cq` to get WorkflowID and status associated with each case
@@ -203,7 +203,7 @@ fi
 # Note that if no cases defined, assume CASE='-'
 if [ "$#" == 0 ]; then
     confirm $CASES_FN
-    CASES=$(cat $CASES_FN)
+    CASES=$(cat $CASES_FN | cut -f 1 )
 elif [ "$1" == "-" ] ; then
     CASES=$(cat - )
 else

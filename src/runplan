@@ -24,7 +24,7 @@ Options:
 -c CROMWELL_QUERY: explicit path to cromwell query utility `cq`.  Default "cq" 
 -R RESTART_MAP: file listing case and workflow IDs for each case when restarting runs.  Requires RESTART_ROOT in PARAMS
 -U UUID_MAP: optional file listing tumor and normal UUIDs for each case.  This bypasses matching of BamMap by 
-    case, sample type, experimental strategy, and reference.  TSV file with columns CASE, TUMOR_UUID, NORMAL_UUID
+    case, sample type, experimental strategy, and reference.  TSV file with columns RUN_NAME, CASE, TUMOR_UUID, NORMAL_UUID
 
 runplan uses BamMap and parameters file to review, initialize, and summarize completed runs.  This
 script makes use of the PARAMS file (default Project.config.sh) to get various parameters
@@ -39,7 +39,7 @@ runplan performs the following tasks, specified with -x:
 * `summary`: Obtain run inputs and result data to generate an analysis summary file
   - Defined here: https://docs.google.com/document/d/1Ho5cygpxd8sB_45nJ90d15DcdaGCiDqF0_jzIcc-9B4/edit
 
-If CASE is - then read CASE from STDIN.  If CASE is not defined, read from CASES_FN file.
+If CASE is - then read CASE from STDIN.  If CASE is not defined, read from first column of CASES_FN file (i.e., RUN_NAME).
 
 Note, we have some embedded assumptions about workflow inputs here which should ideally be separated out
 for each workflow.  For now, deal with a superset of substituted variables.
@@ -292,7 +292,7 @@ init_params_kv
 # Note that if no cases defined, assume CASE='-'
 if [ "$#" == 0 ]; then
     confirm "$CASES_FN" $ONLYWARN
-    CASES=$(cat $CASES_FN)
+    CASES=$(cat $CASES_FN | cut -f 1)
 elif [ "$1" == "-" ] ; then
     CASES=$(cat - )
 else
@@ -471,7 +471,7 @@ function get_tumor {
         TUMOR=$(get_BAM $CASE $TUMOR_ST)
         test_exit_status
     else
-        TUMOR_UUID=$(grep $CASE $UUID_MAP | cut -f 2)
+        TUMOR_UUID=$(grep $CASE $UUID_MAP | cut -f 3)
         test_exit_status
         TUMOR=$(get_BAM $CASE $TUMOR_UUID)
         test_exit_status
@@ -485,7 +485,7 @@ function get_normal {
         NORMAL=$(get_BAM $CASE $NORMAL_ST)
         test_exit_status
     else
-        NORMAL_UUID=$(grep $CASE $UUID_MAP | cut -f 3)
+        NORMAL_UUID=$(grep $CASE $UUID_MAP | cut -f 4)
         test_exit_status
         NORMAL=$(get_BAM $CASE $NORMAL_UUID)
         test_exit_status
@@ -743,14 +743,16 @@ else
     exit 1
 fi
 
-for CASE in $CASES; do
+for L in $CASES; do
+    RUN_NAME=$(echo "$L" | cut -f 1)
+
     if [ "$PROGRESS" ]; then
-        >&2 echo Processing $CASE 
+        >&2 echo Processing $RUN_NAME 
     fi
 
 # this goes into called functions
     if [ $TASK == "query" ]; then
-        do_query $CASE 
+        do_query $RUN_NAME 
     elif [ $TASK == "yaml" ]; then
 
         if [ $YAMLD != "-" ]; then
@@ -758,7 +760,7 @@ for CASE in $CASES; do
         else
             YAML_FN="-"
         fi
-        do_yaml $CASE $YAML_FN
+        do_yaml $RUN_NAME $YAML_FN
 
         # Now do a sanity check on YAML files - make sure all files listed in it exist
         SANITY=$(grep -v "#" $YAML_FN | grep path | cut -f 2 -d : | xargs ls -l 2>&1 >/dev/null)
@@ -778,7 +780,7 @@ for CASE in $CASES; do
         done
 
     elif [ $TASK == "summary" ]; then
-        do_summary $CASE 
+        do_summary $RUN_NAME 
     fi
 
     if [ $JUSTONE ]; then

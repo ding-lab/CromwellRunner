@@ -34,7 +34,7 @@ RID is RunID, and can be either a Case or a WorkflowID.  Examples:
 * `cq CASE1 CASE2 CASE3` - returns status of runs for three cases.  TODO: discuss how this looked up
 * `cq WID1 WID2` - returns status for two runs with given WorkflowIDs
 
-If RID is - then read RID from STDIN.  If RID is not defined, read from CASES_FN file.
+If RID is - then read RID from STDIN.  If RID is not defined, read from first column of CASES_FN file.
 
 Evaluates the following information for each case
 * The workflow ID of the cromwell job
@@ -346,7 +346,7 @@ fi
 # Note that if no Run IDs defined, assume RIDS='-'
 if [ "$#" == 0 ]; then
     confirm $CASES_FN
-    RIDS=$(cat $CASES_FN)
+    RIDS=$(cat $CASES_FN | cut -f 1)
 elif [ "$1" == "-" ] ; then
     RIDS=$(cat - )
 else
