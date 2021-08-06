@@ -1,3 +1,0 @@
-Branch with experimental changes to use filebased db as suggested by Tom Mooney
-
-Other changes include support for UUID_MAP 4-column format
