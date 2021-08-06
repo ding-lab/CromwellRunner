@@ -13,6 +13,7 @@
 # MGI system with Cromwell output to gc2541
 ###############################################################################################
 
+WORKFLOW="TinDaisy"
 SYSTEM="MGI"
 LSF_CONF="/opt/lsf9/conf/lsf.conf"
 LSFQ="research-hpc"
@@ -30,7 +31,10 @@ CROMWELL_JAR="/usr/local/cromwell/cromwell-47.jar"
 # Workflow root - where Cromwell output goes.  This value replaces text WORKFLOW_ROOT in CONFIG_TEMPLATE,
 # and is written to CONFIG_FILE
 WORKFLOW_ROOT="/gscmnt/gc2541/cptac3_analysis"
+# This is template for cromwell run
 CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.MGI.template.dat"
+# this is template for cromwell server
+CONFIG_SERVER_TEMPLATE="config/Templates/cromwell-config/server-cromwell-config.MGI.dat"
 
 # Path to BamMap, which is a file which defines sequence data path and other metadata
 # BamMap format is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
@@ -44,7 +48,7 @@ REF_ROOT="/gscmnt/gc7202/dinglab/common/Reference/A_Reference"
 # CWL_ROOT is needed for CWL.  It is the container path to where project is installed
 # This is also used in rungo to get git status of project for tracking purposes
 # Use _C for arguments to scripts
-CWL_ROOT_H="/gscuser/mwyczalk/projects/TinDaisy/TinDaisy"
+CWL_ROOT_H="./CWL/TinDaisy"
 CWL_ROOT_C="/usr/local/TinDaisy"
 
 # path to CromwellRunner and its scripts.  We map local path to absolute path in container
@@ -123,6 +127,7 @@ CASES_FN="dat/cases.dat"
 # not sure where this should go - seems specific to CromwellRunner setup
 # Think this is OUTPUT of config creation step
 CONFIG_FILE="dat/cromwell-config-db.dat"
+CONFIG_SERVER_FILE="dat/cromwell-server-config-db.dat"
 
 # RESTART_ROOT used when restarting
 # this is not a restart

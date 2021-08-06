@@ -466,11 +466,13 @@ function init_yaml {
 }
 
 function get_tumor {
+    CASE=$1
     if [ -z $UUID_MAP ]; then
         # we get details about tumor, normal samples from BamMap for every case
         TUMOR=$(get_BAM $CASE $TUMOR_ST)
         test_exit_status
     else
+# This won't work if CASE and RUN_NAME differ
         TUMOR_UUID=$(grep $CASE $UUID_MAP | cut -f 3)
         test_exit_status
         TUMOR=$(get_BAM $CASE $TUMOR_UUID)
@@ -480,6 +482,7 @@ function get_tumor {
 }
 
 function get_normal {
+    CASE=$1
     if [ -z $UUID_MAP ]; then
         # we get details about tumor, normal samples from BamMap for every case
         NORMAL=$(get_BAM $CASE $NORMAL_ST)
@@ -494,13 +497,13 @@ function get_normal {
 }
 
 function do_yaml {
-    CASE=$1
+    RUN_NAME=$1
     YAML_FN=$2
 
-    TUMOR=$(get_tumor $CASE)
+    TUMOR=$(get_tumor $RUN_NAME)
     test_exit_status
 
-    NORMAL=$(get_normal $CASE)
+    NORMAL=$(get_normal $RUN_NAME)
     test_exit_status
 
     # TUMOR and NORMAL look like this: "BAM_path sample_name UUID Disease"
@@ -512,7 +515,7 @@ function do_yaml {
 
     # If RESTART_MAP is defined, get RESTART_D as RESTART_ROOT/UUID
     if [ ! -z $RESTART_MAP ]; then
-        RESTART_D=$(get_restartd $CASE $RESTART_MAP)
+        RESTART_D=$(get_restartd $RUN_NAME $RESTART_MAP)
         test_exit_status
         PARAM_KV="$PARAM_KV RESTART_D:$RESTART_D"
     fi
@@ -756,7 +759,7 @@ for L in $CASES; do
     elif [ $TASK == "yaml" ]; then
 
         if [ $YAMLD != "-" ]; then
-            YAML_FN="$YAMLD/$CASE.yaml"
+            YAML_FN="$YAMLD/${RUN_NAME}.yaml"
         else
             YAML_FN="-"
         fi
