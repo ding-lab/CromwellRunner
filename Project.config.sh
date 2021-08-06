@@ -2,7 +2,7 @@
 # Project config
 #
 
-PROJECT="SomaticCNV-dev"
+PROJECT="SomaticCNV-821"
 
 # From ../12
 #SYSTEM_CONFIG="config/Definitions/System/MGI.gc2541.config.sh"

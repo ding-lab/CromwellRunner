@@ -1,7 +1,7 @@
 # Generate cromwell config file
 
-# This is sourced both here and in make_yaml.sh to fill out template parameters
-# CONFIG_TEMPLATE defines the specific template used
+# CONFIG_TEMPLATE defines the template used used for `cromwell run`
+# CONFIG_SERVER_TEMPLATE defines the template used used for `cromwell server`
 
 PARAMS="Project.config.sh"
 
@@ -11,7 +11,12 @@ if [ ! -f $PARAMS ]; then
 fi
 source $PARAMS
 
->&2 echo Writing Cromwell config file to $CONFIG_FILE
-
 mkdir -p $(dirname $CONFIG_FILE)
+>&2 echo Writing Cromwell config file to $CONFIG_FILE
 bash src/make_config.sh $CONFIG_TEMPLATE $WORKFLOW_ROOT > $CONFIG_FILE
+
+mkdir -p $(dirname $CONFIG_SERVER_FILE)
+>&2 echo Writing Cromwell server config file to $CONFIG_SERVER_FILE
+bash src/make_config.sh $CONFIG_SERVER_TEMPLATE $WORKFLOW_ROOT > $CONFIG_SERVER_FILE
+
+

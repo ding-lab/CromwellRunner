@@ -10,16 +10,19 @@ source $LSF_CONF
 
 DB_ARGS="-Djavax.net.ssl.trustStorePassword=changeit -Djavax.net.ssl.trustStore=/home/m.wyczalkowski/lib/cromwell-jar/cromwell.truststore"
 
-# this is specific to SomaticCNV workflow to delete large staged BAMs
-# Remove this section for non-SomaticCNV
-RESULT_LIST="config/Templates/prune_list/SomaticCNV.stage_files_delete.dat"
-ARGS="-P $RESULT_LIST"
+if [ $WORKFLOW == "SomaticCNV" ]; then
+    >&2 echo Adding Results List specific to SomaticCNV workflow
+    # this is specific to SomaticCNV workflow to delete large staged BAMs
+    # Remove this section for non-SomaticCNV
+    RESULT_LIST="config/Templates/prune_list/SomaticCNV.stage_files_delete.dat"
+    ARGS="-P $RESULT_LIST"
+fi
 
 # -F - finalize and compress jobs immediately upon completion
 ARGS="$ARGS -F"
 
 # spawning cromwell server (-S) happens only if -F is defined by user
-ARGS="$ARGS -X -Xmx10g -G $CWL_ROOT_H -D \"$DB_ARGS\" -c $CQ_ROOT_C -S $SYSTEM"
+ARGS="$ARGS -X -Xmx10g -G $CWL_ROOT_H -D \"$DB_ARGS\" -c $CQ_ROOT_C -S $CONFIG_SERVER_FILE"
 
 CMD="bash src/rungo $ARGS $LSF_ARGS -c src -p $PROJECT -R $CROMWELL_JAR -W $CWL -C $CONFIG_FILE $@"
 >&2 echo Running: $CMD

@@ -6,7 +6,7 @@
 
 source Project.config.sh
 
-CMD="bash src/spawn_cromwell_server.sh $CONFIG_FILE"
+CMD="bash src/spawn_cromwell_server.sh $CONFIG_SERVER_FILE"
 >&2 echo Running $CMD
 eval $CMD
 
