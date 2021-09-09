@@ -48,7 +48,8 @@ REF_ROOT="/gscmnt/gc7202/dinglab/common/Reference/A_Reference"
 # CWL_ROOT is needed for CWL.  It is the container path to where project is installed
 # This is also used in rungo to get git status of project for tracking purposes
 # Use _C for arguments to scripts
-CWL_ROOT_H="./CWL/TinDaisy"
+CWL_ROOT_H_LOC="./CWL/TinDaisy"
+CWL_ROOT_H=$(readlink -f $CWL_ROOT_H_LOC)
 CWL_ROOT_C="/usr/local/TinDaisy"
 
 # path to CromwellRunner and its scripts.  We map local path to absolute path in container
