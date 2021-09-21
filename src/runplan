@@ -610,6 +610,12 @@ function do_summary {
 
         confirm $RF $ONLYWARN  # complain if result file does not exist
 
+        # if result file does not exist and we have ONLYWARN turned on, skip writing file (so that output has only existing files)
+        if [ ! -s $RF ]; then
+            >&2 echo WARNING: $RF does not exist.  Skipping
+            continue
+        fi
+
         WID=` $CROMWELL_QUERY -V -q wid $CASE `
         test_exit_status
 
@@ -627,6 +633,8 @@ function do_summary {
             FILE_FORMAT="SEG"
         elif [ "$EXT" == "cnv" ]; then
             FILE_FORMAT="CNV"
+        elif [ "$EXT" == "dat" ]; then
+            FILE_FORMAT="DAT"
         else
             >&2 echo ERROR: Unknown file format $EXT
             exit 1
