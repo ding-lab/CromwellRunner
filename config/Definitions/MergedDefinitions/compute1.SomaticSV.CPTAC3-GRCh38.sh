@@ -16,7 +16,6 @@ LSF_GROUP="/m.wyczalkowski/cromwell-runner"
 LSFQ="dinglab"              # for MGI, queue is "research-hpc"
 LSF_ARGS="-B \"-g $LSF_GROUP\"  -M -q $LSFQ"
 
-
 # This is in CromwellRunner container
 CROMWELL_JAR="/usr/local/cromwell/cromwell-47.jar"
 
@@ -41,7 +40,8 @@ REF_ROOT="/storage1/fs1/dinglab/Active/Resources/References"
 # CWL_ROOT is needed for CWL.  It is the container path to where project is installed
 # This is also used in rungo to get git status of project for tracking purposes
 # Use _C for arguments to scripts
-CWL_ROOT_H="/home/m.wyczalkowski/Projects/SomaticSV"
+CWL_ROOT_H_LOC="./CWL/SomaticSV"
+CWL_ROOT_H=$(readlink -f $CWL_ROOT_H_LOC)
 CWL_ROOT_C="/usr/local/SomaticSV"
 
 # path to CromwellRunner and its scripts.  We map local path to absolute path in container
@@ -55,7 +55,7 @@ export DATALOG="/storage1/fs1/m.wyczalkowski/Active/cromwell-data/CromwellRunner
 # Mapping home directory to /home/m.wyczalkowski is convenient because it includes environment
 # definitions for interactive work.  All scripts should run without this mapping, however
 # Note that /home used to be expanded to /storage1/fs1/home1/Active/home
-HOME_MAP="/storage1/fs1/home1/Active/home/m.wyczalkowski:/home/m.wyczalkowski"
+HOME_MAP="$HOME"
 
 
 # All these volumes will be mounted, with paths in container same as on host unless otherwise specified.
