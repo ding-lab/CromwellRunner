@@ -16,7 +16,7 @@ Options:
 -p PARAM_SCRIPT: path to executable which returns a list of key:value pairs 
    used to create configuration file from YAML_TEMPLATE.  Required
 -g: Issue warnings rather than quitting for testing
--R RESTART_MAP: file listing case and workflow IDs for each case when restarting runs.  
+-R RESTART_MAP: file listing case and workflow IDs for each case when restarting runs.  This is not fully implemented
 -Y YAML_TEMPLATE: template file used to generate YAML configuration file for each template.  Required
 -U RUN_LIST: file with lines composed of RUN_NAME, CASE_NAME, and one or more UUIDs corresponding to data to be
    processed.  Required.

@@ -14,7 +14,7 @@ Options:
 -o OUT: output file.  Default: UUID_MAP.dat
 -r REF_NAME: reference name, for matching in BAM_MAP. Default: hg38
 -e ES: Experimental strategy, for matching in BAM_MAP. Default: WXS
--g GST: Run in germline mode, with given sample type used
+-G GST: Run in germline mode, with given sample type used
 
 Iterate over all CASEs in CASE_NAMES and create a RUN_NAME associated with each
 tumor sample for that case.  Assume only one normal exists.
@@ -22,7 +22,7 @@ tumor sample for that case.  Assume only one normal exists.
 By default, a tumor/normal RUN_LIST is created.  This has the output with the columns,
 * RUN_NAME   CASE    TUMOR_UUID  NORMAL_UUID
 
-If germline mode (-g) is defined, the output has the columns
+If germline mode (-G) is defined, the output has the columns
 * RUN_NAME   CASE    SAMPLE_UUID
 where the sample chosen is defined by ST (e.g., 'tumor' or 'blood_normal')
 
@@ -48,7 +48,7 @@ REF_NAME="hg38"
 ES="WXS"
 
 # http://wiki.bash-hackers.org/howto/getopts_tutorial
-while getopts ":ho:r:e:g:" opt; do
+while getopts ":ho:r:e:G:" opt; do
   case $opt in
     h)
       echo "$USAGE"
@@ -63,7 +63,7 @@ while getopts ":ho:r:e:g:" opt; do
     e) 
       ES=$OPTARG
       ;;
-    g) 
+    G) 
       GST=$OPTARG
       ;;
     \?)
