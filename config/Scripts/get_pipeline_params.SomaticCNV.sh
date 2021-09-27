@@ -170,8 +170,6 @@ function get_BAM {
     #    10  UUID
     #    11  system
 
-    >&2 echo DEBUG: grep $UUID $BAMMAP
-
     LINE_A=$(grep $UUID $BAMMAP)
 
     if [ -z "$LINE_A" ]; then

@@ -9,7 +9,6 @@ Usage: runplan [options] [RUN_NAME1 [ RUN_NAME2 ... ]]
 
 Options:
 -h: print usage information
--v: Indicate progress in stderr
 -d: Print debug information about YAML processing
 -1: Quit after evaluating one case
 -y YAMLD: output directory of YAML files.  If "-", write YAML to stdout.  Default: ./yaml
@@ -52,14 +51,11 @@ YAMLD="./yaml"
 PARAMS="Project.config.sh"
 PYTHON="/usr/bin/python"
 
-while getopts ":hvd1y:P:p:gR:Y:U:" opt; do
+while getopts ":hd1y:P:p:gR:Y:U:" opt; do
   case $opt in
     h)  
       echo "$USAGE"
       exit 0
-      ;;
-    v) 
-      PROGRESS=1
       ;;
     d) 
       TP_DEBUG=1
@@ -193,9 +189,7 @@ init_yaml
 for L in $RUN_NAMES; do
     RUN_NAME=$(echo "$L" | cut -f 1)
 
-    if [ "$PROGRESS" ]; then
-        >&2 echo Processing $RUN_NAME 
-    fi
+    >&2 echo Processing $RUN_NAME 
 
     if [ $YAMLD != "-" ]; then
         YAML_FN="$YAMLD/${RUN_NAME}.yaml"
