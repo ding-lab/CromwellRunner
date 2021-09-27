@@ -1,17 +1,13 @@
 # Generate YAML config files
 
-# Usage:
-# 20_make_yaml.sh -P PARAMS
-
 # All arguments are passed as is to src/runplan
 
-# Note that running `runplan` with no arguments will give back useful information about anticipated runs
-# perhaps add this as default?
-
+cd ..
 PARAMS="Project.config.sh"
+source $PARAMS
 
 >&2 echo Writing YAML files
-CMD="bash src/runplan -x yaml -P $PARAMS $@ "
+CMD="bash src/runplan -P $PARAMS -p $PARAM_SCRIPT -U $RUN_LIST -Y $YAML_TEMPLATE $@ "
 
 >&2 echo Running: $CMD
 eval $CMD

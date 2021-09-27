@@ -88,11 +88,11 @@ CWL="$CWL_ROOT_C/cwl/workflows/bicseq2-cwl.case-control.cwl"
 # template used for generating YAML files
 YAML_TEMPLATE="config/Templates/YAML/SomaticCNV.template.yaml"
 
+# pipeline-specific script to obtain parameters to fill in YAML file, get_pipeline_params.XXX.sh
+PARAM_SCRIPT="config/Scripts/get_pipeline_params.SomaticCNV.sh"
+
 # These parameters used when finding data in BamMap
 ES="WGS"                            # experimental strategy
-
-TUMOR_ST="tumor"                    # Sample type for tumor BAM, for BAMMAP matching
-NORMAL_ST='blood_normal'            # Sample type for normal BAM, for BAMMAP matching.  Default 'blood_normal'
 
 # This one seem pretty low-level, since it is created and then consumed within CromwellRunner
 # not sure where this should go - seems specific to CromwellRunner setup
@@ -101,11 +101,11 @@ CONFIG_FILE="dat/cromwell-config-db.dat"
 CONFIG_SERVER_FILE="dat/cromwell-server-config-db.dat"
 
 # RESTART_ROOT used when restarting
-#RESTART_ROOT="$WORKFLOW_ROOT/cromwell-workdir/cromwell-executions/tindaisy.cwl"
+#RESTART_ROOT="$WORKFLOW_ROOT/cromwell-workdir/cromwell-executions/bicseq2-cwl.case-control.cwl"
 
-# List of cases to analyze.  This has to be created
-# may want to reconsider the use and implementation of case list
-CASES_FN="dat/cases.dat"
+# List of runs to analyze
+#CASES_FN="dat/cases.dat" # old
+RUN_LIST="dat/RUN_LIST.dat"
 
 # Mapping files
 MAP_PATH="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Analysis/WGS_CNV_Somatic/Datasets/inputs/GRCh38.d1.vd1.fa.150mer-noBedGraph.tar.gz"

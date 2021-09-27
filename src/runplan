@@ -4,72 +4,37 @@
 # https://dinglab.wustl.edu/
 
 read -r -d '' USAGE <<'EOF'
-Usage: runplan [options] [CASE1 [ CASE2 ... ]]
-  Review, initialize, and summarize runs
+Usage: runplan [options] [RUN_NAME1 [ RUN_NAME2 ... ]]
+  Create YAML configuration files
 
 Options:
 -h: print usage information
 -v: Indicate progress in stderr
 -d: Print debug information about YAML processing
 -1: Quit after evaluating one case
--x TASK: Execute given task.  Values: 'query' (default), 'yaml', 'summary'
 -y YAMLD: output directory of YAML files.  If "-", write YAML to stdout.  Default: ./yaml
--P PARAMS: parameters file which holds varibles for substution in template, read via `source $PARAMS`
--u: Print BAM UUIDs in query
--p: Print BAM paths in query
--n: Print BAM sample names in query
--w: Print additional details in query (REF_PATH, CWL_ROOT, DBSNP_DB, VEP_CACHE_GZ).  Requires PARAMS 
+-P PARAMS: parameters file which holds varibles for substution in template.  Not read by this script but passed to PARAM_SCRIPT
+-p PARAM_SCRIPT: path to executable which returns a list of key:value pairs 
+   used to create configuration file from YAML_TEMPLATE.  Required
 -g: Issue warnings rather than quitting for testing
--s SUMMARY_OUT: output analysis summary file for task `summary`.  If '-', write to STDOUT
--c CROMWELL_QUERY: explicit path to cromwell query utility `cq`.  Default "cq" 
--R RESTART_MAP: file listing case and workflow IDs for each case when restarting runs.  Requires RESTART_ROOT in PARAMS
--U UUID_MAP: optional file listing tumor and normal UUIDs for each case.  This bypasses matching of BamMap by 
-    case, sample type, experimental strategy, and reference.  TSV file with columns RUN_NAME, CASE, TUMOR_UUID, NORMAL_UUID
+-R RESTART_MAP: file listing case and workflow IDs for each case when restarting runs.  
+-Y YAML_TEMPLATE: template file used to generate YAML configuration file for each template.  Required
+-U RUN_LIST: file with lines composed of RUN_NAME, CASE_NAME, and one or more UUIDs corresponding to data to be
+   processed.  Required.
 
-runplan uses BamMap and parameters file to review, initialize, and summarize completed runs.  This
-script makes use of the PARAMS file (default Project.config.sh) to get various parameters
+runplan uses BamMap, catalog, and parameters file to initialize runs.  Loops
+over RUN_LIST to create per-run configuration files ("YAML" files)
+Pipeline-specific details, including reading of parameters file, is delegated
+to get_pipeline_parameters scripts, which provides variable substitution to
+generate configuration files based on YAML_TEMPLATE.  Output YAML filename is YAMLD/RUN_NAME.yaml  
+All paths in YAML output are tested to make sure they exist
 
-runplan performs the following tasks, specified with -x:
-* `query`: return information about inputs to be used for generating YAML file.  This is the default task
-  - Values returned are case, disease, tumor BAM, normal BAM, [optionaly RESTART_D, if specified ]
-  - flags -u, -p, -n specify whether to write BAM as UUID, path, or sample name, respectively.
-    These may be combined.  If not specified, -n is assumed
-  - flag -w will print detailed information about inputs for YAML file
-* `yaml`: Write YAML files ( typically ./yaml/CASE.yaml) contain inputs for each run, including paths to BAMs. 
-* `summary`: Obtain run inputs and result data to generate an analysis summary file
-  - Defined here: https://docs.google.com/document/d/1Ho5cygpxd8sB_45nJ90d15DcdaGCiDqF0_jzIcc-9B4/edit
+If RUN_NAME1 is - then read RUN_NAME from STDIN.  If RUN_NAME1 is not defined,
+read from first column of RUN_NAME file
 
-If CASE is - then read CASE from STDIN.  If CASE is not defined, read from first column of CASES_FN file (i.e., RUN_NAME).
-
-Note, we have some embedded assumptions about workflow inputs here which should ideally be separated out
-for each workflow.  For now, deal with a superset of substituted variables.
-
-Output YAML filename is CASE.yaml.  It is based on YAML_TEMPLATE, with the following variables substituted:
-    * NORMAL_BAM
-    * TUMOR_BAM
-    * REF_PATH
-    * RESTART_D
-    * TUMOR_BARCODE
-    * NORMAL_BARCODE
-    * PARAM_ROOT            TD
-    * DBSNP_DB              TD, not TD2
-    * VEP_CACHE_GZ          TD
-    * VEP_CACHE_VERSION     TD
-    * ASSEMBLY              TD
-    * CHRLIST               TD
-    * CLINVAR_ANNOTATION    TD2
-    * CALL_REGIONS          TD2
-    * CANONICAL_BED         TD2
-    * VAF_RESCUE_BED        TD2 VAF Rescue
-    * MAP_PATH              SomaticCNV only
-    * GENE_BED_PATH         SomaticCNV only
-
-Source of info:
-    * TD indicates parameters useful only for TinDaisy, TD2 are for TinDaisy2
-    * TUMOR_BAM and NORMAL_BAM are defined by lookup of CASE in BamMap
-    * RESTART_D is defined when -R flag is set
-    * TUMOR_BARCODE and NORMAL_BARCODE are defined by lookup of UUID in Catalog file
-    * Remainder defined in PARAMS file
+Run-specific details, including CASE_NAME and UUID of input data, are obtained from RUN_LIST 
+for a given RUN_NAME.  The contents of the matching line are then passed as input arguments to PARAM_SCRIPT,
+which returns a list of key:value pairs used for populating YAML_TEMPLATE
 
 Restarting of runs is supported by making available RESTART_D variable in YAML
 template, which provides path to root directory of prior run.
@@ -83,17 +48,11 @@ source src/cromwell_utils.sh
 
 SCRIPT=$(basename $0)
 
-TASK="query"
 YAMLD="./yaml"
-SUMMARY_OUT="./dat/analysis_summary.dat"
 PARAMS="Project.config.sh"
-CROMWELL_QUERY="bash src/cq"
 PYTHON="/usr/bin/python"
 
-TUMOR_ST='tumor'
-NORMAL_ST='blood_normal'
-
-while getopts ":hdv1P:x:y:upnwgs:c:R:U:" opt; do
+while getopts ":hvd1y:P:p:gR:Y:U:" opt; do
   case $opt in
     h)  
       echo "$USAGE"
@@ -108,42 +67,26 @@ while getopts ":hdv1P:x:y:upnwgs:c:R:U:" opt; do
     1)  
       JUSTONE=1
       ;;
-    P)  
-      PARAMS="$OPTARG"
-      ;;
-    x)  
-      TASK="$OPTARG"
-      ;;
     y)  
       YAMLD="$OPTARG"
       ;;
-    u) 
-      BAM_UUID=1
+    P)  
+      PARAMS="$OPTARG"
       ;;
-    p) 
-      BAM_PATH=1
-      ;;
-    n) 
-      BAM_SN=1
-      ;;
-    w) 
-      QUERY_DETAIL=1
+    p)  
+      PARAM_SCRIPT="$OPTARG"
       ;;
     g) 
       ONLYWARN=1
       ;;
-    s)  
-      SUMMARY_OUT="$OPTARG"
-      ;;
-    c) 
-      CROMWELL_QUERY="$OPTARG"
-      ;;
     R) 
       RESTART_MAP="$OPTARG"
       ;;
+    Y) 
+      YAML_TEMPLATE="$OPTARG"
+      ;;
     U) 
-      UUID_MAP="$OPTARG"
-      confirm $UUID_MAP
+      RUN_LIST="$OPTARG"
       ;;
     \?)
       >&2 echo "Invalid option: -$OPTARG" 
@@ -171,287 +114,9 @@ function complain {
 
 }
 
-# init_params reads PARAMS and fills in several variables used for BamMap queries
-# Parameters processed here are not passed to TemplateParser.py directly
-function init_params_common {
-    if [ -z $PARAMS ]; then
-        >&2 echo ERROR: Parameter file  not defined \(-p\)
-        >&2 echo "$USAGE"
-        exit 1
-    fi
+function init_yaml {
     confirm $PARAMS $ONLYWARN
 
-    source $PARAMS
-
-    # These parameters used to be passed as arguments, but are now in PARAMS
-    if [ -z $BAMMAP ]; then
-        complain "BAMMAP not defined in $PARAMS" $ONLYWARN
-        BAMMAP="undefined"
-    else
-        confirm $BAMMAP $ONLYWARN
-    fi
-    if [ -z $CASES_FN ]; then
-        complain "CASES_FN not defined in $PARAMS" $ONLYWARN
-        $CASES_FN="undefined"
-    else
-        confirm $CASES_FN $ONLYWARN
-    fi
-    if [ -z $YAML_TEMPLATE ]; then
-        complain "YAML_TEMPLATE not defined in $PARAMS" $ONLYWARN
-        YAML_TEMPLATE="undefined"
-    else
-        confirm $YAML_TEMPLATE $ONLYWARN
-    fi
-
-    # the parameters below, also required, are used for matching BamMap
-    if [ -z $ES ]; then
-        complain "ES not defined in $PARAMS" $ONLYWARN
-        ES="undefined"
-    fi
-    if [ -z $TUMOR_ST ]; then
-        complain "TUMOR_ST not defined in $PARAMS" $ONLYWARN
-        TUMOR_ST="undefined"
-    fi
-    if [ -z $NORMAL_ST ]; then
-        complain "NORMAL_ST not defined in $PARAMS" $ONLYWARN
-        NORMAL_ST="undefined"
-    fi
-    if [ -z $REF_NAME ]; then
-        complain "REF_NAME not defined in $PARAMS" $ONLYWARN
-        REF_NAME="undefined"
-    fi
-
-}
-
-# PARAMS should already have been read
-# go through and set BATCH_PARAMS_KV for each parameter which has been defined.
-# Note that some of these may not be applicable to different workflows, but any
-# error checking about missing parameters will take place in TemplateParser.py
-#
-# Note adding additional kv parameters will require modifications to this function, 
-# an annoyance that may need to be addressed in the future
-function init_params_kv {
-
-    BATCH_PARAM_KV=""
-    if [ ! -z $REF_PATH ]; then   
-        BATCH_PARAM_KV="$BATCH_PARAM_KV REF_PATH:$REF_PATH"
-    fi
-    if [ ! -z $PARAM_ROOT ]; then
-        BATCH_PARAM_KV="$BATCH_PARAM_KV PARAM_ROOT:$PARAM_ROOT"
-    fi
-    if [ ! -z $DBSNP_DB ]; then
-        BATCH_PARAM_KV="$BATCH_PARAM_KV DBSNP_DB:$DBSNP_DB"
-    fi
-    if [ ! -z $VEP_CACHE_GZ ]; then
-        BATCH_PARAM_KV="$BATCH_PARAM_KV VEP_CACHE_GZ:$VEP_CACHE_GZ"
-    fi
-    if [ ! -z $VEP_CACHE_VERSION ]; then
-        BATCH_PARAM_KV="$BATCH_PARAM_KV VEP_CACHE_VERSION:$VEP_CACHE_VERSION"
-    fi
-    if [ ! -z $ASSEMBLY ]; then
-        BATCH_PARAM_KV="$BATCH_PARAM_KV ASSEMBLY:$ASSEMBLY"
-    fi
-    if [ ! -z $CHRLIST ]; then
-        BATCH_PARAM_KV="$BATCH_PARAM_KV CHRLIST:$CHRLIST"
-    fi
-    if [ ! -z $CLINVAR_ANNOTATION ]; then
-        BATCH_PARAM_KV="$BATCH_PARAM_KV CLINVAR_ANNOTATION:$CLINVAR_ANNOTATION"
-    fi
-    if [ ! -z $CALL_REGIONS ]; then
-        BATCH_PARAM_KV="$BATCH_PARAM_KV CALL_REGIONS:$CALL_REGIONS"
-    fi
-    if [ ! -z $CANONICAL_BED ]; then
-        BATCH_PARAM_KV="$BATCH_PARAM_KV CANONICAL_BED:$CANONICAL_BED"
-    fi
-    if [ ! -z $VAF_RESCUE_BED ]; then
-        BATCH_PARAM_KV="$BATCH_PARAM_KV VAF_RESCUE_BED:$VAF_RESCUE_BED"
-    fi
-
-#    * MAP_PATH              SomaticCNV only
-#    * GENE_BED_PATH         SomaticCNV only
-# Adding SomaticCNV-specific variables
-    if [ ! -z $MAP_PATH ]; then
-        BATCH_PARAM_KV="$BATCH_PARAM_KV MAP_PATH:$MAP_PATH"
-    fi
-    if [ ! -z $GENE_BED_PATH ]; then
-        BATCH_PARAM_KV="$BATCH_PARAM_KV GENE_BED_PATH:$GENE_BED_PATH"
-    fi
-
-}
-
-# Goal of kv parameter parsing is to build up a string PARAM_KV consisting of "key1:value1" pairs, e.g.,
-# PARAM_KV="TUMOR_BAM:/path/to/file NORMAL_BAM:/path/to/file ..."
-# such a string consists of parameters common to the entire batch and those specific to a particular case
-init_params_common
-init_params_kv
-
-# this allows us to get case names in one of three ways:
-# 1: cq CASE1 CASE2 ...
-# 2: cat cases.dat | cq -
-# 3: read from CASES_FN file
-# Note that if no cases defined, assume CASE='-'
-if [ "$#" == 0 ]; then
-    confirm "$CASES_FN" $ONLYWARN
-    CASES=$(cat $CASES_FN | cut -f 1)
-elif [ "$1" == "-" ] ; then
-    CASES=$(cat - )
-else
-    CASES="$@"
-fi
-
-# Usage:
-#   get_BAM CASE ST
-# searches for entries with
-#   experimental strategy = WGS, WXS, RNA-Seq, etc
-#   sample type = as given by ST
-#   case = as given by CASE
-# Alternatively, if sample type is a UUID, search BamMap for this UUID
-# Returns "BAM_path sample_name UUID Disease"
-function get_BAM {
-    CASE=$1
-    ST=$2
-    # BAMMAP, ES, REF_NAME  as global
-
-    # BamMap columns
-    #     1  sample_name
-    #     2  case
-    #     3  disease
-    #     4  experimental_strategy
-    #     5  sample_type
-    #     6  data_path
-    #     7  filesize
-    #     8  data_format
-    #     9  reference
-    #    10  UUID
-    #    11  system
-
-    # Evaluate if ST is a UUID.  If it is, then just grep the BamMap for this value
-    # From https://stackoverflow.com/questions/38416602/check-if-string-is-uuid
-    if [[ $ST =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then
-        LINE_A=$(grep $ST $BAMMAP)
-    else
-        LINE_A=$(awk -v c=$CASE -v ref=$REF_NAME -v es=$ES -v st=$ST 'BEGIN{FS="\t";OFS="\t"}{if ($2 == c && $4 == es && $5 == st && $9 == ref) print}' $BAMMAP)
-    fi
-
-    if [ -z "$LINE_A" ]; then
-        if [ $ONLYWARN ]; then
-            >&2 echo WARNING: $REF_NAME $CASE $ES $ST sample not found in $BAMMAP
-        else
-            >&2 echo ERROR: $REF_NAME $CASE $ES $ST sample not found in $BAMMAP
-            exit 1
-        fi
-    elif [ $(echo "$LINE_A" | wc -l) != "1" ]; then
-        if [ $ONLYWARN ]; then
-            >&2 echo WARNING: $REF_NAME $CASE $ES $ST sample has multiple matches in $BAMMAP
-            >&2 echo We will choose the first match.  Please review YAML file carefully
-            LINE_A=$(echo "$LINE_A" | head -n 1)
-        else
-            >&2 echo ERROR: $REF_NAME $CASE $ES $ST sample has multiple matches in $BAMMAP
-            >&2 echo Not making assumptions about which to choose, YAML will need to be created manually
-            exit 1
-        fi
-    fi
-
-    # Sample Name and UUID will be needed for analysis summary
-    SN=$(echo "$LINE_A" | cut -f 1)
-    DIS=$(echo "$LINE_A" | cut -f 3)
-    BAM=$(echo "$LINE_A" | cut -f 6)
-    UUID=$(echo "$LINE_A" | cut -f 10)
-
-    printf "$BAM\t$SN\t$UUID\t$DIS"
-}
-
-# Obtain aliquot name associated with given UUID from Catalog file
-#  Catalog files come from here: https://github.com/ding-lab/CPTAC3.catalog
-#  and aliquot names are column 6
-# TODO: allow aliquot names to be obtained even if Catalog file does not exist
-#  An option is pass a fake catalog file with two columns, UUID and Aliquot, and 
-#  check here how many columns the catalog file has.
-function get_aliquot {
-    UUID=$1
-    CATALOG=$2
-#$ header CPTAC3.Catalog.dat
-#     1  # sample_name
-#     2  case
-#     3  disease
-#     4  experimental_strategy
-#     5  short_sample_type
-#     6  aliquot
-#     7  filename
-#     8  filesize
-#     9  data_format
-#    10  result_type
-#    11  UUID
-#    12  MD5
-#    13  reference
-#    14  sample_type
-
-    LINE_A=$(grep $UUID $CATALOG)
-    if [ -z "$LINE_A" ]; then
-        if [ $ONLYWARN ]; then
-            >&2 echo WARNING: UUID $UUID not found in $CATALOG
-        else
-            >&2 echo ERROR: UUID $UUID not found in $CATALOG
-            exit 1
-        fi
-    elif [ $(echo "$LINE_A" | wc -l) != "1" ]; then
-        if [ $ONLYWARN ]; then
-            >&2 echo WARNING: UUID $UUID has multiple matches in $CATALOG
-            >&2 echo We will choose the first match.  Please review YAML file carefully
-            LINE_A=$(echo "$LINE_A" | head -n 1)
-        else
-            >&2 echo ERROR: UUID $UUID has multiple matches in $CATALOG
-            >&2 echo Not making assumptions about which to choose, YAML will need to be created manually
-            exit 1
-        fi
-    fi
-    ALIQUOT=$(echo "$LINE_A" | cut -f 6)
-    printf "$ALIQUOT"
-}
-
-# Returns base directory of prior run and confirms it exists
-# Error if CASE does not appear in RESTART_MAP exactly once
-function get_restartd {
-    CASE=$1
-    RESTART_MAP=$2
-
-    CMD="grep \"$CASE[[:space:]]\" $RESTART_MAP"
-    UUID=$(eval $CMD | cut -f 2)
-
-    if [ -z "$UUID" ]; then
-        if [ $ONLYWARN ]; then
-            >&2 echo WARNING: $CASE not found in $RESTART_MAP
-        else
-            >&2 echo ERROR: $CASE not found in $RESTART_MAP
-            exit 1
-        fi
-    elif [ $(echo "$UUID" | wc -l) != "1" ]; then
-        if [ $ONLYWARN ]; then
-            >&2 echo WARNING: $CASE sample has multiple matches in $RESTART_MAP
-            >&2 echo We will choose the first match.  Please review YAML file carefully
-            LINE_A=$(echo "$LINE_A" | head -n 1)
-        else
-            >&2 echo ERROR: $CASE sample has multiple matches in $RESTART_MAP
-            >&2 echo Not making assumptions about which to choose, YAML will need to be created manually
-            exit 1
-        fi
-    fi
-
-    RESTART_D="$RESTART_ROOT/$UUID"
-    if [ ! -s $RESTART_D ]; then
-        if [ $ONLYWARN ]; then
-            >&2 echo WARNING: $RESTART_D is not an existing directory.  Continuing
-        else
-            >&2 echo ERROR: $RESTART_D is not an existing directory
-            exit 1
-        fi
-    fi
-
-    printf "$RESTART_D"
-}
-
-
-function init_yaml {
     if [ -z $YAML_TEMPLATE ]; then
         >&2 echo ERROR: YAML template not defined \(-Y\)
         >&2 echo "$USAGE"
@@ -459,323 +124,90 @@ function init_yaml {
     fi
     confirm $YAML_TEMPLATE $ONLYWARN
 
+    if [ -z $PARAM_SCRIPT ]; then
+        >&2 echo ERROR: PARAM_SCRIPT not defined \(-p\)
+        >&2 echo "$USAGE"
+        exit 1
+    fi
+    confirm $PARAM_SCRIPT $ONLYWARN
+
+    if [ -z $RUN_LIST ]; then
+        >&2 echo ERROR: RUN_LIST not defined \(-U\)
+        >&2 echo "$USAGE"
+        exit 1
+    fi
+    confirm $RUN_LIST $ONLYWARN
+
     if [ $YAMLD != "-" ]; then
         mkdir -p $YAMLD
         test_exit_status
     fi
 }
 
-function get_tumor {
-    CASE=$1
-    if [ -z $UUID_MAP ]; then
-        # we get details about tumor, normal samples from BamMap for every case
-        TUMOR=$(get_BAM $CASE $TUMOR_ST)
-        test_exit_status
-    else
-# This won't work if CASE and RUN_NAME differ
-        TUMOR_UUID=$(grep $CASE $UUID_MAP | cut -f 3)
-        test_exit_status
-        TUMOR=$(get_BAM $CASE $TUMOR_UUID)
-        test_exit_status
-    fi
-    echo "$TUMOR"
-}
-
-function get_normal {
-    CASE=$1
-    if [ -z $UUID_MAP ]; then
-        # we get details about tumor, normal samples from BamMap for every case
-        NORMAL=$(get_BAM $CASE $NORMAL_ST)
-        test_exit_status
-    else
-        NORMAL_UUID=$(grep $CASE $UUID_MAP | cut -f 4)
-        test_exit_status
-        NORMAL=$(get_BAM $CASE $NORMAL_UUID)
-        test_exit_status
-    fi
-    echo "$NORMAL"
-}
-
-function do_yaml {
+# Create YAML configuration file in three steps:
+# * get per-run parameters from RUN_LIST by matching by RUN_NAME
+# * get key/value parameters by calling pipeline-specific PARAM_SCRIPT
+# * populate YAML_TEMPLATE by replacing "key" with "value" to generate YAML configuration file
+function make_yaml {
     RUN_NAME=$1
     YAML_FN=$2
 
-    TUMOR=$(get_tumor $RUN_NAME)
-    test_exit_status
-
-    NORMAL=$(get_normal $RUN_NAME)
-    test_exit_status
-
-    # TUMOR and NORMAL look like this: "BAM_path sample_name UUID Disease"
-
-    TUMOR_BAM=$(echo "$TUMOR" | cut -f 1)
-    NORMAL_BAM=$(echo "$NORMAL" | cut -f 1)
-
-    PARAM_KV="$BATCH_PARAM_KV TUMOR_BAM:$TUMOR_BAM NORMAL_BAM:$NORMAL_BAM"
-
-    # If RESTART_MAP is defined, get RESTART_D as RESTART_ROOT/UUID
-    if [ ! -z $RESTART_MAP ]; then
-        RESTART_D=$(get_restartd $RUN_NAME $RESTART_MAP)
-        test_exit_status
-        PARAM_KV="$PARAM_KV RESTART_D:$RESTART_D"
+    # find RUN_NAME in RUN_LIST; the matching line provides arguments to PARAM_SCRIPT
+    SARGS=$(awk -v run_name=$RUN_NAME '{if ($1 == run_name) print}' $RUN_LIST)
+    CMD="bash $PARAM_SCRIPT -P $PARAMS $SARGS"
+    if [ "$TP_DEBUG" == 1 ]; then
+        >&2 echo $SCRIPT Running: $CMD
+        DARG="-d"
     fi
+    
+    PARAM_KV=$(eval $CMD)
+    test_exit_status 
 
-    # Get barcode for tumor and normal
-    # If $CATALOG is defined, obtain NORMAL_BARCODE and _TUMOR based on aliquot column using lookup of UUID
-    # if CATALOG not defined, NORMAL_BARCODE = NORMAL and TUMOR_BARCODE = TUMOR
-    if [ ! -z $CATALOG ]; then
-        TUMOR_UUID=$(echo "$TUMOR" | cut -f 3)
-        NORMAL_UUID=$(echo "$NORMAL" | cut -f 3)
-        TUMOR_BARCODE=$(get_aliquot $TUMOR_UUID $CATALOG) 
-        NORMAL_BARCODE=$(get_aliquot $NORMAL_UUID $CATALOG) 
-    else
-        TUMOR_BARCODE="TUMOR"
-        NORMAL_BARCODE="NORMAL"
-    fi
-    # note that SomaticSV does not need barcodes, but it is not clear how to define this necessity
-    PARAM_KV="$PARAM_KV TUMOR_BARCODE:$TUMOR_BARCODE NORMAL_BARCODE:$NORMAL_BARCODE"
-        
     if [ $YAML_FN != "-" ]; then
         OUT_ARG="-o $YAML_FN"
     else
         OUT_ARG=""
-    fi
-    if [ "$TP_DEBUG" == 1 ]; then
-        DARG="-d"
     fi
 
     CMD="$PYTHON src/TemplateParser.py $DARG $OUT_ARG -t $YAML_TEMPLATE $PARAM_KV"
     run_cmd "$CMD" 1
 }
 
-function init_summary {
-# Summary prep and header written
-    if [ -z $RESTART_MAP ]; then
-        HEADER=$(printf "# case\tdisease\tresult_path\tfile_format\ttumor_name\ttumor_uuid\tnormal_name\tnormal_uuid\tcromwell_workflow_id\n") 
-    else
-        HEADER=$(printf "# case\tdisease\tresult_path\tfile_format\ttumor_name\ttumor_uuid\tnormal_name\tnormal_uuid\tcromwell_workflow_id\trestart_dir\n") 
-    fi
 
-    if [ $SUMMARY_OUT == "-" ]; then
-        echo "$HEADER"
-    else
-        SD=$(dirname $SUMMARY_OUT)
-        if [ ! -d $SD ]; then
-            >&2 echo Making output directory for analysis summary: $SD
-            mkdir -p $SD
-            test_exit_status
-        fi
-        echo "$HEADER" > $SUMMARY_OUT
-        test_exit_status
-    fi 
-}
-
-# Implicitly, this is a summary which is valid only for workflows which take tumor + normal as input
-function do_summary {
-    CASE=$1
-
-#    if [ -z $CWL_OUTPUT ]; then
-#        >&2 echo ERROR: CWL_OUTPUT must be defined in parameters file
-#        exit 1
-#    fi
-
-    TUMOR=$(get_tumor $CASE)
-    test_exit_status
-
-    NORMAL=$(get_normal $CASE)
-    test_exit_status
-    # TUMOR and NORMAL look like this: "BAM_path sample_name UUID Disease"
-
-    # Evaluate only runs which have status Succeeded
-    STATUS=$( $CROMWELL_QUERY -V -q status $CASE )
-    test_exit_status
-    if [ "$STATUS" != "Succeeded" ]; then
-        if [ $ONLYWARN ]; then
-            >&2 echo WARNING: $CASE status is $STATUS.  Continuing
-        else
-            >&2 echo Skipping $CASE because status = $STATUS
-            return
-        fi
-    fi
-
-    TUMOR_SN=$(echo "$TUMOR" | cut -f 2)
-    TUMOR_UUID=$(echo "$TUMOR" | cut -f 3)
-    NORMAL_SN=$(echo "$NORMAL" | cut -f 2)
-    NORMAL_UUID=$(echo "$NORMAL" | cut -f 3)
-    DIS=$(echo "$TUMOR" | cut -f 4)
-
-#    RESULT_FILES=$($CROMWELL_QUERY -V -q outputs -W $CWL_OUTPUT $CASE)
-    RESULT_FILES=$($CROMWELL_QUERY -V -q outputs $CASE)
-    test_exit_status
-
-    # Iterate over all result files - there may be more than one
-    for RF in $RESULT_FILES; do
-
-        confirm $RF $ONLYWARN  # complain if result file does not exist
-
-        # if result file does not exist and we have ONLYWARN turned on, skip writing file (so that output has only existing files)
-        if [ ! -s $RF ]; then
-            >&2 echo WARNING: $RF does not exist.  Skipping
-            continue
-        fi
-
-        WID=` $CROMWELL_QUERY -V -q wid $CASE `
-        test_exit_status
-
-        # https://stackoverflow.com/questions/965053/extract-filename-and-extension-in-bash
-        BASE="${RF##*/}"
-        EXT="${BASE##*.}"
-# Not sure this lookup is that helpful
-        if   [ "$EXT" == "vcf" ]; then
-            FILE_FORMAT="VCF"
-        elif [ "$EXT" == "maf" ]; then
-            FILE_FORMAT="MAF"
-        elif [ "$EXT" == "bam" ]; then
-            FILE_FORMAT="BAM"
-        elif [ "$EXT" == "seg" ]; then
-            FILE_FORMAT="SEG"
-        elif [ "$EXT" == "cnv" ]; then
-            FILE_FORMAT="CNV"
-        elif [ "$EXT" == "dat" ]; then
-            FILE_FORMAT="DAT"
-        else
-            >&2 echo ERROR: Unknown file format $EXT
-            exit 1
-        fi
-
-        # If RESTART_MAP is defined, get RESTART_D as RESTART_ROOT/UUID
-        if [ ! -z $RESTART_MAP ]; then
-            RESTART_D=$(get_restartd $CASE $RESTART_MAP)
-            test_exit_status
-            OUTLINE=$(printf "$CASE\t$DIS\t$RF\t$FILE_FORMAT\t$TUMOR_SN\t$TUMOR_UUID\t$NORMAL_SN\t$NORMAL_UUID\t$WID\t$RESTART_D\n" )
-        else
-            OUTLINE=$(printf "$CASE\t$DIS\t$RF\t$FILE_FORMAT\t$TUMOR_SN\t$TUMOR_UUID\t$NORMAL_SN\t$NORMAL_UUID\t$WID\n" )
-        fi
-
-        if [ $SUMMARY_OUT == "-" ]; then
-            echo "$OUTLINE"
-        else
-            echo "$OUTLINE" >> $SUMMARY_OUT
-            test_exit_status
-        fi 
-    done
-}
-
-function init_query {
-    # Default query BAM output is sample name, if nothing else is defined
-    if [ -z "$BAM_UUID" ] && [ -z "$BAM_PATH" ] && [ -z "$BAM_SN" ] ; then
-        BAM_SN=1
-    fi
-}
-
-function do_query {
-# Write: case, disease, tumor BAM, normal BAM
-# If QUERY_DETAIL, write all relevant details
-    CASE=$1
-
-    TUMOR=$(get_tumor $CASE)
-    test_exit_status
-
-    NORMAL=$(get_normal $CASE)
-    test_exit_status
-    # TUMOR and NORMAL look like this: "BAM_path sample_name UUID Disease"
-
-    TUMOR_BAM=$(echo "$TUMOR" | cut -f 1)
-    TUMOR_SN=$(echo "$TUMOR" | cut -f 2)
-    TUMOR_UUID=$(echo "$TUMOR" | cut -f 3)
-    DIS=$(echo "$TUMOR" | cut -f 4)
-
-    NORMAL_BAM=$(echo "$NORMAL" | cut -f 1)
-    NORMAL_SN=$(echo "$NORMAL" | cut -f 2)
-    NORMAL_UUID=$(echo "$NORMAL" | cut -f 3)
-
-    TUMOR_INFO=""
-    NORMAL_INFO=""
-    if [ "$BAM_SN" ]; then
-        TUMOR_INFO="$TUMOR_SN"
-        NORMAL_INFO="$NORMAL_SN"
-    fi
-    if [ "$BAM_UUID" ]; then
-        if [ -z $TUMOR_INFO ]; then
-            TUMOR_INFO="$TUMOR_UUID"
-            NORMAL_INFO="$NORMAL_UUID"
-        else
-            TUMOR_INFO="$TUMOR_INFO\t$TUMOR_UUID"
-            NORMAL_INFO="$NORMAL_INFO\t$NORMAL_UUID"
-        fi
-    fi
-    if [ "$BAM_PATH" ]; then
-        if [ -z $TUMOR_INFO ]; then
-            TUMOR_INFO="$TUMOR_BAM"
-            NORMAL_INFO="$NORMAL_BAM"
-        else
-            TUMOR_INFO="$TUMOR_INFO\t$TUMOR_BAM"
-            NORMAL_INFO="$NORMAL_INFO\t$NORMAL_BAM"
-        fi
-    fi
-
-    # If RESTART_MAP is defined, append $RESTART_D
-    if [ ! -z $RESTART_MAP ]; then
-        RESTART_D=$(get_restartd $CASE $RESTART_MAP)
-        test_exit_status
-        SUFFIX="\t$RESTART_D" 
-    fi
-
-    # Spit out additional details if user requests
-    if [ "$QUERY_DETAIL" ]; then
-        printf "$CASE\t$DIS\t$TUMOR_INFO\t$NORMAL_INFO\t$REF_PATH\t$CWL_ROOT\t$DBSNP_DB\t${VEP_CACHE_GZ}${SUFFIX}\n"
-    else
-        printf "$CASE\t$DIS\t$TUMOR_INFO\t${NORMAL_INFO}${SUFFIX}\n" 
-    fi
-}
-
-# Note init_params has already been called
-# If RESTART_MAP is defined,
-# confirm it exists and confirm RESTART_ROOT is defined
-if [ ! -z $RESTART_MAP ]; then
-    confirm $RESTART_MAP $ONLYWARN
-    >&2 echo Restart mapping from $RESTART_MAP
-    if [ -z $RESTART_ROOT ]; then
-        >&2 echo ERROR: RESTART_ROOT not defined in $PARAMS
-        exit 1
-    fi
-fi
-
-# Initialize and check for valid task name
-if [ $TASK == "query" ]; then
-    init_query 
-elif [ $TASK == "yaml" ]; then
-    init_yaml
-elif [ $TASK == "summary" ]; then
-    init_summary
+# this allows us to get run names in one of three ways:
+# 1: runplan RUN_NAME1 RUN_NAME2 ...
+# 2: cat cases.dat | runplan -
+# 3: read from RUN_LIST file
+# Note that if no run names defined, assume RUN_NAME='-'
+if [ "$#" == 0 ]; then
+    confirm "$RUN_LIST" $ONLYWARN
+    RUN_NAMES=$(cat $RUN_LIST | cut -f 1)
+elif [ "$1" == "-" ] ; then
+    RUN_NAMES=$(cat - )
 else
-    >&2 echo ERROR: Unknown task $TASK 
-    >&2 echo "$USAGE"
-    exit 1
+    RUN_NAMES="$@"
 fi
 
-for L in $CASES; do
+init_yaml
+
+for L in $RUN_NAMES; do
     RUN_NAME=$(echo "$L" | cut -f 1)
 
     if [ "$PROGRESS" ]; then
         >&2 echo Processing $RUN_NAME 
     fi
 
-# this goes into called functions
-    if [ $TASK == "query" ]; then
-        do_query $RUN_NAME 
-    elif [ $TASK == "yaml" ]; then
+    if [ $YAMLD != "-" ]; then
+        YAML_FN="$YAMLD/${RUN_NAME}.yaml"
+    else
+        YAML_FN="-"
+    fi
+    make_yaml $RUN_NAME $YAML_FN
 
-        if [ $YAMLD != "-" ]; then
-            YAML_FN="$YAMLD/${RUN_NAME}.yaml"
-        else
-            YAML_FN="-"
-        fi
-        do_yaml $RUN_NAME $YAML_FN
-
-        # Now do a sanity check on YAML files - make sure all files listed in it exist
+    # Now do a sanity check on written YAML files - make sure all files listed in it exist
+    if [ $YAMLD != "-" ]; then
         SANITY=$(grep -v "#" $YAML_FN | grep path | cut -f 2 -d : | xargs ls -l 2>&1 >/dev/null)
-        
+    
         rcs=${PIPESTATUS[*]};
         for rc in ${rcs}; do
             if [[ $rc != 0 ]]; then
@@ -785,13 +217,10 @@ for L in $CASES; do
                 else 
                     >&2 echo ERROR: $YAML_FN has non-existing paths:
                     >&2 echo "$SANITY"
-                    exit $rc;
+                    exit $rc
                 fi
             fi;
         done
-
-    elif [ $TASK == "summary" ]; then
-        do_summary $RUN_NAME 
     fi
 
     if [ $JUSTONE ]; then
@@ -800,8 +229,3 @@ for L in $CASES; do
     fi
 done
 
-if [ $TASK == "summary" ]; then
-    if [ $SUMMARY_OUT != "-" ]; then
-        >&2 echo Written to $SUMMARY_OUT
-    fi
-fi
