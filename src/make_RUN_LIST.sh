@@ -197,7 +197,6 @@ function get_tumor_run_name {
     RUN_NAME=$(echo $TSN | sed "s/${ES}.T.//" | sed 's/.hg38//')
     test_exit_status
 
-    >&2 echo DEBUG get_tumor_run_name: $TSN - $RUN_NAME
     echo "$RUN_NAME"
 }
 
@@ -207,14 +206,12 @@ function get_any_run_name {
     RUN_NAME=$(echo $TSN | sed "s/${ES}\.T\.//" | sed 's/.hg38//')
     test_exit_status
 
-    >&2 echo DEBUG get_any_run_name: $TSN - $RUN_NAME
     echo "$RUN_NAME"
 }
 
 while read CASE; do
 
     if [ -z $GST ]; then    # do tumor / normal
-        >&2 echo DEBUG tumor / normal
         # Assume there is just blood normal per case
         NORMAL_SN=$(get_blood_normal_sample_name $CASE)
         test_exit_status
@@ -233,7 +230,6 @@ while read CASE; do
         done
     else
         # note, this may need some work
-        >&2 echo DEBUG germline with ST = $GST
         # Get sample names for case based on GST as sample type, and multiple samples OK
         SNS=$(get_sample_names $CASE $GST 1 ) # here, GST has to be name
         test_exit_status
