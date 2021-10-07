@@ -7,21 +7,21 @@ read -r -d '' USAGE <<'EOF'
 Launch Cromwell workflow tasks for multiple cases
 
 Usage:
-  rungo [options] [ CASE1 [CASE2 ...]]
+  rungo [options] [RUN_NAME1 [ RUN_NAME2 ... ]]
 
 Required options:
 -W CWL: CWL file which defines workflow
--C CROMWELL_CONFIG: Cromwell config file. Required.
+-C CROMWELL_CONFIG: Cromwell config file
 
 Optional options
 -h: print usage information
 -d: dry run: print commands but do not run
 -1 : stop after one case processed.
--k CASES_FN: file with list of all cases, one per line, used when CASE1 not defined. Default: dat/cases.dat
--y YAMLD: directory with YAML input files (named CASE.yaml).  Default "./yaml"
--g LOGD: directory where runtime output (CASE.out, CASE.err, CASE.log ) written.  Default "./logs"
+-k RUN_LIST: file with list of all run names, one per line, used when RUN_NAME1 not defined. Default: dat/RUN_LIST.dat
+-y YAMLD: directory with YAML input files (named RUN_NAME.yaml).  Default "./yaml"
+-g LOGD: directory where runtime output (RUN_NAME.out, RUN_NAME.err, RUN_NAME.log ) written.  Default "./logs"
 -J N: run N tasks in parallel.  If 0, disable parallel mode. Default 0
--e: write STDERR output of workflow to terminal rather than LOGD/CASE.err
+-e: write STDERR output of workflow to terminal rather than LOGD/RUN_NAME.err
 -D DB_ARGS: arguments for connecting to Cromwell DB.  Default as specified in Cromwell configuration page below.  If value is "none",
    will not save to database
 -R CROMWELL_JAR: Cromwell JAR file.  Default: /opt/cromwell.jar
@@ -42,10 +42,11 @@ Optional options
     SPAWN_CONFIG is cromwell server configuration file
 -P RESULT_LIST: list of files which are deleted prior to compressing data by `datatidy` during finalization after a run
 
-If CASE is - then read CASE from STDIN.  If CASE is not defined, read from first column of CASES_FN file.
+If RUN_NAME1 is - then read RUN_NAME from STDIN.  If RUN_NAME1 is not defined,
+read from first column of RUN_NAME file
 
 STDERR and STDOUT of workflow runs, as well as tmp dir and log of parallel, written to LOGD
-YAML files for a given CASE are assumed to be $YAMLD/$CASE.yaml
+YAML files for a given RUN_NAME are assumed to be $YAMLD/$RUN_NAME.yaml
 
 If LSF [-M] is defined, jobs will be submitted using bsub with docker image 
 mwyczalkowski/cromwell-runner.  Recommend to use job groups
@@ -84,7 +85,7 @@ LOGD="./logs"
 DB_ARGS="-Djavax.net.ssl.trustStorePassword=changeit -Djavax.net.ssl.trustStore=/gscmnt/gc2560/core/genome/cromwell/cromwell.truststore"
 CROMWELL_JAR="/opt/cromwell.jar"
 JAVA="/usr/bin/java"
-CASES_FN="dat/cases.dat"
+RUN_LIST="dat/RUN_LIST.dat"
 BSUB="bsub"
 
 # Used for spawning cromwell server prior to workflow to be able to query database and clean up with datatidy at end
@@ -107,7 +108,7 @@ while getopts ":W:y:hd1J:g:eC:D:R:j:k:c:FX:p:L:l:G:Mq:B:S:P:" opt; do
       JUSTONE=1
       ;;
     k) 
-      CASES_FN="$OPTARG"
+      RUN_LIST="$OPTARG"
       ;;
     y) 
       YAMLD="$OPTARG"
@@ -196,12 +197,12 @@ command -v jq >/dev/null 2>&1 || { echo >&2 "ERROR: jq is not installed.  Quitti
 
 function get_cromwell_cmd {
     CWL="$1"
-    CASE="$2"
+    RUN_NAME="$2"
     CROMWELL_CONFIG="$3"
     STDOUT_FN="$4"
     STDERR_FN="$5"
 
-    YAML="$YAMLD/$CASE.yaml"  
+    YAML="$YAMLD/$RUN_NAME.yaml"  
     confirm "$YAML"  # this must exist
     confirm "$JAVA"
     
@@ -261,18 +262,18 @@ fi
 # Used for `parallel` job groups 
 MYID=$(date +%Y%m%d%H%M%S)
 
-# this allows us to get case names in one of three ways:
-# 1: cq CASE1 CASE2 ...
-# 2: cat cases.dat | cq -
-# 3: read from CASES_FN file
-# Note that if no cases defined, assume CASE='-'
+# this allows us to get run names in one of three ways:
+# 1: runplan RUN_NAME1 RUN_NAME2 ...
+# 2: cat cases.dat | runplan -
+# 3: read from RUN_LIST file
+# Note that if no run names defined, assume RUN_NAME='-'
 if [ "$#" == 0 ]; then
-    confirm $CASES_FN
-    CASES=$(cat $CASES_FN | cut -f 1)
+    confirm "$RUN_LIST" $ONLYWARN
+    RUN_NAMES=$(cat $RUN_LIST | cut -f 1)
 elif [ "$1" == "-" ] ; then
-    CASES=$(cat - )
+    RUN_NAMES=$(cat - )
 else
-    CASES="$@"
+    RUN_NAMES="$@"
 fi
 
 if [ $NJOBS == 0 ] ; then
@@ -292,11 +293,11 @@ if [ $DO_FINALIZE ]; then
     fi
 
     # run one runtidy and datatidy query to make sure they don't error out
-    CMD="echo $CASES | $RUNTIDY -1 -x query -"
+    CMD="echo $RUN_NAMES | $RUNTIDY -1 -x query -"
     R=$($CMD)
     test_exit_status $SCRIPT
 
-    CMD="echo $CASES | $DATATIDY -1 -x query -"
+    CMD="echo $RUN_NAMES | $DATATIDY -1 -x query -"
     R=$($CMD)
     test_exit_status $SCRIPT
 fi
@@ -304,11 +305,14 @@ fi
 # Check to make sure log files do not exist.  Quit if they do, othewise they will be overwritten
 # Write git details to every log output file
 if [ $CWL_ROOT ]; then
-    >&2 echo Writing git log of $CWL_ROOT to $LOGD/CASE.out
+    >&2 echo Writing git log of $CWL_ROOT to $LOGD/RUN_NAME.out
 fi
-for CASE in $CASES; do
-    STDOUT_FN="$LOGD/$CASE.out"
-    STDERR_FN="$LOGD/$CASE.err"
+
+for L in $RUN_NAMES; do
+    RUN_NAME=$(echo "$L" | cut -f 1)
+
+    STDOUT_FN="$LOGD/$RUN_NAME.out"
+    STDERR_FN="$LOGD/$RUN_NAME.err"
 
     if [ -e $STDOUT_FN ] || [ -e $STDERR_FN ]; then
         >&2 echo ERROR: Log files $STDOUT_FN and/or $STDERR_FN exist
@@ -332,8 +336,8 @@ for CASE in $CASES; do
 done
 
 # LSF log issues
-# We want the file LOGD/CASE.out to contain the verbose output of Cromwell for parsing by `cq`
-# and the LSF-generated output to got to LOGD/CASE.LSF.out
+# We want the file LOGD/RUN_NAME.out to contain the verbose output of Cromwell for parsing by `cq`
+# and the LSF-generated output to got to LOGD/RUN_NAME.LSF.out
 # Log output for bsub submissions is defined something like,
 #   CMD="java cromwell.jar > STDOUT"
 #   bsub -o LSFOUT "CMD"
@@ -342,30 +346,21 @@ done
 # LOG A works on MGI for TinDaisy.  Need to understand better situations where LOG B required 
 # It seems that LOG B is appropriate for SomaticSV on compute1
 
-for CASE in $CASES; do
+for RUN_NAME in $RUN_NAMES; do
     NOW=$(date)
-    >&2 echo \[ $NOW \] : Processing case $CASE
+    >&2 echo \[ $NOW \] : Processing run $RUN_NAME
 
-# LOG A
-#    if [ $LSF ]; then
-#        STDOUT_FN="$LOGD/$CASE.LSF.out"
-#        STDERR_FN="$LOGD/$CASE.LSF.err"
-#    else
-#        STDOUT_FN="$LOGD/$CASE.out"
-#        STDERR_FN="$LOGD/$CASE.err"
-#    fi
-# LOG B
-    STDOUT_FN="$LOGD/$CASE.out"
-    STDERR_FN="$LOGD/$CASE.err"
+    STDOUT_FN="$LOGD/$RUN_NAME.out"
+    STDERR_FN="$LOGD/$RUN_NAME.err"
 
 
-    CMD=$(get_cromwell_cmd $CWL $CASE $CROMWELL_CONFIG $STDOUT_FN $STDERR_FN)
+    CMD=$(get_cromwell_cmd $CWL $RUN_NAME $CROMWELL_CONFIG $STDOUT_FN $STDERR_FN)
     test_exit_status $SCRIPT
 
     if [ $DO_FINALIZE ]; then
         # finalize and compress run immediately after successful completion
-        RT_CMD="$RUNTIDY -x finalize -m Autofinalizing -p $PROJECT $CASE"
-        DT_CMD="$DATATIDY -F Succeeded -x compress -p $PROJECT $CASE"
+        RT_CMD="$RUNTIDY -x finalize -m Autofinalizing -p $PROJECT $RUN_NAME"
+        DT_CMD="$DATATIDY -F Succeeded -x compress -p $PROJECT $RUN_NAME"
         FIN_CMD="$RT_CMD && $DT_CMD"
 
         # Start Cromwell Server prior to Cromwell run so that it is running and available when
@@ -383,16 +378,16 @@ for CASE in $CASES; do
         # LOG A
         # Note that in LSF mode, we actually want to write the std/stdout as reported
         # here for use by log parsers, since the output of the BSUB command is trivial
-        # LSF_LOGS="-e $LOGD/${CASE}.err -o $LOGD/${CASE}.out"
+        # LSF_LOGS="-e $LOGD/${RUN_NAME}.err -o $LOGD/${RUN_NAME}.out"
 
         # LOG B
         # capture stderr/out of bsub submission here:
-        LSF_LOGS="-e $LOGD/${CASE}.LSF.err -o $LOGD/${CASE}.LSF.out"
+        LSF_LOGS="-e $LOGD/${RUN_NAME}.LSF.err -o $LOGD/${RUN_NAME}.LSF.out"
         CMD="$BSUB $LSFQ $LSF_ARGS $LSF_LOGS -a \"docker($LSF_IMAGE)\" $CMD "
     fi
 
     if [ $NJOBS != 0 ]; then
-        JOBLOG="$LOGD/$CASE.log"
+        JOBLOG="$LOGD/$RUN_NAME.log"
         CMD=$(echo "$CMD" | sed 's/"/\\"/g' )   # This will escape the quotes in $CMD 
         CMD="parallel --semaphore -j$NJOBS --id $MYID --joblog $JOBLOG --tmpdir $LOGD \"$CMD\" "
     fi

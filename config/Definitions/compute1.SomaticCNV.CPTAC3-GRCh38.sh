@@ -93,6 +93,9 @@ YAML_TEMPLATE="config/Templates/YAML/SomaticCNV.template.yaml"
 # pipeline-specific script to obtain parameters to fill in YAML file, get_pipeline_params.XXX.sh
 PARAM_SCRIPT="config/Scripts/get_pipeline_params.SomaticCNV.sh"
 
+# this is specific to SomaticCNV workflow to delete large staged BAMs
+WORKFLOW_RUN_ARGS="-P config/Templates/prune_list/SomaticCNV.stage_files_delete.dat"
+
 # These parameters used when finding data in BamMap
 ES="WGS"                            # experimental strategy
 
