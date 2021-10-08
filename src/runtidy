@@ -7,7 +7,7 @@ read -r -d '' USAGE <<'EOF'
 Register, query, and archive Cromwell run output
 
 Usage:
-  bash runtidy [options] [ CASE1 [CASE2 ...]]
+  bash runtidy [options] [RUN_NAME1 [ RUN_NAME2 ... ]]
 
 Required options:
 
@@ -18,7 +18,7 @@ Optional options
 -1: stop after one case processed.
 -0: do not process any cases, exit after initialization
 -x TASK: Execute given task.  Values: 'query' (default), 'register', 'stash', 'finalize'
--k CASES_FN: file with list of all cases, one per line, used when CASE1 not defined. Default: dat/cases.dat
+-k RUN_LIST: file with list of all run names, one per line, used when RUN_NAME1 not defined. Default: dat/RUN_LIST.dat
 -g LOGD: directory where runtime output (CASE.out, CASE.err, CASE.log ) can be found.  Default "./logs"
 -T STASHD: root directory where we write archived logs.  Default "./logs/stashed"
 -L RUNLOG: Run log file. Default is "./logs/runlog.dat".  Has to exist unless -f is set.  Can be obtained from environment variable
@@ -49,7 +49,7 @@ to a directory STASHD/WorkflowID.  This is done to clean output directory and
 allow for multiple runs for one case (e.g. to restart failed run).Stashing or
 finalizing a run twice will print a warning.  If this WorkflowID does not exist
 in runlog file exit with an error, since not having this entry will make it
-hard to map CASE to WorkflowID in future.  Stashing also copies or moves YAML
+hard to map RUN_NAME to WorkflowID in future.  Stashing also copies or moves YAML
 files to stash directory; if status is Succeeded the YAML is moved, copied
 otherwise (-Y to always move YAML files).
 
@@ -77,7 +77,7 @@ help prevent inadvertant data loss from stashing running jobs)
 
 All runs regardless of status are processed for `register` and `query` tasks.
 
-If CASE is - then read CASE from STDIN.  If CASE is not defined, read from first column of CASES_FN file.
+If RUN_NAME is - then read RUN_NAME from STDIN.  If RUN_NAME is not defined, read from first column of RUN_LIST file.
 `runtidy` script does not WorkflowIDs as arguments to define runs
 
 This script relies on `cq` to get WorkflowID and status associated with each case
@@ -96,7 +96,7 @@ STASHD="./logs/stashed"     # where we put stashed logs
 CQD="./src"
 
 YAMLD="./yaml"
-CASES_FN="dat/cases.dat"
+RUN_LIST="dat/RUN_LIST.dat"
 QUIET=1
 
 # read default from environment variable if possible, otherwise use default
@@ -129,7 +129,7 @@ while getopts ":hdv10x:k:g:T:L:y:YF:c:m:D:fp:" opt; do
       TASK="$OPTARG"
       ;;
     k) 
-      CASES_FN="$OPTARG"
+      RUN_LIST="$OPTARG"
       ;;
     g) 
       LOGD="$OPTARG"
@@ -199,22 +199,22 @@ fi
 # this allows us to get case names in one of three ways:
 # 1: cq CASE1 CASE2 ...
 # 2: cat cases.dat | cq -
-# 3: read from CASES_FN file
-# Note that if no cases defined, assume CASE='-'
+# 3: read from RUN_LIST file
+# Note that if no cases defined, assume RUN_NAME='-'
 if [ "$#" == 0 ]; then
-    confirm $CASES_FN
-    CASES=$(cat $CASES_FN | cut -f 1 )
+    confirm $RUN_LIST
+    RUNS=$(cat $RUN_LIST | cut -f 1 )
 elif [ "$1" == "-" ] ; then
-    CASES=$(cat - )
+    RUNS=$(cat - )
 else
-    CASES="$@"
+    RUNS="$@"
 fi
 
 # Test to make sure no cases look like UUIDs
 
-for CASE in $CASES; do
-    if [[ $CASE =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then
-        >&2 echo ERROR: Case $CASE looks like a UUID
+for RUN_NAME in $RUNS; do
+    if [[ $RUN_NAME =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then
+        >&2 echo ERROR: Case $RUN_NAME looks like a UUID
         exit 1
     fi
 done
@@ -235,21 +235,21 @@ if [ ! -f $RUNLOG ]; then
 fi
 
 function do_query {
-    CASE=$1
+    RUN_NAME=$1
 # * `query`: Evaluate and print for each case
 #     - case, workflowId, path to run log 
 # TODO: add time start and duration of run
-    WID=$( $CQ -V -q wid $CASE )
-    printf "$CASE\t$WID\t$RUNLOG\n"
+    WID=$( $CQ -V -q wid $RUN_NAME )
+    printf "$RUN_NAME\t$WID\t$RUNLOG\n"
 }
 
 function do_register {
-    CASE=$1
+    RUN_NAME=$1
 
-    STATUS=$( $CQ -V -q status $CASE )
+    STATUS=$( $CQ -V -q status $RUN_NAME )
 
     # CQL has all columns except for project and note
-    CQL=$( $CQ -q runlog $CASE ) 
+    CQL=$( $CQ -q runlog $RUN_NAME ) 
     test_exit_status $SCRIPT
     WID=$( echo "$CQL" | cut -f 2 )
     if [ "$WID" == "Unknown" ] || [ "$WID" == "Unassigned" ]; then
@@ -281,19 +281,19 @@ function do_register {
 #    * Move YAMLD/CASE.yaml to STASHD/WorkflowID
 #    * otherwise copy YAMLD/CASE.yaml to STASHD/WorkflowID
 function do_stash {
-    CASE=$1
+    RUN_NAME=$1
 
     OUTFN="$LOGD/$CASE.out"
     ERRFN="$LOGD/$CASE.err"
     YAMLFN="$YAMLD/$CASE.yaml"
-    WID=$( $CQ -V -q wid $CASE ) 
+    WID=$( $CQ -V -q wid $RUN_NAME ) 
 
     if [ ! -f $OUTFN ] || [ ! -f $ERRFN ] || [ ! -f $YAMLFN ]; then
     # Log files missing.  See if they've already been stashed
         if [ -d $LOGD/$WID ]; then
-            >&2 echo $CASE already stashed 
+            >&2 echo $RUN_NAME already stashed 
         else
-            >&2 echo WARNING: $CASE: Log/yaml files do not exist, not stashing
+            >&2 echo WARNING: $RUN_NAME: Log/yaml files do not exist, not stashing
         fi
         return
     fi
@@ -301,11 +301,11 @@ function do_stash {
     # WID may be unknown for various reasons, like error conditions.  Stashing requires that this
     # value be known; if it is not, print a complaint and go on
     if [ $WID == "Unknown" ]; then
-        >&2 echo WARNING: WorkflowID for $CASE is $WID.  Not stashing these logs, continuing
+        >&2 echo WARNING: WorkflowID for $RUN_NAME is $WID.  Not stashing these logs, continuing
         return
     fi
 
-    STATUS=$( $CQ -V -q status $CASE ) 
+    STATUS=$( $CQ -V -q status $RUN_NAME ) 
     test_exit_status $SCRIPT
     if [ $STATUS == "Succeeded" ] || [ "$YAML_MV" ]; then
         YAML_CMD="mv"
@@ -315,7 +315,7 @@ function do_stash {
 
     if ! grep -F -q $WID $RUNLOG ; then
         if [ ! "$DRYRUN" ]; then
-            >&2 echo $SCRIPT ERROR: $CASE \( $WID \) not found in $RUNLOG. Register run with \`runLogger.sh\` before stashing
+            >&2 echo $SCRIPT ERROR: $RUN_NAME \( $WID \) not found in $RUNLOG. Register run with \`runLogger.sh\` before stashing
             exit 1
         fi
     fi
@@ -330,8 +330,8 @@ function do_stash {
     CMD="mkdir -p $OUTD"
     run_cmd "$CMD" "$DRYRUN" $QUIET 
 
-    #CMD="mv $LOGD/$CASE.* $OUTD"
-    CMD="mv $LOGD/${CASE}.err $LOGD/${CASE}.out $LOGD/${CASE}.LSF.err $LOGD/${CASE}.LSF.out $OUTD"
+    #CMD="mv $LOGD/$RUN_NAME.* $OUTD"
+    CMD="mv $LOGD/${RUN_NAME}.err $LOGD/${RUN_NAME}.out $LOGD/${RUN_NAME}.LSF.err $LOGD/${RUN_NAME}.LSF.out $OUTD"
     run_cmd "$CMD" "$DRYRUN" $QUIET
 
     CMD="$YAML_CMD $YAMLD/$CASE.yaml $OUTD"
@@ -343,18 +343,18 @@ function do_stash {
 if [ ! -z $EXPECTED_STATUS ]; then
     DOCKET=""
     >&2 echo Testing docket
-    for CASE in $CASES; do
-        STATUS=$( $CQ -V -q status $CASE )
+    for RUN_NAME in $RUNS; do
+        STATUS=$( $CQ -V -q status $RUN_NAME )
         if [ "$STATUS" != "$EXPECTED_STATUS" ]; then
-            >&2 echo $SCRIPT ERROR: Status of case $CASE \( $STATUS \) differs from expected \( $EXPECTED_STATUS \)
+            >&2 echo $SCRIPT ERROR: Status of case $RUN_NAME \( $STATUS \) differs from expected \( $EXPECTED_STATUS \)
             exit 2  # to distinguish status mismatch from garden variety errors
         fi
-        DOCKET="$DOCKET $CASE"
+        DOCKET="$DOCKET $RUN_NAME"
         if [ $JUSTONE ]; then
             break
         fi
     done
-    CASE=$DOCKET    #  CASE replenished to loop through all cases again
+    RUN_NAME=$DOCKET    #  RUN_NAME replenished to loop through all cases again
 fi
 
 CMD="mkdir -p $LOGD"
@@ -365,31 +365,31 @@ if [ $JUSTZERO ]; then
     exit 0
 fi
 
-for CASE in $CASES; do
+for RUN_NAME in $RUNS; do
 
-    STATUS=$( $CQ -V -q status $CASE )
+    STATUS=$( $CQ -V -q status $RUN_NAME )
     test_exit_status $SCRIPT
     case "$TASK" in
       "query")
-        do_query $CASE  
+        do_query $RUN_NAME  
         ;;
       "register")
-        do_register $CASE 
+        do_register $RUN_NAME 
         ;;
       "stash")
         if [ -z $EXPECTED_STATUS ]; then
             if [ "$STATUS" != "Succeeded" ] && [ "$STATUS" != "Failed" ]; then
-                >&2 echo Skipping $CASE \(Status $STATUS not Succeeded or Failed.  Specify expected status with -F to stash\)
+                >&2 echo Skipping $RUN_NAME \(Status $STATUS not Succeeded or Failed.  Specify expected status with -F to stash\)
                 continue
             fi
         fi
-        do_stash $CASE 
+        do_stash $RUN_NAME 
         ;;
       "finalize")
         DATATIDY_ARGS="$DATATIDY_ARGS -p $PROJECT"   
         if [ -z $EXPECTED_STATUS ]; then
             if [ "$STATUS" != "Succeeded" ] && [ "$STATUS" != "Failed" ]; then
-                >&2 echo Skipping $CASE \(Status $STATUS not Succeeded or Failed.  Specify expected status with -F to finalize\)
+                >&2 echo Skipping $RUN_NAME \(Status $STATUS not Succeeded or Failed.  Specify expected status with -F to finalize\)
                 continue
             fi
         else
@@ -397,13 +397,13 @@ for CASE in $CASES; do
             DATATIDY_ARGS="$DATATIDY_ARGS -F $EXPECTED_STATUS "   
         fi
         if [ ! -z "$NOTE" ]; then   # NOTE can have spaces, so escaping it is a pain
-            $DATATIDY -m "$NOTE" $DATATIDY_ARGS -x original $CASE 
+            $DATATIDY -m "$NOTE" $DATATIDY_ARGS -x original $RUN_NAME 
         else
-            $DATATIDY $DATATIDY_ARGS -x original $CASE 
+            $DATATIDY $DATATIDY_ARGS -x original $RUN_NAME 
         fi
         test_exit_status $SCRIPT
-        do_register $CASE 
-        do_stash $CASE
+        do_register $RUN_NAME 
+        do_stash $RUN_NAME
         ;;
       *)
         >&2 echo $SCRIPT ERROR: Unknown task $TASK

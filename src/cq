@@ -17,7 +17,7 @@ Options:
 -d: Print debug output
 -v: Indicate progress in stderr
 -1: Stop after one
--k CASES_FN: file with list of all cases, one per line, used when RID1 not defined. Default: dat/cases.dat
+-k RUN_LIST: file with list of all run names, one per line, used when RUN_NAME1 not defined. Default: dat/RUN_LIST.dat
 -q QUERY: type of query, one of 'check_server', 'status', 'logs', 'workflowRoot', 'timing', 'duration', 'outputs', 'runlog', 'url'.  Default is `status`
 -s STEP: define step of interest for use with 'logs' query
 -V: output query result only only (i.e., don't write case and workflow ID)
@@ -29,12 +29,12 @@ Options:
 -L RUNLOG: Run log file. Default is "./logs/runlog.dat".  Can be obtained from environment variable
 #-W CWL_OUTPUT: ID of principal output of workflow, used for parsing JSON output. Default is "tindaisy.cwl.output_vcf"
 
-RID is RunID, and can be either a Case or a WorkflowID.  Examples:
+RID is RunID, and can be either a Run Name or a WorkflowID.  Examples:
 * `cq` - will return status for all cases defined in `dat/cases.dat`
 * `cq CASE1 CASE2 CASE3` - returns status of runs for three cases.  TODO: discuss how this looked up
 * `cq WID1 WID2` - returns status for two runs with given WorkflowIDs
 
-If RID is - then read RID from STDIN.  If RID is not defined, read from first column of CASES_FN file.
+If RID is - then read RID from STDIN.  If RID is not defined, read from first column of RUN_LIST file.
 
 Evaluates the following information for each case
 * The workflow ID of the cromwell job
@@ -46,7 +46,6 @@ Evaluates the following information for each case
     * workflowRoot - Path to root of cromwell output
     * timing - URL to visualize timing and progress of workflow
     * duration - display duration of run in minutes
-#    * output - Principal output of workflow, associated with CWL_OUTPUT
     * outputs - All outputs of workflow run as specified in input CWL
     * runlog - Output status, start, end times
     * url - print URL of Cromwell server and quit.  This is a hardcoded value, but useful to know for manual queries
@@ -82,7 +81,7 @@ if [ -z $RUNLOG ]; then
 fi
 
 # Defaults
-CASES_FN="dat/cases.dat"
+RUN_LIST="dat/RUN_LIST.dat"
 QUERY="status"
 #CWL_OUTPUT="tindaisy.cwl.output_vcf"
 
@@ -103,7 +102,7 @@ while getopts ":hdv1k:q:s:VUSTDC:L:" opt; do
       JUST_ONCE=1
       ;;
     k) 
-      CASES_FN="$OPTARG"
+      RUN_LIST="$OPTARG"
       ;;
     q) 
       QUERY="$OPTARG"
@@ -342,11 +341,11 @@ fi
 # this allows us to get Run IDs in one of three ways:
 # 1: cq RID1 RID2 ...
 # 2: cat cases.dat | cq -
-# 3: read from CASES_FN file
+# 3: read from RUN_LIST file
 # Note that if no Run IDs defined, assume RIDS='-'
 if [ "$#" == 0 ]; then
-    confirm $CASES_FN
-    RIDS=$(cat $CASES_FN | cut -f 1)
+    confirm $RUN_LIST
+    RIDS=$(cat $RUN_LIST | cut -f 1)
 elif [ "$1" == "-" ] ; then
     RIDS=$(cat - )
 else
@@ -417,9 +416,6 @@ for RID in $RIDS; do
         elif [ "$QUERY" == 'timing' ]; then
             # URL as provided by tmooney on slack 
             STATUS="$CROMWELL_URL/api/workflows/v1/$WID/timing"
-#        elif [ "$QUERY" == 'output' ]; then     # this returns principal output associated with workflow as defined by CWL_OUTPUT
-#            STATUS=$(get_output $WID $CWL_OUTPUT)
-#            test_exit_status $SCRIPT
         elif [ "$QUERY" == 'outputs' ]; then    # this returns multiple outputs
             STATUS=$(get_outputs $WID | grep -v -w "null")
             test_exit_status $SCRIPT

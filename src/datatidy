@@ -16,7 +16,7 @@ Optional options
 -l DATALOG: Data log file.  Default: is "./logs/datalog.dat". Must exist unless -f is set. Can be obtained from environment variable
 -L RUNLOG: Run log file. Default is "./logs/runlog.dat".  Can be obtained from environment variable
 -f: Create data log file if it does not exist
--k CASES_FN: file with list of all cases, one per line, used when CASE1 not defined. Default: dat/cases.dat
+-k RUN_LIST: file with list of all run names, one per line, used when RUN_NAME1 not defined. Default: dat/RUN_LIST.dat
 -p PROJECT: Project name associated with this analysis
 -m NOTE: A note added to data log file for each case
 -x TASK: Execute given task.  Values: 'query' (default), 'original', 'inputs', 'compress', 'prune', 'final', 'wipe', `uncompress_restart`
@@ -29,7 +29,7 @@ Optional options
         ./call-canonical_filter/execution/output/HotspotFiltered.vcf
 
 RID is RunID, and can be either a Case or a WorkflowID.  If RID is - then read
-RID from STDIN.  If RID is not defined, read from first column of CASES_FN file.
+RID from STDIN.  If RID is not defined, read from first column of RUN_LIST file.
 
 Datatidy performs the following task:
 * `query` - Evaluate and print for each run data directory. Values in brackets printed with -w
@@ -88,7 +88,7 @@ source src/cromwell_utils.sh
 SCRIPT=$(basename $0)
 SCRIPT_PATH=$(dirname $0)
 
-CASES_FN="dat/cases.dat"
+RUN_LIST="dat/RUN_LIST.dat"
 NOTE=""
 TASK="query"
 
@@ -119,7 +119,7 @@ while getopts ":hd1l:L:k:m:c:x:wF:p:fP:" opt; do
       JUSTONE=1
       ;;
     k) 
-      CASES_FN="$OPTARG"
+      RUN_LIST="$OPTARG"
       ;;
     l) 
       DATALOG="$OPTARG"
@@ -168,11 +168,11 @@ shift $((OPTIND-1))
 # this allows us to get Run IDs in one of three ways:
 # 1: cq RID1 RID2 ...
 # 2: cat cases.dat | cq -
-# 3: read from CASES_FN file
+# 3: read from RUN_LIST file
 # Note that if no Run IDs defined, assume RIDS='-'
 if [ "$#" == 0 ]; then
-    confirm $CASES_FN
-    RIDS=$(cat $CASES_FN | cut -f 1)
+    confirm $RUN_LIST
+    RIDS=$(cat $RUN_LIST | cut -f 1)
 elif [ "$1" == "-" ] ; then
     RIDS=$(cat - )
 else
