@@ -32,7 +32,7 @@ STORAGE_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"
 
 # Path to BamMap, which is a file which defines sequence data path and other metadata
 # BamMap format is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
-BAMMAP="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Analysis/CromwellRunner/SomaticCNV/03.ATAC_Seq.20211008/dat/atacseq.bammap.storage1.20210927.single_tumors.part1.BRCA_batch1.tsv"
+BAMMAP="dat/atacseq.bammap.storage1.20210927.single_tumors.part1.BRCA_batch1.tsv"
 
 # Assume that all references are based here
 REF_ROOT="/storage1/fs1/dinglab/Active/Resources/References"
