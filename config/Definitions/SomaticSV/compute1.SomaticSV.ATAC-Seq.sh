@@ -106,10 +106,6 @@ DEST_BASE="$STORAGE_ROOT/cromwell-workdir/cromwell-executions/SomaticSV.cwl"
 # These parameters used when finding data in BamMap
 ES="WGS"                            # experimental strategy
 
-# Necessary?
-# TUMOR_ST="tumor"                    # Sample type for tumor BAM, for BAMMAP matching
-# NORMAL_ST='blood_normal'            # Sample type for normal BAM, for BAMMAP matching.  Default 'blood_normal'
-
 # This one seem pretty low-level, since it is created and then consumed within CromwellRunner
 # not sure where this should go - seems specific to CromwellRunner setup
 # Think this is OUTPUT of config creation step

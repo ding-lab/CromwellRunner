@@ -41,23 +41,28 @@ cases, it is important to run one case fully to completion first.
 
 ### Installation
 
-First, clone the relevant workflow.  For TinDaisy,
-```
-git clone https://github.com/ding-lab/TinDaisy
-```
-and for SomaticSV,
-```
-git clone https://github.com/ding-lab/SomaticSV.git
-```
-Note that this has to be done just once.  The path to this workflow is `CWL_ROOT_H` in
-the configuration file, below.
-
-Next, clone the CromwellRunner project.  This is typically done once for each batch
+First, clone the CromwellRunner project.  This is typically done once for each batch
 of analyses:
 ```
 git clone --recurse-submodules https://github.com/ding-lab/CromwellRunner.git PROJECT_NAME
 ```
 where `PROJECT_NAME` is an arbitrary name for this particular run or batch.
+
+Next, clone the relevant workflow into the `PROJECT_NAME` directory.  For TinDaisy,
+```
+cd PROJECT_NAME
+mkdir CWL && cd CWL
+git clone https://github.com/ding-lab/TinDaisy
+```
+and for SomaticSV,
+```
+cd PROJECT_NAME
+mkdir CWL && cd CWL
+git clone https://github.com/ding-lab/SomaticSV.git
+```
+Note that this has to be done just once.  The path to this workflow is `CWL_ROOT_H` in
+the configuration file, below.
+
 
 ### Configuration
 
