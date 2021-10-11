@@ -3,8 +3,7 @@ cd ..
 
 source Project.config.sh
 
-#CASES="dat/cases.dat"
-CASES="dat/cases.916.dat"
+CASES="dat/cases.dat"
 
 # BAMMAP, ES, RUN_LIST obtained from Project.config.sh
 
