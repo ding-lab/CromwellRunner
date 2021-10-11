@@ -24,9 +24,6 @@ Obtain run inputs and result data to generate an analysis summary file
 
 If RUN_NAME1 is - then read RUN_NAME from STDIN.  If RUN_NAME1 is not defined, read from first column of RUN_NAME file
 
-Note, we have some embedded assumptions about workflow inputs here which should ideally be separated out
-for each workflow.  For now, deal with a superset of substituted variables.
-
 Restarting of runs is supported by making available RESTART_D variable in YAML
 template, which provides path to root directory of prior run.
 RESTART_D="RESTART_ROOT/UUID", with RESTART_ROOT defined in PARAMS (mandatory),
@@ -119,15 +116,15 @@ function init_summary {
 # Summary prep and header written
     if [ $TUMOR_NORMAL ]; then
         if [ -z $RESTART_MAP ]; then
-            HEADER=$(printf "# case\tdisease\tresult_path\tfile_format\ttumor_name\ttumor_uuid\tnormal_name\tnormal_uuid\tcromwell_workflow_id\n") 
+            HEADER=$(printf "# run_name\tcase\tdisease\tresult_path\tfile_format\ttumor_name\ttumor_uuid\tnormal_name\tnormal_uuid\tcromwell_workflow_id\n") 
         else
-            HEADER=$(printf "# case\tdisease\tresult_path\tfile_format\ttumor_name\ttumor_uuid\tnormal_name\tnormal_uuid\tcromwell_workflow_id\trestart_dir\n") 
+            HEADER=$(printf "# run_name\tcase\tdisease\tresult_path\tfile_format\ttumor_name\ttumor_uuid\tnormal_name\tnormal_uuid\tcromwell_workflow_id\trestart_dir\n") 
         fi
     else
         if [ -z $RESTART_MAP ]; then
-            HEADER=$(printf "# case\tdisease\tresult_path\tfile_format\tsample_name\tsample_uuid\tcromwell_workflow_id\n") 
+            HEADER=$(printf "# run_name\tcase\tdisease\tresult_path\tfile_format\tsample_name\tsample_uuid\tcromwell_workflow_id\n") 
         else
-            HEADER=$(printf "# case\tdisease\tresult_path\tfile_format\tsample_name\tsample_uuid\tcromwell_workflow_id\trestart_dir\n") 
+            HEADER=$(printf "# run_name\tcase\tdisease\tresult_path\tfile_format\tsample_name\tsample_uuid\tcromwell_workflow_id\trestart_dir\n") 
         fi
     fi
 
@@ -161,7 +158,30 @@ function get_sample_name {
     echo $SN
 }
 
-TODO: Continue here
+# given a UUID, return disease based on lookup in BAM_MAP
+# This is very similar to get_sample_name
+# Return multiple values based on https://stackoverflow.com/questions/2488715/idioms-for-returning-multiple-values-in-shell-scripting
+#get_vars () {
+#  #...
+#  echo "value1" "value2"
+#}
+#
+#read var1 var2 < <(get_vars)
+function get_sample_case_disease {
+    UUID=$1
+
+    CD=$(awk -v uuid=$UUID 'BEGIN{FS="\t";OFS="\t"}{if ($10 == uuid) print $2,$3}' $BAM_MAP)
+    if [ -z "$CD" ]; then
+        >&2 echo ERROR: UUID $UUID not found in $BAM_MAP
+        exit 1
+    fi
+    if [ $(echo "$CD" | wc -l) != "1" ]; then
+        >&2 echo "ERROR: multiple samples found for UUID $UUID: $CD"
+        exit 1
+    fi
+    echo $CD
+}
+
 function make_summary {
     RUN_NAME=$1
 
@@ -173,27 +193,26 @@ function make_summary {
         TUMOR_SN=$(get_sample_name $TUMOR_UUID)
         NORMAL_UUID=$(echo "$SARGS" | cut -f 4)
         NORMAL_SN=$(get_sample_name $NORMAL_UUID)
+        read CASE DIS < <(get_sample_case_disease $TUMOR_UUID)
     else
-        TUMOR_UUID=$(echo "$SARGS" | cut -f 3)
-        TUMOR_SN=$(get_sample_name $TUMOR_UUID)
+        SAMPLE_UUID=$(echo "$SARGS" | cut -f 3)
+        SAMPLE_SN=$(get_sample_name $SAMPLE_UUID)
+        read CASE DIS < <(get_sample_case_disease $SAMPLE_UUID)
     fi
 
     # Evaluate only runs which have status Succeeded
-    STATUS=$( $CROMWELL_QUERY -V -q status $CASE )
+    STATUS=$( $CROMWELL_QUERY -V -q status $RUN_NAME )
     test_exit_status
     if [ "$STATUS" != "Succeeded" ]; then
         if [ $ONLYWARN ]; then
-            >&2 echo WARNING: $CASE status is $STATUS.  Continuing
+            >&2 echo WARNING: $RUN_NAME status is $STATUS.  Continuing
         else
-            >&2 echo Skipping $CASE because status = $STATUS
+            >&2 echo Skipping $RUN_NAME because status = $STATUS
             return
         fi
     fi
 
-    DIS=$(echo "$TUMOR" | cut -f 4)
-
-#    RESULT_FILES=$($CROMWELL_QUERY -V -q outputs -W $CWL_OUTPUT $CASE)
-    RESULT_FILES=$($CROMWELL_QUERY -V -q outputs $CASE)
+    RESULT_FILES=$($CROMWELL_QUERY -V -q outputs $RUN_NAME)
     test_exit_status
 
     # Iterate over all result files - there may be more than one
@@ -207,37 +226,22 @@ function make_summary {
             continue
         fi
 
-        WID=` $CROMWELL_QUERY -V -q wid $CASE `
+        WID=` $CROMWELL_QUERY -V -q wid $RUN_NAME `
         test_exit_status
 
         # https://stackoverflow.com/questions/965053/extract-filename-and-extension-in-bash
         BASE="${RF##*/}"
         EXT="${BASE##*.}"
-# Not sure this lookup is that helpful
-        if   [ "$EXT" == "vcf" ]; then
-            FILE_FORMAT="VCF"
-        elif [ "$EXT" == "maf" ]; then
-            FILE_FORMAT="MAF"
-        elif [ "$EXT" == "bam" ]; then
-            FILE_FORMAT="BAM"
-        elif [ "$EXT" == "seg" ]; then
-            FILE_FORMAT="SEG"
-        elif [ "$EXT" == "cnv" ]; then
-            FILE_FORMAT="CNV"
-        elif [ "$EXT" == "dat" ]; then
-            FILE_FORMAT="DAT"
-        else
-            >&2 echo ERROR: Unknown file format $EXT
-            exit 1
-        fi
+        # File format is just upper case of EXT for now
+        FILE_FORMAT=${EXT^^}        # https://stackoverflow.com/questions/11392189/how-to-convert-a-string-from-uppercase-to-lowercase-in-bash
 
         # If RESTART_MAP is defined, get RESTART_D as RESTART_ROOT/UUID
         if [ ! -z $RESTART_MAP ]; then
-            RESTART_D=$(get_restartd $CASE $RESTART_MAP)
+            RESTART_D=$(get_restartd $RUN_NAME $RESTART_MAP)
             test_exit_status
-            OUTLINE=$(printf "$CASE\t$DIS\t$RF\t$FILE_FORMAT\t$TUMOR_SN\t$TUMOR_UUID\t$NORMAL_SN\t$NORMAL_UUID\t$WID\t$RESTART_D\n" )
+            OUTLINE=$(printf "$RUN_NAME\t$CASE\t$DIS\t$RF\t$FILE_FORMAT\t$TUMOR_SN\t$TUMOR_UUID\t$NORMAL_SN\t$NORMAL_UUID\t$WID\t$RESTART_D\n" )
         else
-            OUTLINE=$(printf "$CASE\t$DIS\t$RF\t$FILE_FORMAT\t$TUMOR_SN\t$TUMOR_UUID\t$NORMAL_SN\t$NORMAL_UUID\t$WID\n" )
+            OUTLINE=$(printf "$RUN_NAME\t$CASE\t$DIS\t$RF\t$FILE_FORMAT\t$TUMOR_SN\t$TUMOR_UUID\t$NORMAL_SN\t$NORMAL_UUID\t$WID\n" )
         fi
 
         if [ $SUMMARY_OUT == "-" ]; then
@@ -270,7 +274,7 @@ for L in $RUN_NAMES; do
 
     >&2 echo Processing $RUN_NAME 
 
-    make_summary $RUN_NAME 
+    make_summary $RUN_NAME  
 
     if [ $JUSTONE ]; then
         >&2 echo Quitting after one

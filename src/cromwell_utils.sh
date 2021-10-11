@@ -2,6 +2,9 @@
 # No database calls here
 # TODO: explain file formats and logic of how WorkflowID is looked up
 
+# NOTE: In all instances, "Case" here refers to RUN_NAME, i.e. a unique name associated with a YAML file and its parameters.
+# Not changing names internally at this point
+
 # obtain both Case and WorkflowID based on one of these values. RUNID passed can be either CASE or WorkflowID
 # A) if RUNID is a WorkflowID, get Case by evaluating RUNLOG (e.g., logs/runlog.dat)
 # B) If RUNID Is a Case, get Workflow ID as follows
