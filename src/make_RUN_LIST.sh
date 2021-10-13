@@ -15,6 +15,7 @@ Options:
 -r REF_NAME: reference name, for matching in BAM_MAP. Default: hg38
 -e ES: Experimental strategy, for matching in BAM_MAP. Default: WXS
 -G GST: Run in germline mode, with given sample type used
+-D: disregard any datasets with the string "deprecated" in the catalog line
 
 Iterate over all CASEs in CASE_NAMES and create a RUN_NAME associated with each
 tumor sample for that case.  Assume only one normal exists.
@@ -48,7 +49,7 @@ REF_NAME="hg38"
 ES="WXS"
 
 # http://wiki.bash-hackers.org/howto/getopts_tutorial
-while getopts ":ho:r:e:G:" opt; do
+while getopts ":ho:r:e:G:D" opt; do
   case $opt in
     h)
       echo "$USAGE"
@@ -65,6 +66,9 @@ while getopts ":ho:r:e:G:" opt; do
       ;;
     G) 
       GST=$OPTARG
+      ;;
+    D)
+      REMOVE_DEPRECATED=1
       ;;
     \?)
       >&2 echo "Invalid option: -$OPTARG"
@@ -119,8 +123,11 @@ function get_sample_names {
     MULTI_OK=$3
     # BAM_MAP, ES, REF_NAME  as global
 
-    LINE_A=$(awk -v c=$CASE -v ref=$REF_NAME -v es=$ES -v st=$ST 'BEGIN{FS="\t";OFS="\t"}{if ($2 == c && $4 == es && $5 == st && $9 == ref) print}' $BAM_MAP)
-
+    if [ $REMOVE_DEPRECATED ]; then  # ad hoc code to remove samples with "deprecated" in name. 
+        LINE_A=$(awk -v c=$CASE -v ref=$REF_NAME -v es=$ES -v st=$ST 'BEGIN{FS="\t";OFS="\t"}{if ($2 == c && $4 == es && $5 == st && $9 == ref) print}' $BAM_MAP | grep -v "deprecated")
+    else
+        LINE_A=$(awk -v c=$CASE -v ref=$REF_NAME -v es=$ES -v st=$ST 'BEGIN{FS="\t";OFS="\t"}{if ($2 == c && $4 == es && $5 == st && $9 == ref) print}' $BAM_MAP)
+    fi
     if [ -z "$LINE_A" ]; then
         >&2 echo ERROR: $REF_NAME $CASE $ES $ST sample not found in $BAM_MAP
         exit 1
@@ -154,6 +161,7 @@ function get_blood_normal_sample_name {
     # BAM_MAP, ES, REF_NAME as global
     # MULTI_OK is 0, since expect single normal
     SNS=$(get_sample_names $CASE $ST 0 )
+    test_exit_status
 
     printf "$SNS" 
 
@@ -165,6 +173,7 @@ function get_tumor_sample_names {
     ST="tumor"
     # MULTI_OK is 1, since multiple tumors samples OK
     SNS=$(get_sample_names $CASE $ST 1 )
+    test_exit_status
 
     printf "$SNS"
 }
@@ -222,7 +231,8 @@ while read CASE; do
         test_exit_status
 
         for TSN in $TUMOR_SNS; do
-            T_UUID=$(grep $TSN $BAM_MAP | cut -f 10)
+            T_UUID=$(awk -v tsn=$TSN 'BEGIN{FS="\t";OFS="\t"}{if ($1 == tsn) print}' $BAM_MAP | cut -f 10)
+
             RUN_NAME=$(get_tumor_run_name $TSN)
 
             test_exit_status
@@ -234,7 +244,7 @@ while read CASE; do
         SNS=$(get_sample_names $CASE $GST 1 ) # here, GST has to be name
         test_exit_status
         for SN in $SNS; do
-            S_UUID=$(grep $SN $BAM_MAP | cut -f 10)
+            S_UUID=$(awk -v tsn=$TSN 'BEGIN{FS="\t";OFS="\t"}{if ($1 == tsn) print}' $BAM_MAP | cut -f 10)
 
             # Change C3L-00103.WXS.T.HET_oymKX.hg38 to C3L-00103.HET_oymKX
             RUN_NAME=$(get_any_run_name $SN )  # but here, has to be a code

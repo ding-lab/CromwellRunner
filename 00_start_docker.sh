@@ -13,6 +13,16 @@ START_DOCKERD="docker/WUDocker"
 IMAGE="mwyczalkowski/cromwell-runner"
 MEM=4  
 
+# Common error - CWL directory does not exist
+if [ -z $CWL_ROOT_H ]; then
+    >&2 echo ERROR: CWL root directory not defined \(does $CWL_ROOT_H_LOC exist?\)
+    exit 1
+fi
+if [ ! -d $CWL_ROOT_H ]; then
+    >&2 echo ERROR: CWL root directory does not exist: $CWL_ROOT_H
+    exit 1
+fi
+
 >&2 echo Launching $IMAGE on $SYSTEM
 CMD="bash $START_DOCKERD/start_docker.sh -I $IMAGE -M $SYSTEM -m $MEM $@ $VOLUME_MAPPING"
 echo Running: $CMD
