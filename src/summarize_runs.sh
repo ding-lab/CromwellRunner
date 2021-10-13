@@ -255,7 +255,7 @@ function make_summary {
 
 # this allows us to get run names in one of three ways:
 # 1: summarize_runs.sh RUN_NAME1 RUN_NAME2 ...
-# 2: cat cases.dat | summarize_runs.sh -
+# 2: cat RUN_LIST.dat | summarize_runs.sh -
 # 3: read from RUN_LIST file
 # Note that if no run names defined, assume RUN_NAME='-'
 if [ "$#" == 0 ]; then

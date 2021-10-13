@@ -167,7 +167,7 @@ shift $((OPTIND-1))
 
 # this allows us to get Run IDs in one of three ways:
 # 1: cq RID1 RID2 ...
-# 2: cat cases.dat | cq -
+# 2: cat RUN_LIST.dat | cq -
 # 3: read from RUN_LIST file
 # Note that if no Run IDs defined, assume RIDS='-'
 if [ "$#" == 0 ]; then

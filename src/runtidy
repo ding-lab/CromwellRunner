@@ -198,7 +198,7 @@ fi
 
 # this allows us to get case names in one of three ways:
 # 1: cq RUN_NAME1 RUN_NAME2 ...
-# 2: cat cases.dat | cq -
+# 2: cat RUN_LIST.dat | cq -
 # 3: read from RUN_LIST file
 # Note that if no cases defined, assume RUN_NAME='-'
 if [ "$#" == 0 ]; then

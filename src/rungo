@@ -264,7 +264,7 @@ MYID=$(date +%Y%m%d%H%M%S)
 
 # this allows us to get run names in one of three ways:
 # 1: runplan RUN_NAME1 RUN_NAME2 ...
-# 2: cat cases.dat | runplan -
+# 2: cat RUN_LIST.dat | runplan -
 # 3: read from RUN_LIST file
 # Note that if no run names defined, assume RUN_NAME='-'
 if [ "$#" == 0 ]; then

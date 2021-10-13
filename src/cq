@@ -30,7 +30,7 @@ Options:
 #-W CWL_OUTPUT: ID of principal output of workflow, used for parsing JSON output. Default is "tindaisy.cwl.output_vcf"
 
 RID is RunID, and can be either a Run Name or a WorkflowID.  Examples:
-* `cq` - will return status for all cases defined in `dat/cases.dat`
+* `cq` - will return status for all cases defined in `dat/RUN_LIST.dat`
 * `cq CASE1 CASE2 CASE3` - returns status of runs for three cases.  TODO: discuss how this looked up
 * `cq WID1 WID2` - returns status for two runs with given WorkflowIDs
 
@@ -340,7 +340,7 @@ fi
 
 # this allows us to get Run IDs in one of three ways:
 # 1: cq RID1 RID2 ...
-# 2: cat cases.dat | cq -
+# 2: cat RUN_LIST.dat | cq -
 # 3: read from RUN_LIST file
 # Note that if no Run IDs defined, assume RIDS='-'
 if [ "$#" == 0 ]; then
