@@ -1,3 +1,4 @@
+# YAML input file for SomaticCNV
 tumor_BAM:  # type "File"
     class: File
     path: TUMOR_BAM
