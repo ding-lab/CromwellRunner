@@ -1,6 +1,9 @@
 # Generate analysis summary file
 # Note that running `runplan` will give back useful information about anticipated runs
 
+# Write to ./dat/analysis_summary.scratch.dat
+# Implicitly, assuming that data will be moved from scratch, but naming wi
+
 PARAMS="Project.config.sh"
 if [ ! -f $PARAMS ]; then 
     echo $PARAMS  does not exist
@@ -8,7 +11,12 @@ if [ ! -f $PARAMS ]; then
 fi
 source $PARAMS
 
-CMD="bash src/summarize_runs.sh -B $BAMMAP -P $PARAMS -U $RUN_LIST $@ "
+if [ $HAS_SCRATCH ]; then
+    AS_NAME="./dat/analysis_summary.scratch.dat"
+else
+    AS_NAME="./dat/analysis_summary.dat"
+fi
+CMD="bash src/summarize_runs.sh $@ -s $AS_NAME -B $BAMMAP -P $PARAMS -U $RUN_LIST "
 
 >&2 echo Running: $CMD
 eval $CMD

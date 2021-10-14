@@ -39,6 +39,19 @@ function confirm {
     fi
 }
 
+function confirm_dir {
+    DN=$1
+    WARN=$2
+    if [ ! -d $DN ]; then
+        if [ -z $WARN ]; then
+            >&2 echo ERROR: Directory $DN does not exist or is empty
+            exit 1
+        else
+            >&2 echo WARNING: Directory $DN does not exist or is empty.  Continuing
+        fi
+    fi
+}
+
 # Evaluate given command CMD either as dry run or for real
 function run_cmd {
     CMD=$1
