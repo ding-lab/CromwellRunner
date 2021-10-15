@@ -1,11 +1,18 @@
-DAT="paths.dat"
+# DAT is a filename to list of workflowRoot paths
+# and may be created with `cq -x workflowRoot | cut -f 3`
+
+DAT=$1
+if [ -z $DAT ]; then
+	>&2 echo ERROR: workflowRoot paths file not specified
+	exit 1
+fi
+if [ ! -f $DAT ]; then
+	>&2 echo ERROR: $DAT does not exist
+	exit 1
+fi
+
 
 TAR_NAME=compressed_results.tar.gz
-
-# NOTE: call-normalize_normal/execution/norm/results/excess_zeros/excess_zeros_observed.dat
-# and the tumor counterpart must also be expanded, otherwise this error condition will not be caught
-
->&2 echo WARNING: current implementation ignores excess_zeros_observed flag
 
 function expand_SomaticCNV_results {
 
@@ -32,7 +39,8 @@ function expand_SomaticCNV_results {
         >&2 echo OK: TAR file $TAR_NAME exists
     fi
         
-    CMD="tar -C $DATAD -zxf $DATAD/$TAR_NAME ./call-segmentation/execution ./call-annotation/execution"
+    # CMD="tar -C $DATAD -zxf $DATAD/$TAR_NAME ./call-segmentation/execution ./call-annotation/execution"
+    CMD="tar -C $DATAD -zxf $DATAD/$TAR_NAME ./call-segmentation/execution ./call-annotation/execution ./call-normalize_normal/execution/norm/results/excess_zeros ./call-normalize_tumor/execution/norm/results/excess_zeros"
 
     >&2 echo RUNNING: $CMD
     eval $CMD
@@ -42,6 +50,7 @@ function expand_SomaticCNV_results {
         >&2 echo Fatal ERROR $rc: $!.  Exiting.
         exit $rc;
     fi
+
 }
 
 while read DATAD; do
