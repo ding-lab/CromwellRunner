@@ -4,46 +4,18 @@
 
 # YAML template as generated with cwltool --make-template
 
-# No reference- or collection-specific (e.g. CPTAC3) definitons
-
-# Template for TinDaisy YAML input file
-# The following arguments must be substituted:
-# * NORMAL_BAM
-# * TUMOR_BAM
-# * REF_PATH
-# * PARAM_ROOT -> value is $TD_ROOT/params
-# * VEP_CACHE_GZ
-# * VEP_CACHE_VERSION
-# * ASSEMBLY
-# * CHRLIST
-# * NORMAL_BARCODE
-# * TUMOR_BARCODE
-
-# New in TinDaisy2
-# * CLINVAR_ANNOTATION
-# * CALL_REGIONS
-# * CANONICAL_BED
-
-# Remove the following:
-# * DBSNP_DB
-
-# New in TinDaisy2
 clinvar_annotation:  # type "File" (optional)
     class: File
     path: CLINVAR_ANNOTATION
-    #path: /gscmnt/gc7202/dinglab/common/databases/ClinVar/GRCh38/20200706/clinvar_20200706.vcf.gz
 rescue_clinvar: true  
 rescue_cosmic: true  
 call_regions:  # type "File" (optional)
     class: File
-    #path: /gscuser/mwyczalk/projects/TinDaisy/TinDaisy/params/chrlist/GRCh38.callRegions.bed.gz
     path: CALL_REGIONS
 canonical_BED:  # type "File"
     class: File
-    #path: /gscuser/mwyczalk/projects/TinDaisy/TinDaisy/params/chrlist/GRCh38.callRegions.bed
     path: CANONICAL_BED
 
-# from TinDaisy
 normal_bam:
   class: File
   path: NORMAL_BAM

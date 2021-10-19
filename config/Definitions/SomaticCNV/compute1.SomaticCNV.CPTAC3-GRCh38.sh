@@ -107,9 +107,7 @@ DEST_BASE="$STORAGE_ROOT/cromwell-workdir/cromwell-executions/bicseq2-cwl.case-c
 # These parameters used when finding data in BamMap
 ES="WGS"                            # experimental strategy
 
-# This one seem pretty low-level, since it is created and then consumed within CromwellRunner
-# not sure where this should go - seems specific to CromwellRunner setup
-# Think this is OUTPUT of config creation step
+# Output of cromwell config creation step
 CONFIG_FILE="dat/cromwell-config-db.dat"
 CONFIG_SERVER_FILE="dat/cromwell-server-config-db.dat"
 

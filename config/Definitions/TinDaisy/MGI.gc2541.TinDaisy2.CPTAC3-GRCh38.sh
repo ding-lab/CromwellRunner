@@ -1,13 +1,3 @@
-# This file is created essentially as,
-# cat config/Definitions/System/MGI.gc2541.config.sh config/Definitions/Collection/CPTAC3-GRCh38.TinDaisy.config.sh config/Definitions/Workflow/TinDaisy-hotspot.config.sh > config/Definitions/MergedDefinitions/MGI.gc2541.TinDaisy2.CPTAC3-GRCh38.sh
-# with some internal formatting added.  Moving to a merged file with internal structure which follows
-# the system / collection / workflow divisions for simplicity of having one configuration file
-
-# New in TinDaisy2 - these have been added to yaml template
-# * CLINVAR_ANNOTATION
-# * CALL_REGIONS
-# * CANONICAL_BED
-
 ###############################################################################################
 # System config
 # MGI system with Cromwell output to gc2541
@@ -39,7 +29,8 @@ CONFIG_SERVER_TEMPLATE="config/Templates/cromwell-config/server-cromwell-config.
 # Path to BamMap, which is a file which defines sequence data path and other metadata
 # BamMap format is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
 BAMMAP="/gscuser/mwyczalk/projects/CPTAC3/CPTAC3.catalog/BamMap/MGI.BamMap.dat"
-# Catalog file format is defined here: https://github.com/ding-lab/CPTAC3.case.discover/blob/master/src/make_catalog.sh
+
+# CATALOG file is also needed for TinDaisy
 CATALOG="/gscuser/mwyczalk/projects/CPTAC3/CPTAC3.catalog/CPTAC3.Catalog.dat"
 
 # Assume that all references are based here
@@ -63,7 +54,7 @@ VEP_CACHE_ROOT="/gscmnt/gc7202/dinglab/common/databases/VEP"
 # TinDaisy parameters relative to CWL_ROOT
 PARAM_ROOT="$CWL_ROOT_H/params"
 
-# Use common datalog.  This is git tracked
+# Use common datalog file
 export DATALOG="/gscuser/mwyczalk/projects/TinDaisy/CromwellRunner/cq.datalog/datalog.dat"
 
 ###############################################################################################
@@ -112,24 +103,25 @@ CWL="$CWL_ROOT_H/cwl/workflows/tindaisy2.cwl"
 # template used for generating YAML files
 YAML_TEMPLATE="config/Templates/YAML/tindaisy2.template.yaml"
 
+# pipeline-specific script to obtain parameters to fill in YAML file, get_pipeline_params.XXX.sh
+PARAM_SCRIPT="config/Scripts/get_pipeline_params.TinDaisy.sh"
+
 # These parameters used when finding data in BamMap
 ES="WXS"                            # experimental strategy
 
-# TUMOR_ST is normally "tumor", but will be "tissue_normal" for Normal Adjacent Normal Adjacent analyses
-TUMOR_ST="tumor"                    # Sample type for tumor BAM, for BAMMAP matching
-# TUMOR_ST="tissue_normal"            # Sample type for Normal Adjacent analyses
-NORMAL_ST='blood_normal'            # Sample type for normal BAM, for BAMMAP matching.  Default 'blood_normal'
+# Not sure if below is still necessary...
+# # TUMOR_ST is normally "tumor", but will be "tissue_normal" for Normal Adjacent Normal Adjacent analyses
+# TUMOR_ST="tumor"                    # Sample type for tumor BAM, for BAMMAP matching
+# # TUMOR_ST="tissue_normal"            # Sample type for Normal Adjacent analyses
+# NORMAL_ST='blood_normal'            # Sample type for normal BAM, for BAMMAP matching.  Default 'blood_normal'
 
-# List of cases to analyze.  This has to be created
-# may want to reconsider the use and implementation of case list
-CASES_FN="dat/cases.dat"
 
-# This one seem pretty low-level, since it is created and then consumed within CromwellRunner
-# not sure where this should go - seems specific to CromwellRunner setup
-# Think this is OUTPUT of config creation step
+# Output of cromwell config creation step
 CONFIG_FILE="dat/cromwell-config-db.dat"
 CONFIG_SERVER_FILE="dat/cromwell-server-config-db.dat"
 
 # RESTART_ROOT used when restarting
-# this is not a restart
 #RESTART_ROOT="$WORKFLOW_ROOT/cromwell-workdir/cromwell-executions/tindaisy.cwl"
+
+# List of runs to analyze
+RUN_LIST="dat/RUN_LIST.dat"

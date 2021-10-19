@@ -123,7 +123,7 @@ function init_params_common {
 function push_params_kv {
     KEY=$1
     VALUE=$2
-    EMPTY_OK=$3
+    EMPTY_OK=$3  # this doesn't work, since this fills $2 when $2 is empty
 
     if [ -z $VALUE ]; then
         if [ $EMPTY_OK == 1 ]; then
@@ -143,7 +143,6 @@ function init_params_kv {
     BATCH_PARAM_KV=""
     push_params_kv REF_PATH $REF_PATH
     push_params_kv PARAM_ROOT $PARAM_ROOT
-    push_params_kv DBSNP_DB $DBSNP_DB
     push_params_kv VEP_CACHE_GZ $VEP_CACHE_GZ
     push_params_kv VEP_CACHE_VERSION $VEP_CACHE_VERSION
     push_params_kv ASSEMBLY $ASSEMBLY
@@ -151,7 +150,9 @@ function init_params_kv {
     push_params_kv CLINVAR_ANNOTATION $CLINVAR_ANNOTATION
     push_params_kv CALL_REGIONS $CALL_REGIONS
     push_params_kv CANONICAL_BED $CANONICAL_BED
-    push_params_kv VAF_RESCUE_BED $VAF_RESCUE_BED
+    if [ ! -z $VAF_RESCUE_BED ]; then
+        push_params_kv VAF_RESCUE_BED $VAF_RESCUE_BED 
+    fi
 }
 
 # Goal of kv parameter parsing is to build up a string PARAM_KV consisting of "key1:value1" pairs, e.g.,
@@ -279,7 +280,7 @@ if [ ! -z $CATALOG ]; then
     TUMOR_BARCODE=$(get_aliquot $TUMOR_UUID $CATALOG) 
     NORMAL_BARCODE=$(get_aliquot $NORMAL_UUID $CATALOG) 
 else
-    >&2 echo NOTE: CATALOG not defined, using placeholder tumor and normal barcodes
+    >&2 echo NOTE: CATALOG not defined in Project Config file, using placeholder tumor and normal barcodes
     TUMOR_BARCODE="TUMOR"
     NORMAL_BARCODE="NORMAL"
 fi
