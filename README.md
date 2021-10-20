@@ -1,20 +1,10 @@
 # CromwellRunner
 
-*TODO*: Add the following discussions
-
-* Cromwell Server - A way of getting status about current and past Cromwell runs
-  Runs locally because of database integrity issues
-* Compute1 issues
-  * scratch1 space - faster and more reliable than storage1, but requires move step at end
-* Creating a YAML template with `cwltool --make-template`
-* Guidance on now to restart runs
-
-
 CromwellRunner is a lightweight interactive workflow manager for managing
 [Cromwell](https://cromwell.readthedocs.io/en/stable/) workflows on MGI and RIS
 compute1 systems at Washington University.  For a batch of cases it provides a
 set of interactive tools to stage, launch, interrogate, and finalize sets of
-jobs and workflow results.  It provides functionality to discover and restart
+jobs and workflow results.  It provides some functionality to discover and restart
 failed jobs, restart runs from intermediate results of past runs, and finalize
 completed runs to reduce disk use.
 
@@ -33,117 +23,328 @@ CromwellRunner consists of the following utilities:
 These utilities are used to initialize, launch, inspect, clean up, restart,
 and log Cromwell runs, particularly for batches of tens and hundreds of runs.
 
-## Quick start
+CromwellRunner is executed by a series of scripts, whose filenames start with
+numbers indicating order of execution, and which are run from the command line 
+with no required arguments.  All parameters are defined in configuration scripts
+which are defined in the `Projects.config.dat` file.
 
-Instructions below show how to run a batch of analyses using the somatic
-variant caller TinDaisy.  In practice, before running a batch of multiple
-cases, it is important to run one case fully to completion first.
+Note that we are generally running [CWL
+language](https://www.commonwl.org/v1.2/Workflow.html) scripts on the [Cromwell
+workflow management system](https://cromwell.readthedocs.io/en/stable/).  This
+is a combination which is relatively well supported on both the MGI and
+compute1 systems at Wash U but which remains under continuous development.  CromwellRunner
+has been used to process batches of over a thousand cases.
+
+# Getting started
+
+CromwellRunner is run regularly on MGI and compute1 environments at Wash U.
+Typically, installation as described below will be performed for each batch of
+runs, aka a "project".  Instructions below assume a Linux command line environment.
+Details specific to this batch are recorded in the `README.project.md` file for future
+reference.
+
+## Basic concepts
+
+Important things to be aware of when running CromwellRunner.
+
+## Workflows
+
+Three pipelines are currently run regularly with CromwellRunner:
+* [TinDaisy2](https://github.com/ding-lab/TinDaisy) - a somatic indel variant caller 
+* [SomaticSV](https://github.com/ding-lab/SomaticSV) - a somatic structural variant caller 
+* [SomaticCNV](https://github.com/mwyczalkowski/BICSEQ2.CWL) - a somatic copy number caller
+
+Differences between pipelines are isolated to configuration files and new CWL pipelines can be readily added.
+The links above provide the URL needed when cloning these workflows below.
+
+### Job Group
+
+The number of runs which CromwellRunner executes at a time is controlled through
+the LSF Job Group.  It is necessary to create one before jobs can be submitted on
+MGI or compute1.  Below are the basics to get started.  
+Refer to [RIS documentation](https://docs.ris.wustl.edu/doc/compute/recipes/job-execution-examples.html?highlight=bjgroup#job-groups)
+for additional details.
+
+User `bob` will create a job group named
+`/bob/cromwell_runner` which can run five jobs (runs) at a time with,
+```
+bgadd -L 5 /bob/cromwell_runner
+```
+You can see the number of jobs running for this group with,
+```
+bjgroup -s /bob/cromwell_runner
+```
+And change to 10 the number of jobs which can run at once with,
+```
+bgmod -L 10 /bob/cromwell_runner
+```
+
+### `RUN_LIST` and YAML configuration files
+
+The list of runs which constitue this batch is defined by the `RUN_LIST` file,
+which consists of the columns,
+* `RUN_NAME` - the name of this run, which must be unique in this batch
+* `CASE` - the case name associated with this run.  This corresponds to an individual participant or patient
+* `TUMOR_UUID` - UUID associated with tumor BAM file (see BamMap discussion for UUID details)
+* `NORMAL_UUID` - UUID associated with normal BAM file
+
+When there is only one tumor BAM file for each case, then the `RUN_NAME` can be the same as
+`CASE`.  In instances when there are multiple tumor BAMs per case, the `RUN_NAME` must
+be differnet for each run.
+
+The common workflow of creating a `RUN_LIST` file based on a list of cases is implemented
+in `A_YAML/10_make_RUN_LIST.sh`.  This searches the BamMap file to identify all tumor and normal
+samples associated with each run, and creates a run for each tumor file found.
+
+YAML configuration files define all the parameters needed for each workflow run.  They are created
+by the script `A_YAML/20_make_yaml.sh` using templates and parameters defined via the `Project.config.sh`
+configuration file.
+
+When Cromwell starts a run, that run is issued a unique Workflow ID.  Multiple
+runs with the same input parameters will each have a different workflow ID.
+
+### Cromwell server and docker
+
+On both MGI and compute1 environments, it is necessary to run CromwellRunner
+within a docker container which contains the necessary runtime libraries and
+executables.  This image is named `mwyczalkowski/cromwell-runner` and is
+created in the `./docker` directory.
+
+The [Cromwell
+database](https://cromwell.readthedocs.io/en/stable/Configuring/#database)
+provides a way to obtain information about running and completed workflows, and
+is central to the interactive functionality of CromwellRunner.  The database
+currently used is an instance running on `genome.wustl.edu` (confirm).
+Interactive funcionality requires a local instance of the Cromwell server to be
+running to connect to the Cromwell database.  As a result, it is necessary to
+launch both the docker container and the Cromwell server (which runs as a
+background process) before starting or querying any Cromwell runs.  Another 
+consequence is that there are two Cromwell configuration files created: a Cromwell server
+configuration file and a Cromwell run configuration file, the latter being used when
+launching each run.
+
+### Logging and output directories
+
+Logs are written to various places:
+* `logs/RUN_NAME.err` and `.out` - output of Cromwell
+* `logs/RUN_NAME.LSF.err` and `.out` - output of LSF processes
+
+Output of the actual workflows, both logs and data files, are written to the Workflow Root 
+directory of each run.  Such output directories can be very large, and may need to be cleaned up
+and/or compressed after each successful run.  CromwellRunner provides tools to manage this.
+
+CromwellRunner itself maintains two log files, `logs/runlog.dat` and a datalog
+file.  The run log file is used to track the progress of individual runs and
+the association between the run name and the workflow ID.  The datalog file
+maintain a log of all operations (e.g., compression or deletion) involving
+workflow output in the workflow root directories. 
+
+### Script basics
+
+CromwellRunner is executed by a series of scripts, whose filenames start with
+numbers indicating order of execution (e.g., `40_start_runs.sh`).  Not all
+scripts should be run - for instance, scripts involving restarts are used only
+when the run is initiated from the intermediate state of a prior run.
+
+Number scripts are run from the command line with no required arguments.  All
+parameters are obtained from configuration scripts which are defined in
+`Projects.config.dat`.
+
+The numbered scripts themselves convenience wrappers around CromwellRunner utilities
+which can also be called directly.  Details of the utilities are below, and each has extensive
+documentation available by calling with `-h` argument.  
+
+Cromwell utilities take several other arguments which are useful for debugging
+and validating runs.  The argument `-d` will perform a "dry run", printing out
+commands and doing parameter validation without affecting files or jobs.  In
+instancers where a job loops over a list of inputs, the `-1` argument will stop
+the execution after one job invoked.  `-1d` are useful together for inspecting
+a command before launching it.
+
+## Running CromwellRunner
+
+Typically, CromwellRunner is cloned once for each project, or batch of runs.
+This preserves the runtime environment for later inspection, allows for simpler
+tracking of provenance, and simplifies ongoing development.  That is the model
+demonstrated here.
+
+A number of example configuration files are provided with the distrbution,
+which will need to be modified as appropriate.
 
 ### Installation
-
-First, clone the CromwellRunner project.  This is typically done once for each batch
-of analyses:
+Clone CromwellRunner into a project-specific directory with,
 ```
 git clone --recurse-submodules https://github.com/ding-lab/CromwellRunner.git PROJECT_NAME
 ```
-where `PROJECT_NAME` is an arbitrary name for this particular run or batch.
+where `PROJECT_NAME` is a name for this particular batch.
 
-Next, clone the relevant workflow into the `PROJECT_NAME` directory.  For TinDaisy,
+Next, clone the relevant workflow into `PROJECT_NAME/workflow` directory.  
 ```
 cd PROJECT_NAME
-mkdir CWL && cd CWL
-git clone https://github.com/ding-lab/TinDaisy
+# CWL_ROOT_H=$(pwd)
+mkdir workflow && cd workflow
+git clone --recurse-submodule WORKFLOW_LINK
 ```
-and for SomaticSV,
+where `WORKFLOW_LINK` is the GitHub URL of the appropriate workflow - see above.
+The path to this directory is `CWL_ROOT_H` in the configuration file.
+
+### Define system configuration files
+
+The file `Project.config.sh` is read by all the scripts and points to the
+principal (`MERGED_CONFIG`) configuration file.  Each of these configuration
+files provide all the definitions needed for the execution of a specific
+pipeline (e.g., TinDaisy) on a given computer system (`compute1`) for a given
+project (`CPTAC3`).  A number of example configuration files are provided, and
+these will be modified as necessary.
+
+Specific steps:
+
 ```
-cd PROJECT_NAME
-mkdir CWL && cd CWL
-git clone https://github.com/ding-lab/SomaticSV.git
+* Edit configuration file `Project.config.sh`
+   * Provide project name in value `PROJECT`
+   * Define the path to the workflow configuration file as `MERGED_CONFIG` 
+     * A number of such files have been defined for different computer systems and workflows
 ```
-Note that this has to be done just once.  The path to this workflow is `CWL_ROOT_H` in
-the configuration file, below.
 
+Next, create the Cromwell server and run configuration files with,
+```
+bash 04_make_cromwell_config.sh
+```
 
-### Configuration
+### Define run configuration 
 
-1. Describe purpose of run in `README.project.md`
-2. Edit `Project.config.sh`
-    a. Define PROJECT with arbitrary name
-    b. Define MERGED_CONFIG with values appropriate for this workflow
-      * See config/README.configuration.md
-    c. See below (section) for additional details about configuration files.
-3. Create file `dat/cases.dat` with list of cases which will be processed
-4. `bash 20_make_yaml.sh`
-    * Running `src/rungo` will provide preview of anticipated runs, i.e., a way to double-check YAML file creation
-5. `bash 30_make_config.sh`
+There are a number of approaches for creating a `RUN_LIST`.  In the example here, it is created
+by generating a run for each tumor found for a list of cases.  In this way, cases with multiple
+tumor samples will generate one run for each.
 
-### System setup
-1. `bash 00_start_docker.sh"
-   This will start a docker container which contains the executables necessary to launch Cromwell
-2. `bash 05_start_cromwell_db_server.sh`
-   This starts an instance of Cromwell in server mode, allowing us to query running Cromwell workflows
-3. `bash 10_make_data_run_logs.sh`
-   Creates runlog.dat files which track details of runs which were run with CromwellRunner.  Necessary
-   for correlating case ID and workflow ID.  Note that Cromwell must be running in server mode for this
-   to succeed; it may take up to a minute to get started so if this fails might wait a bit and try again
+The script `15_exclude_already_analyzed.sh` will remove from `RUN_LIST` any runs which have already
+been performed, based on a match of tumor UUIDs to a DCC Analysis File (a CPTAC3 file listing all performed analyses).
+This is optional and CPTAC3-specific.
+
+Finally, the per-run YAML configuration files are created, one for each `RUN_LIST` entry.  Specific parameters
+are obtained from the `RUN_LIST` as well as project configuration files.  The YAML file itself is generated
+from a workflow-specific template, in which run-specific parameters are populated.  This YAML file then contains
+all of the input parameters into a specific workflow run.
+
+```
+cd A_YAML
+bash 10_make_RUN_LIST.sh
+bash 15_exclude_already_analyzed.sh
+bash 20_make_yaml.sh
+```
+
+### Start docker and Cromwell server
+
+Start docker and the Cromwell server with,
+```
+bash 00_start_docker.sh
+bash 05_start_cromwell_db_server.sh
+```
+Note that this has to be done anytime the Cromwell database is to be queried, for instance when running `cq` (described below).
+
+If starting a new project, create new run logs with,
+```
+bash 10_make_data_run_logs.sh
+```
+It is necessary for the Cromwell server to be running for this to succeed, and it may take up to a minute
+for the server to start.  If the server does not start, debug with `bash 10_make_data_run_logs.sh -d`.
 
 ### Start runs
-1. Test configuration by starting one "dry run" with, `bash 40_start_runs.sh -1d`
-   a. It is *highly recommended* to run one case fully to completion before starting a batch.
-      This can be done with `bash 40_start_runs.sh -1`.  
-2. Confirm / configure LSF job groups, which control how many jobs run at a time
-   a. At this time, the following job groups are defined:
-        compute1: LSF_GROUP="/m.wyczalkowski/cromwell-runner"
-        MGI: LSF_GROUP="/mwyczalk/cromwell-runner"
-	IMPORTANT: Each user should define their own group following the model above.  See [MGI
-	documentation](https://confluence.gsc.wustl.edu/pages/viewpage.action?pageId=27592450)
-	for details
-   b. Check number of jobs which can run at a time (and which are running) with,
-        `bjgroup -s $LSF_GROUP`
-   c. Change number of jobs which can run at a time (given by N) with,
-        `bgmod -L N $LSF_GROUP`
-   d. We do not recommend running more than 5-10 jobs at a time, in part because running
-      jobs consume a significant amount of disk space which is not cleaned until jobs are finalized.
-2. Start all runs in a batch with automatic finalization when finished, with,
-   `bash 40_start_runs.sh -F -S SYSTEM`  
-   a. SYSTEM is `MGI` or `compute1` (TODO: update script so SYSTEM is read from config file)
+
+Starting a batch of runs should be done with care.  Besides double-checking the configuration parameters,
+it is recommended to proceed by 
+1. start one run in debug mode (`-1d`) and examining the logs
+2. launching one run and letting it execute to completion before proceeding with the rest of the batch.  This
+is particularly important changes were made to the project configuration file
+
+Things to double-check:
+* Is `WORKFLOW_ROOT` set to an allocation large enough to contain the output data?  Note that each run may take
+  up to 1Tb of disk space in this volume during job execution.  On compute1 this should be scratch space
+* Confirm that `LSF_GROUP` is defined correctly and has a reasonable job limit (new installs should start low, 3-5).
+
+Start one dry run with,
+```
+bash 40_start_runs.sh -1d
+```
+Examine for errors and check that output "looks right".  Then, start one run with,
+```
+bash 40_start_runs.sh -1
+```
+Evaluate log output, principally in `logs/RUN_NAME.out`.  If this is a new install, allow this to run to completion to confirm
+pipeline is stable.  Once that is confirmed, launch the rest of the runs with,
+```
+tail -n +2 dat/RUN_LIST.dat | bash 40_start_runs.sh -
+```
+Here, running starting all but the first run in the list.  This will submit each run individually to the 
+queue, and as many will start running as the job group limit allows.
 
 ### Test progress of runs
-1. Output of runs is written to `./logs/CASE.out` and run progress may be tracked that way
-2. `cq` (described below) is a utility to query Cromwell database server to track runs and related information. This can be started in a separate terminal
-   using System setup steps 1 and 2 above.  Then, `cq` will provide status of all scheduled runs
+While a batch of runs is being processed, status and progress may be measured with the `src/cq` utility.
+This queries the Cromwell server about each run and displays a variety of diagnostics.  As such, it must be
+started from within a docker container running the server,
+```
+bash 00_start_docker.sh
+bash 05_start_cromwell_db_server.sh
+```
+then,
+```
+bash src/cq
+```
+will provide the status and workflow ID (if available) of all runs in `RUN_LIST`
 
-### Finalize runs
-1. `bash 50_make_analysis_summary.sh` -- confirm this
-2. If automatic finalization (-J) was not selected when runs were started, or if errors occurred during runtime,
-   runs will need to be finalized using `runtidy` and `datatidy` utilities, as described below.
-3. On compute1, results are written to scratch volume for performance and reliability.  These need to be 
-   copied to storage1 for long term safe keeping with `60_move_results.sh`
+Runs which conclude successfully should (provided `-F` flag is provided `40_start_runs.sh`) delete large
+temporary files and compress other intermediate results.  This can be checked by evaluating size of
+the workflow root directory (`cq -x workflowRoot` and `du -sh <path>`).  
 
+### Clean up and restart failed runs
 
-## Manually finalize when complete
+Jobs which failed for whatever reason, or which were not cleaned up during the
+main processing, should be cleaned up to clean up logs and minimize disk used.
+Runs may fail for a variety reasons, including configuration errors, disk full
+errors, problems with filesystem access, and the like, and are typically restarted.
+CromwellRunner utilities are designed to simplify such tasks.
 
-Once all jobs completed with status `Succeeded`, need to finalize and clean up
-the runs to free up disk space.  Failed jobs will also need to cleaned up in this way.
-Note that starting runs with `-F` flag will stash and compress all results
-during execution, so this step is not necessary for succeeded runs. 
-
-Given a specific PROJECT (as defined in `Project.config.sh`), finalize the run
-(move logs to logs/stashed and make a record of this run in logs/rundata.dat) 
-
+Runs with a status of `Failed` can be identified by searching output of `cq`, i.e.,
+```
+bash src/cq | grep Failed | cut -f 1
+```
+This can be combined with the `runtidy` utility, which registers this run as having
+failed and moves the log files in `./logs` to `./logs/stashed` for later review:
 ``` 
-bash src/runtidy -x finalize -p BATCH_NAME -m "Manual cleanup" -F Succeeded RID 
+bash src/cq | grep Failed | cut -f 1 | bash src/runtidy -x finalize -p PROJECT -F Failed -m "Manual cleanup" -
+```
+Likewise, the data in the workflow root directory can have the input files deleted (these can be very large) and intermediate files compressed with,
+```
+bash src/cq | grep Failed | cut -f 1 | bash src/datatidy -x compress -p PROJECT_NAME -F Failed -m "Manual cleanup" -
+```
+Note that failed jobs can be deleted wholesale (-x wipe) if there is no need to keep them around.
+
+Once the cause of the failure is identified and resolved, such failed jobs can be restarted with,
+```
+bash src/cq | grep Failed | cut -f 1 | bash 40_start_runs.sh
 ```
 
-Clean up data
+### Store runs and create analysis summary
+When all runs have completed successfully, the results need to be reported and,
+if these are on a temporary scratch space, stored in a permanent location.
+
+The `50_make_analysis_summary.sh` script will create a file named
+`dat/analysis_summary.dat`, which lists the outputs of each run along with the
+input data.  
+
+For runs on a system with `WORKFLOW_ROOT` on scratch storage (compute1
+typically), the script `60_store_results.sh` will move results listed in the
+analysis summary file from the location given by `SCRATCH_BASE` to `DEST_BASE`,
+and update the analysis summary file to reflect this.  This step is called
+storing the results, and is typically a move from `scratch1` to `storage1`.
+
 ```
-bash src/datatidy -x compress -p BATCH_NAME -F Succeeded -m "Manual cleanup" RID
+bash 50_make_analysis_summary.sh
+bash 60_store_results.sh
 ```
-Note that failed jobs can be deleted wholesale (-x wipe), restarted from scratch if
-the errors are transient, or restarted from some intermediate step (much faster, see below).
 
 
-# Configuration details
+# Configuration file details
 
 CromwellRunner configuration system provides parameters to,
 * configure YAML files based on case names, BamMap files, and workflow parameters
@@ -151,7 +352,7 @@ CromwellRunner configuration system provides parameters to,
 * launch cromwell instances
 * collect and process results
 
-We divide parameters into four families (some of these are specific to TinDaisy, but meant to be general):
+We divide parameters into four families 
 * Project parameters
   * parameters which are expected to change with every project, such as project name
 * System parameters
@@ -162,10 +363,8 @@ We divide parameters into four families (some of these are specific to TinDaisy,
   * Associated with collections such as CPTAC3 and MMRF
   * Reference dependencies here
   * External databases
-    * VEP cache defined here
-    * dbSnP-cosmic database defined here
 * Workflow parameters
-  * Will differ depending on e.g. whether this is tindaisy.cwl or tindaisy-postcall.cwl
+  * Will differ depending on e.g. whether this is tindaisy.cwl or SomaticSV.cwl
   * Defines CWL 
   * Defines YAML template
   * Defines details related to finding BAMs in BamMap
@@ -186,6 +385,16 @@ directory are not saved to git, though relevant examples can be copied to `../ex
 Template directory contains cromwell and YAML configuration templates.  These are not generally modified per run by hand.
 
 # Additional details
+*TODO*: Add the following discussions
+
+* Cromwell Server - A way of getting status about current and past Cromwell runs
+  Runs locally because of database integrity issues
+* Compute1 issues
+  * scratch1 space - faster and more reliable than storage1, but requires move step at end
+* Creating a YAML template with `cwltool --make-template`
+* Guidance on now to restart runs
+
+
 
 ## BamMap
 
@@ -222,30 +431,6 @@ Non-CPTAC3 data will typically not have a BamMap constructed as above.  It is po
 * `data_path` is the full path to the sequence data (BAM file).  Note that the index file must be available as the BAM path with `.bai` appended
 * `reference` is typically `hg19` or `hg38`, though other values can be used
 * `UUID` is a unique identifier of a specific sample.  It need not be used
-
-## Other options making YAML file
-
-In certain situations generating YAML files based on case name alone is not
-appropriate - for instance, when matching by `case`, `experimental_strategy`,
-and `sample_type` does not provide a unique UUID.  This may happen for
-heterogeneity studies.  In this situation, passing "-U UUID_MAP" to `runplan`
-will bypass lookup of samples in BamMap and use the UUID of the tumor and
-normal obtained from `UUID_MAP` file.
-
-A `UUID_MAP` file has the columns:
-* `CASE`
-* `TUMOR_UUID`
-* `NORMAL_UUID`
-
-There are two ways of dealing with this situation:
-* One run per case
-    * case name is unchanged
-* Multiple runs per case
-    * case name is modified to be unique
-    * note that `dat/cases.dat` has to be changed to reflect the list of modified case names
-
-The script `src/make_UUID_MAP.sh` generates UUID_MAP files for the second situation.  Review
-the script carefully before running
 
 
 ## canonical_BED (defined in config/Templates/YAML/tindaisy.template.yaml)
@@ -511,41 +696,3 @@ cat zombies.dat | runtidy -x finalize -p MMRF_WXS_restart -m "Succeeded zombie m
 cat zombies.dat | datatidy -x compress -p MMRF_WXS_restart -m "Succeeded zombie manual cleanup" -F Succeeded   -
 ```
 
-# Additional documentation to add
-## LSF options
-### LSF Groups
-
-CromwellRunner allows jobs to be submitted en masse using LSF as a job controller rather than
-parallel.  This is the perferred setup on MGI and compute1 systems at Wash U.
-
-Background: https://confluence.gsc.wustl.edu/pages/viewpage.action?pageId=27592450
-
-On MGI we'll be using the following LSF Group Name:
-    LSF_GROUP="/mwyczalk/cromwell-runner"
-This is defined in the system configuration file (e.g., `config/Definitions/System/MGI.gc2541.config.sh`)
-
-Note that on compute1,
-    LSF_GROUP="/m.wyczalkowski/cromwell-runner"
-
-IMPORTANT: Each user should define their own group following the model above.  See [MGI documentation](https://confluence.gsc.wustl.edu/pages/viewpage.action?pageId=27592450)
-for details
-
-#### Setup
-Do this just once for each new LSF group on each system
-
-To set up a LSF Group which will allow 5 runnning jobs at a time, do
-```
-bgadd -L 5 /mwyczalk/cromwell-runner
-```
-
-#### Modifying number of jobs
-
-Job queue size can be modified at any time to run 12 jobs with
-```
-bgmod -L 12 /mwyczalk/cromwell-runner
-```
-
-To check queue details,
-```
-bjgroup -s /mwyczalk/cromwell-runner
-```
