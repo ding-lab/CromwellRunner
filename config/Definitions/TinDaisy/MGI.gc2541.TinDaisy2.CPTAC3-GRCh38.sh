@@ -109,12 +109,11 @@ PARAM_SCRIPT="config/Scripts/get_pipeline_params.TinDaisy.sh"
 # These parameters used when finding data in BamMap
 ES="WXS"                            # experimental strategy
 
-# Not sure if below is still necessary...
+# This isn't currently used when creating RUN_LIST, but it could be...
 # # TUMOR_ST is normally "tumor", but will be "tissue_normal" for Normal Adjacent Normal Adjacent analyses
 # TUMOR_ST="tumor"                    # Sample type for tumor BAM, for BAMMAP matching
 # # TUMOR_ST="tissue_normal"            # Sample type for Normal Adjacent analyses
 # NORMAL_ST='blood_normal'            # Sample type for normal BAM, for BAMMAP matching.  Default 'blood_normal'
-
 
 # Output of cromwell config creation step
 CONFIG_FILE="dat/cromwell-config-db.dat"

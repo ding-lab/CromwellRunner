@@ -40,13 +40,15 @@ REF_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Analysis/WGS_CNV_Somatic/
 # CWL_ROOT is needed for CWL.  It is the container path to where project is installed
 # This is also used in rungo to get git status of project for tracking purposes
 # Use _C for arguments to scripts
-CWL_ROOT_H_LOC="./CWL/BICSEQ2.CWL"
-CWL_ROOT_H=$(readlink -f $CWL_ROOT_H_LOC)
+PWD=$(pwd)
+CWL_ROOT_H_LOC="$PWD/CWL/BICSEQ2.CWL"
+# CWL_ROOT_H=$(readlink -f $CWL_ROOT_H_LOC) # this is a problem on compute nodes
+CWL_ROOT_H=$CWL_ROOT_H_LOC
 CWL_ROOT_C="/usr/local/BICSEQ2.CWL"
 
 # path to CromwellRunner and its scripts.  We map local path to absolute path in container
 # so all scripts know where to find these
-CQ_ROOT_H="."
+CQ_ROOT_H="$PWD"
 CQ_ROOT_C="/usr/local/CromwellRunner"
 
 # Using common datalog file
@@ -55,7 +57,7 @@ export DATALOG="/storage1/fs1/m.wyczalkowski/Active/cromwell-data/CromwellRunner
 # Mapping home directory to /home/m.wyczalkowski is convenient because it includes environment
 # definitions for interactive work.  All scripts should run without this mapping, however
 # Note that /home used to be expanded to /storage1/fs1/home1/Active/home
-HOME_MAP="$HOME"    # HOME being an environment variable
+HOME_MAP="$HOME"
 
 # All these volumes will be mounted, with paths in container same as on host unless otherwise specified.
 VOLUME_MAPPING=" \

@@ -14,7 +14,9 @@ Options:
 -o OUT: output file.  Default: UUID_MAP.dat
 -r REF_NAME: reference name, for matching in BAM_MAP. Default: hg38
 -e ES: Experimental strategy, for matching in BAM_MAP. Default: WXS
--G GST: Run in germline mode, with given sample type used
+-G GERMLINE_ST: Run in germline mode, with given sample type used
+-T TUMOR_ST: Sample type to use for tumor.  Default: tumor
+-N NORMAL_ST: Sample type to use for tumor.  Default: blood_normal
 -D: disregard any datasets with the string "deprecated" in the catalog line
 
 Iterate over all CASEs in CASE_NAMES and create a RUN_NAME associated with each
@@ -25,7 +27,7 @@ By default, a tumor/normal RUN_LIST is created.  This has the output with the co
 
 If germline mode (-G) is defined, the output has the columns
 * RUN_NAME   CASE    SAMPLE_UUID
-where the sample chosen is defined by ST (e.g., 'tumor' or 'blood_normal')
+where the sample chosen is defined by GERMLINE_ST (e.g., 'tumor' or 'blood_normal')
 
 In instances where there is only one tumor sample, RUN_NAME and CASE are the same.
 For cases with multiple samples for tumor, the run name will consist of 
@@ -47,9 +49,11 @@ EOF
 OUT="UUID_MAP.dat"
 REF_NAME="hg38"
 ES="WXS"
+TUMOR_ST="tumor"
+NORMAL_ST="blood_normal"
 
 # http://wiki.bash-hackers.org/howto/getopts_tutorial
-while getopts ":ho:r:e:G:D" opt; do
+while getopts ":ho:r:e:G:T:N:D" opt; do
   case $opt in
     h)
       echo "$USAGE"
@@ -65,7 +69,13 @@ while getopts ":ho:r:e:G:D" opt; do
       ES=$OPTARG
       ;;
     G) 
-      GST=$OPTARG
+      GERMLINE_ST=$OPTARG
+      ;;
+    T) 
+      TUMOR_ST=$OPTARG
+      ;;
+    N) 
+      NORMAL_ST=$OPTARG
       ;;
     D)
       REMOVE_DEPRECATED=1
@@ -220,14 +230,15 @@ function get_any_run_name {
 
 while read CASE; do
 
-    if [ -z $GST ]; then    # do tumor / normal
+    if [ -z $GERMLINE_ST ]; then    # do tumor / normal
         # Assume there is just blood normal per case
-        NORMAL_SN=$(get_blood_normal_sample_name $CASE)
+        NORMAL_SN=$(get_sample_names $CASE $NORMAL_ST 0 )
         test_exit_status
         NORMAL_UUID=$(grep $NORMAL_SN $BAM_MAP | cut -f 10)  
         test_exit_status
 
-        TUMOR_SNS=$(get_tumor_sample_names $CASE )
+        # MULTI_OK is 1, since multiple tumors samples OK
+        TUMOR_SNS=$(get_sample_names $CASE $TUMOR_ST 1 )
         test_exit_status
 
         for TSN in $TUMOR_SNS; do
@@ -240,8 +251,8 @@ while read CASE; do
         done
     else
         # note, this may need some work
-        # Get sample names for case based on GST as sample type, and multiple samples OK
-        SNS=$(get_sample_names $CASE $GST 1 ) # here, GST has to be name
+        # Get sample names for case based on GERMLINE_ST as sample type, and multiple samples OK
+        SNS=$(get_sample_names $CASE $GERMLINE_ST 1 ) # here, GERMLINE_ST has to be name
         test_exit_status
         for SN in $SNS; do
             S_UUID=$(awk -v tsn=$TSN 'BEGIN{FS="\t";OFS="\t"}{if ($1 == tsn) print}' $BAM_MAP | cut -f 10)
