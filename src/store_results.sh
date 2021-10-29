@@ -23,7 +23,8 @@ AS_SCRATCH is the scratch analysis summary file
 
 Algorithm:
   * For each UUID in AS_SCRATCH with a path matching SCRATCH_BASE
-    * mv SCRATCH_BASE/UUID DEST_BASE
+    * if SCRATCH_BASE/UUID exists
+        * mv SCRATCH_BASE/UUID DEST_BASE
   * Replace all instances of string SCRATCH_BASE with DEST_BASE in the file AS_SCRATCH, writing AS_OUT
 EOF
 
@@ -75,8 +76,19 @@ UUIDS=$(grep "$SCRATCH_BASE" $AS_SCRATCH | cut -f 10 | sort -u)
 for UUID in $UUIDS ; do
     echo Processing $UUID
 
-    CMD="mv $SCRATCH_BASE/$UUID $DEST_BASE"
-    run_cmd "$CMD" $DRYRUN
+    SRCD="$SCRATCH_BASE/$UUID"
+    
+    if [ -d $SRCD ]; then 
+        CMD="mv $SRCD $DEST_BASE"
+        run_cmd "$CMD" $DRYRUN
+    else
+        >&2 echo NOTE: $SRCD does not exist.  Skipping
+    fi
+
+    if [ $JUSTONE ]; then
+        break
+    fi
+
 done
 
 CMD="sed \"s+$SCRATCH_BASE+$DEST_BASE+\" $AS_SCRATCH > $AS_OUT"

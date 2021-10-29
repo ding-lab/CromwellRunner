@@ -7,7 +7,7 @@ WORKFLOW="SomaticSV"
 SYSTEM="compute1"  
 HAS_SCRATCH=1		# 1 if data needs to be copied from scratch to storage at end of batch, otherwise 0
 LSF_CONF="/opt/ibm/lsfsuite/lsf/conf/lsf.conf"
-LSF_GROUP="/mwyczalk/gdc-download"  # changing this just for this run since there are jobs in other queue
+LSF_GROUP="/m.wyczalkowski/cromwell-runner2"
 #LSFQ="general"              # for MGI, queue is "research-hpc"
 LSFQ="dinglab"              # for MGI, queue is "research-hpc"
 LSF_ARGS="-B \"-g $LSF_GROUP\"  -M -q $LSFQ"
@@ -32,7 +32,7 @@ STORAGE_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"
 
 # Path to BamMap, which is a file which defines sequence data path and other metadata
 # BamMap format is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
-BAMMAP="dat/atacseq.bammap.storage1.20210927.single_tumors.part1.BRCA_batch1.tsv"
+BAMMAP="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Analysis/CromwellRunner/SomaticCNV/05.ATAC_346/dat/ATACseq.BamMap.storage1.tsv"
 
 # Assume that all references are based here
 REF_ROOT="/storage1/fs1/dinglab/Active/Resources/References"
@@ -40,13 +40,15 @@ REF_ROOT="/storage1/fs1/dinglab/Active/Resources/References"
 # CWL_ROOT is needed for CWL.  It is the container path to where project is installed
 # This is also used in rungo to get git status of project for tracking purposes
 # Use _C for arguments to scripts
-CWL_ROOT_H_LOC="./CWL/SomaticSV"
-CWL_ROOT_H=$(readlink -f $CWL_ROOT_H_LOC)
+PWD=$(pwd)
+CWL_ROOT_H_LOC="$PWD/CWL/SomaticSV"
+# CWL_ROOT_H=$(readlink -f $CWL_ROOT_H_LOC)  This can be used if remap /rdcw/ to /storage1/
+CWL_ROOT_H=$CWL_ROOT_H_LOC
 CWL_ROOT_C="/usr/local/SomaticSV"
 
 # path to CromwellRunner and its scripts.  We map local path to absolute path in container
 # so all scripts know where to find these
-CQ_ROOT_H="."
+CQ_ROOT_H="$PWD"
 CQ_ROOT_C="/usr/local/CromwellRunner"
 
 # Using common datalog file
@@ -94,8 +96,8 @@ YAML_TEMPLATE="config/Templates/YAML/SomaticSV.template.yaml"
 # pipeline-specific script to obtain parameters to fill in YAML file, get_pipeline_params.XXX.sh
 PARAM_SCRIPT="config/Scripts/get_pipeline_params.SomaticSV.sh"
 
-# this is specific to SomaticCNV workflow to delete large staged BAMs
-WORKFLOW_RUN_ARGS="-P config/Templates/prune_list/SomaticSV.stage_files_delete.dat"
+# this is specific to workflows which need delete large staged BAMs.  Not being used for SomaticSV
+# WORKFLOW_RUN_ARGS="-P config/Templates/prune_list/SomaticSV.stage_files_delete.dat"
 
 # For moving data from scratch to final storage upon completion
 # Relevant only if HAS_SCRATCH=1
@@ -105,6 +107,9 @@ DEST_BASE="$STORAGE_ROOT/cromwell-workdir/cromwell-executions/SomaticSV.cwl"
 
 # These parameters used when finding data in BamMap
 ES="WGS"                            # experimental strategy
+
+TUMOR_ST="tumor"                    # Sample type for tumor BAM, for BAMMAP matching
+NORMAL_ST='blood_normal'            # Sample type for normal BAM, for BAMMAP matching.  Default 'blood_normal'
 
 # This one seem pretty low-level, since it is created and then consumed within CromwellRunner
 # not sure where this should go - seems specific to CromwellRunner setup

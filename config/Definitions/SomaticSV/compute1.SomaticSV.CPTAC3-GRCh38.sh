@@ -40,13 +40,14 @@ REF_ROOT="/storage1/fs1/dinglab/Active/Resources/References"
 # CWL_ROOT is needed for CWL.  It is the container path to where project is installed
 # This is also used in rungo to get git status of project for tracking purposes
 # Use _C for arguments to scripts
+PWD=$(pwd)
 CWL_ROOT_H_LOC="./CWL/SomaticSV"
-CWL_ROOT_H=$(readlink -f $CWL_ROOT_H_LOC)
+CWL_ROOT_H=$CWL_ROOT_H_LOC
 CWL_ROOT_C="/usr/local/SomaticSV"
 
 # path to CromwellRunner and its scripts.  We map local path to absolute path in container
 # so all scripts know where to find these
-CQ_ROOT_H="."
+CQ_ROOT_H="$PWD"
 CQ_ROOT_C="/usr/local/CromwellRunner"
 
 # Using common datalog file
@@ -106,9 +107,8 @@ DEST_BASE="$STORAGE_ROOT/cromwell-workdir/cromwell-executions/SomaticSV.cwl"
 # These parameters used when finding data in BamMap
 ES="WGS"                            # experimental strategy
 
-# Necessary?
-# TUMOR_ST="tumor"                    # Sample type for tumor BAM, for BAMMAP matching
-# NORMAL_ST='blood_normal'            # Sample type for normal BAM, for BAMMAP matching.  Default 'blood_normal'
+TUMOR_ST="tumor"                    # Sample type for tumor BAM, for BAMMAP matching
+NORMAL_ST='blood_normal'            # Sample type for normal BAM, for BAMMAP matching.  Default 'blood_normal'
 
 # This one seem pretty low-level, since it is created and then consumed within CromwellRunner
 # not sure where this should go - seems specific to CromwellRunner setup
