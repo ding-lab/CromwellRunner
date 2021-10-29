@@ -1,5 +1,0 @@
-Streamline and debug creation of YAML files
-
-* CASES_FN is renamed to RUN_LIST, and the whole workflow of creating the latter from the 
-  former is moved to A_YAML
-
