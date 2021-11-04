@@ -29,10 +29,11 @@ CONFIG_SERVER_TEMPLATE="config/Templates/cromwell-config/server-cromwell-config.
 # For moving data from scratch to storage upon completion
 # This is analogous to WORKFLOW_ROOT
 STORAGE_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"
+CATALOG_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog"
 
 # Path to BamMap, which is a file which defines sequence data path and other metadata
 # BamMap format is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
-BAMMAP="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog/BamMap/storage1.BamMap.dat"
+BAMMAP="$CATALOG_ROOT/BamMap/storage1.BamMap.dat"
 
 # Assume that all references are based here
 REF_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Analysis/WGS_CNV_Somatic/Datasets"

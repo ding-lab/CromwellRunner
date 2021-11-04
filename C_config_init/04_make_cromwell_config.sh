@@ -3,6 +3,8 @@
 # CONFIG_TEMPLATE defines the template used used for `cromwell run`
 # CONFIG_SERVER_TEMPLATE defines the template used used for `cromwell server`
 
+cd ..
+
 PARAMS="Project.config.sh"
 
 if [ ! -f $PARAMS ]; then 

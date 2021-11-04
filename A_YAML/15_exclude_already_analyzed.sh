@@ -4,17 +4,22 @@ cd ..
 
 source Project.config.sh
 
-# SomaticSV
-#DCC="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog/DCC_Analysis_Summary/WGS_SV.DCC_analysis_summary.dat"
-#TUMOR_COL=12
-
-# SomaticCNV 
-#DCC="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog/DCC_Analysis_Summary/WGS_CNV_Somatic.DCC_analysis_summary.dat"
-#TUMOR_COL=12
-
-# TinDaisy
-DCC="/gscmnt/gc2521/dinglab/mwyczalk/projects.CPTAC3/CPTAC3.catalog/DCC_Analysis_Summary/WXS_Somatic_Variant_TD.DCC_analysis_summary.dat"
-TUMOR_COL=12
+if [[ $WORKFLOW == "SomaticSV" ]]; then
+    # SomaticSV
+    DCC="$CATALOG_ROOT/DCC_Analysis_Summary/WGS_SV.DCC_analysis_summary.dat"
+    TUMOR_COL=12
+elif [[ $WORKFLOW == "SomaticCNV" ]]; then
+    # SomaticCNV 
+    DCC="$CATALOG_ROOT/DCC_Analysis_Summary/WGS_CNV_Somatic.DCC_analysis_summary.dat"
+    TUMOR_COL=12
+elif [[ $WORKFLOW == "TinDaisy" ]]; then
+    # TinDaisy
+    DCC="$CATALOG_ROOT/DCC_Analysis_Summary/WXS_Somatic_Variant_TD.DCC_analysis_summary.dat"
+    TUMOR_COL=12
+else
+    >&2 echo ERROR: WORKFLOW unknown or undefined
+    exit 1
+fi
 
 RUN_LIST_PRELIM="dat/RUN_LIST.preliminary.dat"
 OUTA="./dat/tumor_uuid_to_run.dat"

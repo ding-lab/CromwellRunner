@@ -26,12 +26,13 @@ CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.MGI.templat
 # this is template for cromwell server
 CONFIG_SERVER_TEMPLATE="config/Templates/cromwell-config/server-cromwell-config.MGI.dat"
 
+CATALOG_ROOT="/gscuser/mwyczalk/projects/CPTAC3/CPTAC3.catalog"
 # Path to BamMap, which is a file which defines sequence data path and other metadata
 # BamMap format is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
-BAMMAP="/gscuser/mwyczalk/projects/CPTAC3/CPTAC3.catalog/BamMap/MGI.BamMap.dat"
+BAMMAP="$CATALOG_ROOT/BamMap/MGI.BamMap.dat"
 
-# CATALOG file is also needed for TinDaisy
-CATALOG="/gscuser/mwyczalk/projects/CPTAC3/CPTAC3.catalog/CPTAC3.Catalog.dat"
+# CATALOG file is needed for TinDaisy to obtain tumor / normal barcodes
+CATALOG="$CATALOG_ROOT/CPTAC3.Catalog.dat"
 
 # Assume that all references are based here
 REF_ROOT="/gscmnt/gc7202/dinglab/common/Reference/A_Reference"

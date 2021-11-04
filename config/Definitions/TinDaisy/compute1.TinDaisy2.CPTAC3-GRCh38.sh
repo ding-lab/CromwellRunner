@@ -24,23 +24,24 @@ CONFIG_SERVER_TEMPLATE="config/Templates/cromwell-config/server-cromwell-config.
 # For moving data from scratch to storage upon completion
 # This is analogous to WORKFLOW_ROOT
 STORAGE_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"
+CATALOG_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog"
 
 # Path to BamMap, which is a file which defines sequence data path and other metadata
 # BamMap format is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
-BAMMAP="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog/BamMap/storage1.BamMap.dat"
+BAMMAP="$CATALOG_ROOT/BamMap/storage1.BamMap.dat"
 
-# Unclear if CATALOG file is needed for TinDaisy - commenting out to evaluate
-# CATALOG="/gscuser/mwyczalk/projects/CPTAC3/CPTAC3.catalog/CPTAC3.Catalog.dat"
+# CATALOG file is needed for TinDaisy to obtain tumor / normal barcodes
+ CATALOG="$CATALOG_ROOT/CPTAC3.Catalog.dat"
 
 # Assume that all references are based here
-REF_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Analysis/WGS_CNV_Somatic/Datasets"
+REF_ROOT="/storage1/fs1/dinglab/Active/Resources/References"
 
 # CWL_ROOT is needed for CWL.  It is the container path to where project is installed
 # This is also used in rungo to get git status of project for tracking purposes
 # Use _C for arguments to scripts
 # We are making the assumption that the workflow project directory is in ./Workflow directory
 PWD=$(pwd)
-CWL_ROOT_H_LOC="./Workflow/TinDaisy"
+CWL_ROOT_H_LOC="$PWD/Workflow/TinDaisy"
 # CWL_ROOT_H=$(readlink -f $CWL_ROOT_H_LOC)
 CWL_ROOT_H=$CWL_ROOT_H_LOC
 CWL_ROOT_C="/usr/local/TinDaisy"
@@ -58,6 +59,21 @@ PARAM_ROOT="$CWL_ROOT_H/params"
 
 # Use common datalog file
 export DATALOG="/storage1/fs1/m.wyczalkowski/Active/cromwell-data/CromwellRunner/datalog.dat"
+
+# Mapping home directory to /home/<USERNAME> is convenient because it includes environment
+# definitions for interactive work.  All scripts should run without this mapping, however
+# Note that /home used to be expanded to /storage1/fs1/home1/Active/home
+HOME_MAP="$HOME"
+
+# All these volumes will be mounted, with paths in container same as on host unless otherwise specified.
+VOLUME_MAPPING=" \
+/storage1/fs1/m.wyczalkowski/Active \
+/storage1/fs1/dinglab/Active \
+$CQ_ROOT_H:$CQ_ROOT_C \
+$CWL_ROOT_H:$CWL_ROOT_C \
+$HOME_MAP \
+/scratch1/fs1/dinglab
+"
 
 ###############################################################################################
 # Collection config
