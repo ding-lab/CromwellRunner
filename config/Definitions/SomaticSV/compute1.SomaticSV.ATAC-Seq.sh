@@ -41,7 +41,7 @@ REF_ROOT="/storage1/fs1/dinglab/Active/Resources/References"
 # This is also used in rungo to get git status of project for tracking purposes
 # Use _C for arguments to scripts
 PWD=$(pwd)
-CWL_ROOT_H_LOC="$PWD/CWL/SomaticSV"
+CWL_ROOT_H_LOC="$PWD/Workflow/SomaticSV"
 # CWL_ROOT_H=$(readlink -f $CWL_ROOT_H_LOC)  This can be used if remap /rdcw/ to /storage1/
 CWL_ROOT_H=$CWL_ROOT_H_LOC
 CWL_ROOT_C="/usr/local/SomaticSV"

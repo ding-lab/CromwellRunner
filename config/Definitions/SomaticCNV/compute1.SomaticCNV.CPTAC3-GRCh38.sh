@@ -40,8 +40,9 @@ REF_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Analysis/WGS_CNV_Somatic/
 # CWL_ROOT is needed for CWL.  It is the container path to where project is installed
 # This is also used in rungo to get git status of project for tracking purposes
 # Use _C for arguments to scripts
+# We are making the assumption that the workflow project directory is in ./Workflow directory
 PWD=$(pwd)
-CWL_ROOT_H_LOC="$PWD/CWL/BICSEQ2.CWL"
+CWL_ROOT_H_LOC="$PWD/Workflow/BICSEQ2.CWL"
 # CWL_ROOT_H=$(readlink -f $CWL_ROOT_H_LOC) # this is a problem on compute nodes
 CWL_ROOT_H=$CWL_ROOT_H_LOC
 CWL_ROOT_C="/usr/local/BICSEQ2.CWL"
