@@ -208,6 +208,7 @@ Specific steps:
 
 Next, create the Cromwell server and run configuration files with,
 ```
+cd C_config_init
 bash 04_make_cromwell_config.sh
 ```
 
@@ -244,6 +245,7 @@ Note that this has to be done anytime the Cromwell database is to be queried, fo
 
 If starting a new project, create new run logs with,
 ```
+cd C_config_init
 bash 10_make_data_run_logs.sh
 ```
 It is necessary for the Cromwell server to be running for this to succeed, and it may take up to a minute

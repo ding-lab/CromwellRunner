@@ -8,9 +8,9 @@ SYSTEM="compute1"
 HAS_SCRATCH=1		# 1 if data needs to be copied from scratch to storage at end of batch, otherwise 0
 LSF_CONF="/opt/ibm/lsfsuite/lsf/conf/lsf.conf"
 LSF_GROUP="/m.wyczalkowski/cromwell-runner"
-#LSFQ="general"              # for MGI, queue is "research-hpc"
-LSFQ="dinglab"              # for MGI, queue is "research-hpc"
-LSF_ARGS="-B \"-g $LSF_GROUP\"  -M -q $LSFQ"
+LSFQ="dinglab"
+COMPUTE_GROUP="compute-dinglab"
+LSF_ARGS="-B \"-g $LSF_GROUP -G $COMPUTE_GROUP \" -M -q $LSFQ"
 
 # This is in CromwellRunner container
 CROMWELL_JAR="/usr/local/cromwell/cromwell-47.jar"

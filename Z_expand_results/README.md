@@ -6,9 +6,9 @@ are instructions for uncompressing any data which is compressed after a run.
 Note that this is specific to SomaticCNV
 
 1. make list of all workflowRoot paths
-`cq -q workflowRoot | cut -f 3 > workflowRootPaths.dat`
+`bash src/cq -q workflowRoot | cut -f 3 > workflowRootPaths.dat`
 
-2. ` bash 1_expand_results.sh workflowRootPaths.dat `
+2. ` bash 1_expand_results.sh ../workflowRootPaths.dat `
 
 # notes
 
