@@ -125,6 +125,11 @@ YAML_TEMPLATE="config/Templates/YAML/tindaisy2.template.yaml"
 # pipeline-specific script to obtain parameters to fill in YAML file, get_pipeline_params.XXX.sh
 PARAM_SCRIPT="config/Scripts/get_pipeline_params.TinDaisy.sh"
 
+# For moving data from scratch to final storage upon completion
+# Relevant only if HAS_SCRATCH=1
+SCRATCH_BASE="$WORKFLOW_ROOT/cromwell-workdir/cromwell-executions/tindaisy2.cwl"
+DEST_BASE="$STORAGE_ROOT/cromwell-workdir/cromwell-executions/tindaisy2.cwl"
+
 # These parameters used when finding data in BamMap
 ES="WXS"                            # experimental strategy
 
