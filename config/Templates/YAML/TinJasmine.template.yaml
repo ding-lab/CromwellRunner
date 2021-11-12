@@ -1,0 +1,47 @@
+# TinJasmine template
+# * Production optimizations
+
+bam:  # type "File"
+    class: File
+    path: SAMPLE_BAM
+reference:  # type "File"
+    class: File
+    path: REF_PATH
+
+centromere:  # type "File" (optional)
+    class: File
+    path: PARAM_ROOT/centromere/ucsc-centromere.GRCh38.bed
+chrlist: # Defining this turns on pindel parallel
+    class: File
+    path: CHRLIST
+pindel_config_template:  # type "File"
+    class: File
+    path: PARAM_ROOT/pindel_config_template/pindel_germline_filter_config.ini
+
+sample_barcode: SAMPLE_BARCODE
+Canonical_BED:  
+    class: File
+    path: CANONICAL_BED
+
+vep_cache_version: VEP_CACHE_VERSION
+assembly: ASSEMBLY
+
+# VEP Cache is used for VEP annotation and vcf_2_maf.
+# If not defined, online lookups will be used by VEP annotation. These are slower and do not include allele frequency info (MAX_AF) needed by AF filter.
+# For performance reasons, defining vep_cache_gz is suggested for production systems
+vep_cache_gz:
+  class: File
+  path: VEP_CACHE_GZ
+
+ROI_BED:  # type "File"
+    class: File
+    path: PARAM_ROOT/ROI_BED/Homo_sapiens.GRCh38.95.allCDS.2bpFlanks.biomart.withCHR.bed
+varscan_filter_config:  # type "File"
+    class: File
+    path: PARAM_ROOT/varscan_filter_config/VLD_FilterVCF-varscan.config.ini
+pindel_filter_config:  # type "File"
+    class: File
+    path: PARAM_ROOT/pindel_filter_config/VLD_FilterVCF-pindel.config.ini
+gatk_filter_config:  # type "File"
+    class: File
+    path: PARAM_ROOT/gatk_filter_config/VLD_FilterVCF-GATK.config.ini

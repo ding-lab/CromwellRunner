@@ -3,7 +3,7 @@
 # Compute1 system with Cromwell output to scratch volume
 ###############################################################################################
 
-WORKFLOW="TinDaisy"
+WORKFLOW="TinJasmine"
 SYSTEM="compute1"
 HAS_SCRATCH=1		# 1 if data needs to be copied from scratch to storage at end of batch, otherwise 0
 LSF_CONF="/opt/ibm/lsfsuite/lsf/conf/lsf.conf"
@@ -31,8 +31,8 @@ CATALOG_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog
 # BamMap format is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
 BAMMAP="$CATALOG_ROOT/BamMap/storage1.BamMap.dat"
 
-# CATALOG file is needed for TinDaisy to obtain tumor / normal barcodes
-CATALOG="$CATALOG_ROOT/CPTAC3.Catalog.dat"
+# CATALOG file is needed to obtain barcodes
+ CATALOG="$CATALOG_ROOT/CPTAC3.Catalog.dat"
 
 # Assume that all references are based here
 REF_ROOT="/storage1/fs1/dinglab/Active/Resources/References"
@@ -42,10 +42,10 @@ REF_ROOT="/storage1/fs1/dinglab/Active/Resources/References"
 # Use _C for arguments to scripts
 # We are making the assumption that the workflow project directory is in ./Workflow directory
 PWD=$(pwd)
-CWL_ROOT_H_LOC="$PWD/Workflow/TinDaisy"
+CWL_ROOT_H_LOC="$PWD/Workflow/TinJasmine"
 # CWL_ROOT_H=$(readlink -f $CWL_ROOT_H_LOC)
 CWL_ROOT_H=$CWL_ROOT_H_LOC
-CWL_ROOT_C="/usr/local/TinDaisy"
+CWL_ROOT_C="/usr/local/TinJasmine"
 
 # path to CromwellRunner and its scripts.  We map local path to absolute path in container
 # so all scripts know where to find these
@@ -55,7 +55,7 @@ CQ_ROOT_C="/usr/local/CromwellRunner"
 # Assume all VEP caches are here
 VEP_CACHE_ROOT="/storage1/fs1/m.wyczalkowski/Active/Primary/Resources/Databases/VEP"
 
-# TinDaisy parameters relative to CWL_ROOT
+# Parameters relative to CWL_ROOT
 PARAM_ROOT="$CWL_ROOT_H/params"
 
 # Use common datalog file
@@ -101,12 +101,9 @@ VEP_CACHE_GZ="$VEP_CACHE_ROOT/v99/vep-cache.99_GRCh38.tar.gz"
 REF_NAME="hg38"                     # Reference, as used when matching to BAMMAP
 
 # Defining this turns on pindel parallel
-CHRLIST="$PARAM_ROOT/chrlist/GRCh38.d1.vd1.chrlist.txt"
+CHRLIST="$PARAM_ROOT/chrlist/GRCh38.d1.vd1.chrlist-reordered.txt"
 
-# This is optionally used by VEP custom annotation feature to provide information about clinvar and enable clinvar rescue
-CLINVAR_ANNOTATION="/storage1/fs1/m.wyczalkowski/Active/Primary/Resources/Databases/ClinVar/GRCh38/20200706/clinvar_20200706.vcf.gz"
-CALL_REGIONS="$PARAM_ROOT/chrlist/GRCh38.callRegions.bed.gz"
-CANONICAL_BED="$PARAM_ROOT/chrlist/GRCh38.callRegions.bed"
+CANONICAL_BED="$PARAM_ROOT/Canonical_BED/GRCh38.callRegions.bed"
 
 ###############################################################################################
 # Workflow
@@ -117,34 +114,32 @@ CANONICAL_BED="$PARAM_ROOT/chrlist/GRCh38.callRegions.bed"
 #   WORKFLOW_ROOT
 ###############################################################################################
 
-CWL="$CWL_ROOT_H/cwl/workflows/tindaisy2.cwl"
+CWL="$CWL_ROOT_H/cwl/workflows/TinJasmine.cwl"
 
 # template used for generating YAML files
-YAML_TEMPLATE="config/Templates/YAML/tindaisy2.template.yaml"
+YAML_TEMPLATE="config/Templates/YAML/TinJasmine.template.yaml"
 
 # pipeline-specific script to obtain parameters to fill in YAML file, get_pipeline_params.XXX.sh
-PARAM_SCRIPT="config/Scripts/get_pipeline_params.TinDaisy.sh"
+PARAM_SCRIPT="config/Scripts/get_pipeline_params.TinJasmine.sh"
 
 # For moving data from scratch to final storage upon completion
 # Relevant only if HAS_SCRATCH=1
-SCRATCH_BASE="$WORKFLOW_ROOT/cromwell-workdir/cromwell-executions/tindaisy2.cwl"
-DEST_BASE="$STORAGE_ROOT/cromwell-workdir/cromwell-executions/tindaisy2.cwl"
+SCRATCH_BASE="$WORKFLOW_ROOT/cromwell-workdir/cromwell-executions/TinJasmine.cwl"
+DEST_BASE="$STORAGE_ROOT/cromwell-workdir/cromwell-executions/TinJasmine.cwl"
 
 # These parameters used when finding data in BamMap
 ES="WXS"                            # experimental strategy
 
-# This isn't currently used when creating RUN_LIST, but it could be...
-# # TUMOR_ST is normally "tumor", but will be "tissue_normal" for Normal Adjacent Normal Adjacent analyses
-# TUMOR_ST="tumor"                    # Sample type for tumor BAM, for BAMMAP matching
-# # TUMOR_ST="tissue_normal"            # Sample type for Normal Adjacent analyses
-# NORMAL_ST='blood_normal'            # Sample type for normal BAM, for BAMMAP matching.  Default 'blood_normal'
+# This is an argument passed to src/make_RUN_LIST.sh which defines the sample types to process
+# for TinJasmine, run in germline mode with blood_normal samples
+SAMPLE_TYPE_ARGS="-G blood_normal"
 
 # Output of cromwell config creation step
 CONFIG_FILE="dat/cromwell-config-db.dat"
 CONFIG_SERVER_FILE="dat/cromwell-server-config-db.dat"
 
 # RESTART_ROOT used when restarting
-#RESTART_ROOT="$WORKFLOW_ROOT/cromwell-workdir/cromwell-executions/tindaisy.cwl"
+#RESTART_ROOT="$WORKFLOW_ROOT/cromwell-workdir/cromwell-executions/TinJasmine.cwl"
 
 # List of runs to analyze
 RUN_LIST="dat/RUN_LIST.dat"

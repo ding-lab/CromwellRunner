@@ -57,7 +57,6 @@ centromere_bed:
 # VEP Cache is used for VEP annotation and vcf_2_maf.
 # If not defined, online lookups will be used by VEP annotation. These are slower and do not include allele frequency info (MAX_AF) needed by AF filter.
 # For performance reasons, defining vep_cache_gz is suggested for production systems
-
 vep_cache_gz:
   class: File
   path: VEP_CACHE_GZ

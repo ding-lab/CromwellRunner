@@ -4,7 +4,7 @@
 # https://dinglab.wustl.edu/
 
 read -r -d '' USAGE <<'EOF'
-Usage: get_pipeline_params.TinDaisy.sh [options] SAMPLE_NAME CASE TUMOR_UUID NORMAL_UUID
+Usage: get_pipeline_params.TinJasmine.sh [options] SAMPLE_NAME CASE SAMPLE_UUID 
   Review, initialize, and summarize runs
 
 Options:
@@ -16,26 +16,21 @@ Options:
 get_pipeline_params.TinDaisy.sh returns a list of parameters in the form, "KEY1:VALUE1 KEY2:VALUE2 ..."
 
 The following parameters are returned
-    * NORMAL_BAM
-    * TUMOR_BAM
+    * SAMPLE_BAM
     * REF_PATH
     * RESTART_D
-    * TUMOR_BARCODE
-    * NORMAL_BARCODE
+    * SAMPLE_BARCODE
     * PARAM_ROOT
     * VEP_CACHE_GZ
     * VEP_CACHE_VERSION
     * ASSEMBLY
     * CHRLIST
-    * CLINVAR_ANNOTATION
-    * CALL_REGIONS
     * CANONICAL_BED
-    * VAF_RESCUE_BED (used only for VAF Rescue)
 
 Source of info:
-    * TUMOR_BAM and NORMAL_BAM are defined by lookup of TUMOR_UUID and NORMAL_UUID in BamMap
+    * SAMPLE_BAM is defined by lookup of SAMPLE_UUID in BamMap 
     * RESTART_D is defined when -R flag is set
-    * TUMOR_BARCODE and NORMAL_BARCODE are defined by lookup of UUID in Catalog file
+    * SAMPLE_BARCODE is defined by lookup of UUID in Catalog file
     * Remainder defined in PARAMS file
 
 Restarting of runs is supported by making available RESTART_D variable in YAML
@@ -83,8 +78,7 @@ shift $((OPTIND-1))
 
 SAMPLE_NAME=$1
 CASE=$2
-TUMOR_UUID=$3
-NORMAL_UUID=$4
+SAMPLE_UUID=$3
 
 function complain {
     MSG="$1"
@@ -139,7 +133,6 @@ function push_params_kv {
 
 # go through and set BATCH_PARAMS_KV for each parameter needed for this workflow
 function init_params_kv {
-
     BATCH_PARAM_KV=""
     push_params_kv REF_PATH $REF_PATH
     push_params_kv PARAM_ROOT $PARAM_ROOT
@@ -147,8 +140,6 @@ function init_params_kv {
     push_params_kv VEP_CACHE_VERSION $VEP_CACHE_VERSION
     push_params_kv ASSEMBLY $ASSEMBLY
     push_params_kv CHRLIST $CHRLIST
-    push_params_kv CLINVAR_ANNOTATION $CLINVAR_ANNOTATION
-    push_params_kv CALL_REGIONS $CALL_REGIONS
     push_params_kv CANONICAL_BED $CANONICAL_BED
     if [ ! -z $VAF_RESCUE_BED ]; then
         push_params_kv VAF_RESCUE_BED $VAF_RESCUE_BED 
@@ -255,16 +246,12 @@ function get_restartd {
     printf "$RESTART_D"
 }
 
-TUMOR=$(get_BAM $TUMOR_UUID)
+SAMPLE=$(get_BAM $SAMPLE_UUID)
 test_exit_status
 
-NORMAL=$(get_BAM $NORMAL_UUID)
-test_exit_status
+SAMPLE_BAM=$(echo "$SAMPLE" | cut -f 1)
 
-TUMOR_BAM=$(echo "$TUMOR" | cut -f 1)
-NORMAL_BAM=$(echo "$NORMAL" | cut -f 1)
-
-PARAM_KV="$BATCH_PARAM_KV TUMOR_BAM:$TUMOR_BAM NORMAL_BAM:$NORMAL_BAM"
+PARAM_KV="$BATCH_PARAM_KV SAMPLE_BAM:$SAMPLE_BAM"
 
 # If RESTART_MAP is defined, get RESTART_D as RESTART_ROOT/UUID
 if [ ! -z $RESTART_UUID ]; then
@@ -277,14 +264,12 @@ fi
 # If $CATALOG is defined, obtain NORMAL_BARCODE and _TUMOR based on aliquot column using lookup of UUID
 # if CATALOG not defined, NORMAL_BARCODE = NORMAL and TUMOR_BARCODE = TUMOR
 if [ ! -z $CATALOG ]; then
-    TUMOR_BARCODE=$(get_aliquot $TUMOR_UUID $CATALOG) 
-    NORMAL_BARCODE=$(get_aliquot $NORMAL_UUID $CATALOG) 
+    SAMPLE_BARCODE=$(get_aliquot $SAMPLE_UUID $CATALOG) 
 else
-    >&2 echo NOTE: CATALOG not defined in Project Config file, using placeholder tumor and normal barcodes
-    TUMOR_BARCODE="TUMOR"
-    NORMAL_BARCODE="NORMAL"
+    >&2 echo NOTE: CATALOG not defined in Project Config file, using placeholder sample barcode
+    SAMPLE_BARCODE="SAMPLE"
 fi
 # note that SomaticSV does not need barcodes, but it is not clear how to define this necessity
-PARAM_KV="$PARAM_KV TUMOR_BARCODE:$TUMOR_BARCODE NORMAL_BARCODE:$NORMAL_BARCODE"
+PARAM_KV="$PARAM_KV SAMPLE_BARCODE:$SAMPLE_BARCODE"
     
 echo $PARAM_KV

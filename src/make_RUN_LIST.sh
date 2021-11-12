@@ -210,6 +210,7 @@ touch $OUT
 # However, is not easily available in a BamMap file except with some ad hoc parsing of sample name
 # The aim is to provide a unique name to sample names when a case has more than one tumor sample,
 #   with annotation details provided by GDC
+# In the future, it will be more convenient to simply parse the catalog file annotation
 function get_tumor_run_name {
     TSN=$1
     # Change C3L-00103.WXS.T.HET_oymKX.hg38 to C3L-00103.HET_oymKX
@@ -222,7 +223,7 @@ function get_tumor_run_name {
 function get_any_run_name {
     TSN=$1
     # Change C3L-00103.WXS.T.HET_oymKX.hg38 to C3L-00103.HET_oymKX
-    RUN_NAME=$(echo $TSN | sed "s/${ES}\.T\.//" | sed 's/.hg38//')
+    RUN_NAME=$(echo $TSN | sed "s/${ES}\.T\.//" | sed "s/${ES}\.N\.//" | sed "s/${ES}\.A\.//" | sed 's/.hg38//')
     test_exit_status
 
     echo "$RUN_NAME"
@@ -252,13 +253,17 @@ while read CASE; do
     else
         # note, this may need some work
         # Get sample names for case based on GERMLINE_ST as sample type, and multiple samples OK
+>&2 echo DEBUG: Germline mode : $GERMLINE_ST
         SNS=$(get_sample_names $CASE $GERMLINE_ST 1 ) # here, GERMLINE_ST has to be name
+>&2 echo DEBUG: SNS = $SNS
         test_exit_status
         for SN in $SNS; do
-            S_UUID=$(awk -v tsn=$TSN 'BEGIN{FS="\t";OFS="\t"}{if ($1 == tsn) print}' $BAM_MAP | cut -f 10)
+            S_UUID=$(awk -v sn=$SN 'BEGIN{FS="\t";OFS="\t"}{if ($1 == sn) print}' $BAM_MAP | cut -f 10)
+>&2 echo DEBUG: S_UUID = $S_UUID
 
             # Change C3L-00103.WXS.T.HET_oymKX.hg38 to C3L-00103.HET_oymKX
             RUN_NAME=$(get_any_run_name $SN )  # but here, has to be a code
+>&2 echo DEBUG: RUN_NAME = $RUN_NAME
             test_exit_status
             printf "$RUN_NAME\t$CASE\t$S_UUID\n" >> $OUT
         done
