@@ -642,7 +642,7 @@ Describe what stashing and finalizing is
 
 If runs are not finalized immediately (with rungo -F), they should be stashed later as a separate step.
 ```
-runtidy -x finalize -p PDA.TargetedSequencing.20200131
+bash src/runtidy -x finalize -F Succeeded -p PDA.TargetedSequencing.20200131
 ```
 
 Likewise, run output can be tidied with,

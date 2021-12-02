@@ -174,7 +174,8 @@ while getopts ":W:y:hd1J:g:eC:D:R:j:k:c:FX:p:L:l:G:Mq:B:S:P:" opt; do
     S)  
       SPAWN_CONFIG="$OPTARG"
       ;;
-    P)  # DATALOG
+    P)  
+      confirm $OPTARG
       DATATIDY_ARG="$DATATIDY_ARG -P $OPTARG"
       ;;
     \?)

@@ -1,9 +1,5 @@
 include required(classpath("application"))
 
-# Specific to MGI:
-# -M memory_kb 
-# -q research-hpc
-#
 # Compute1
 # -M memory_mb 
 # -q general
@@ -30,6 +26,7 @@ backend {
         ${"-M " + memory_mb} \
         ${"-n " + cpu} \
         ${"-R \"select[mem>" + memory_mb + "] rusage[mem=" + memory_mb + "]\""} \
+        -G compute-dinglab \
         /bin/bash ${script}
         """
         submit-docker = """
@@ -44,6 +41,7 @@ backend {
         ${"-M " + memory_mb} \
         ${"-n " + cpu} \
         ${"-R \"select[mem>" + memory_mb + "] rusage[mem=" + memory_mb + "]\""} \
+        -G compute-dinglab \
         /bin/bash ${script}
         """
 

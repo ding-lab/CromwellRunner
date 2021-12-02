@@ -114,13 +114,16 @@ CANONICAL_BED="$PARAM_ROOT/Canonical_BED/GRCh38.callRegions.bed"
 #   WORKFLOW_ROOT
 ###############################################################################################
 
-CWL="$CWL_ROOT_H/cwl/workflows/TinJasmine.cwl"
+CWL="$CWL_ROOT_H/cwl/TinJasmine.cwl"
 
 # template used for generating YAML files
 YAML_TEMPLATE="config/Templates/YAML/TinJasmine.template.yaml"
 
 # pipeline-specific script to obtain parameters to fill in YAML file, get_pipeline_params.XXX.sh
 PARAM_SCRIPT="config/Scripts/get_pipeline_params.TinJasmine.sh"
+
+# this is required for workflows with staged BAMs 
+WORKFLOW_RUN_ARGS="-P config/Templates/prune_list/TinJasmine.stage_files_delete.dat"
 
 # For moving data from scratch to final storage upon completion
 # Relevant only if HAS_SCRATCH=1

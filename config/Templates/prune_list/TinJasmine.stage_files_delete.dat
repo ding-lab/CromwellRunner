@@ -1,0 +1,3 @@
+# files to be deleted prior to compressing in finalization step
+call-stage_bam/execution/staged_data.bam
+call-stage_bam/execution/staged_data.bam.bai

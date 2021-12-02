@@ -125,6 +125,9 @@ YAML_TEMPLATE="config/Templates/YAML/tindaisy2.template.yaml"
 # pipeline-specific script to obtain parameters to fill in YAML file, get_pipeline_params.XXX.sh
 PARAM_SCRIPT="config/Scripts/get_pipeline_params.TinDaisy.sh"
 
+# this is required for workflows with staged BAMs 
+WORKFLOW_RUN_ARGS="-P config/Templates/prune_list/TinDaisy.stage_files_delete.dat"
+
 # For moving data from scratch to final storage upon completion
 # Relevant only if HAS_SCRATCH=1
 SCRATCH_BASE="$WORKFLOW_ROOT/cromwell-workdir/cromwell-executions/tindaisy2.cwl"
