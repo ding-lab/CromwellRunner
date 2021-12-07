@@ -13,6 +13,7 @@ START_DOCKERD="docker/WUDocker"
 IMAGE="mwyczalkowski/cromwell-runner"
 MEM=4  
 ARG="-q dinglab-interactive"
+GROUP="-G compute-dinglab"
 
 # Common error - CWL directory does not exist
 if [ -z $CWL_ROOT_H ]; then
@@ -25,6 +26,6 @@ if [ ! -d $CWL_ROOT_H ]; then
 fi
 
 >&2 echo Launching $IMAGE on $SYSTEM
-CMD="bash $START_DOCKERD/start_docker.sh $ARG -A -I $IMAGE -M $SYSTEM -m $MEM $@ $VOLUME_MAPPING"
+CMD="bash $START_DOCKERD/start_docker.sh $ARG -g \"$GROUP\" -A -I $IMAGE -M $SYSTEM -m $MEM $@ $VOLUME_MAPPING"
 echo Running: $CMD
 eval $CMD

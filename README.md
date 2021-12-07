@@ -51,6 +51,7 @@ Important things to be aware of when running CromwellRunner.
 
 Three pipelines are currently run regularly with CromwellRunner:
 * [TinDaisy2](https://github.com/ding-lab/TinDaisy) - a somatic indel variant caller 
+* [TinJasmine](https://github.com/ding-lab/TinJasmine) - a germline indel variant caller 
 * [SomaticSV](https://github.com/ding-lab/SomaticSV) - a somatic structural variant caller 
 * [SomaticCNV](https://github.com/mwyczalkowski/BICSEQ2.CWL) - a somatic copy number caller
 
@@ -181,12 +182,14 @@ where `PROJECT_NAME` is a name for this particular batch.
 Next, clone the relevant workflow into `PROJECT_NAME/workflow` directory.  
 ```
 cd PROJECT_NAME
-# CWL_ROOT_H=$(pwd)
-mkdir workflow && cd workflow
+mkdir Workflow && cd Workflow
 git clone --recurse-submodule WORKFLOW_LINK
 ```
-where `WORKFLOW_LINK` is the GitHub URL of the appropriate workflow - see above.
-The path to this directory is `CWL_ROOT_H` in the configuration file.
+where `WORKFLOW_LINK` is the GitHub URL of the appropriate workflow:
+* TinDaisy2: `https://github.com/ding-lab/TinDaisy.git`
+* TinJasmine: `https://github.com/ding-lab/TinJasmine.git`
+* SomaticSV: `https://github.com/ding-lab/SomaticSV.git`
+* SomaticCNV: `https://github.com/mwyczalkowski/BICSEQ2.CWL.git`
 
 ### Define system configuration files
 
