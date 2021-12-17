@@ -254,6 +254,11 @@ bash 10_make_data_run_logs.sh
 It is necessary for the Cromwell server to be running for this to succeed, and it may take up to a minute
 for the server to start.  If the server does not start, debug with `bash 10_make_data_run_logs.sh -d`.
 
+Also, make sure that the file defined by the `DATALOG` configuration variable exists with,
+```
+bash src/datatidy -f1
+```
+
 ### Start runs
 
 Starting a batch of runs should be done with care.  Besides double-checking the configuration parameters,
