@@ -20,6 +20,7 @@ Options:
 -Y YAML_TEMPLATE: template file used to generate YAML configuration file for each template.  Required
 -U RUN_LIST: file with lines composed of RUN_NAME, CASE_NAME, and one or more UUIDs corresponding to data to be
    processed.  Required.
+# -r: remap paths /rdcw/ to /storage1/ - maybe a useful feature, not currently implemented
 
 runplan uses BamMap, catalog, and parameters file to initialize runs.  Loops
 over RUN_LIST to create per-run configuration files ("YAML" files)
@@ -39,6 +40,9 @@ Restarting of runs is supported by making available RESTART_D variable in YAML
 template, which provides path to root directory of prior run.
 RESTART_D="RESTART_ROOT/UUID", with RESTART_ROOT defined in PARAMS (mandatory),
 and UUID obtained from RESTART_MAP file (TSV with CASE and UUID, `cq | cut -f 1-2` will work)
+
+Remapping paths /rdcw/ to /storage1/ allows paths obtained with `readlink` on a compute1 client
+to be used on cache layer machines.
 
 Format of BamMap is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
 EOF
@@ -84,6 +88,9 @@ while getopts ":hd1y:P:p:gR:Y:U:" opt; do
     U) 
       RUN_LIST="$OPTARG"
       ;;
+#    r)
+#      REMAP_PATHS=1
+#      ;;
     \?)
       >&2 echo "Invalid option: -$OPTARG" 
       >&2 echo "$USAGE"
@@ -158,6 +165,11 @@ function make_yaml {
     
     PARAM_KV=$(eval $CMD)
     test_exit_status 
+# Code from WUdocker/start_docker.sh.  Not clear whether this has to be implemented following
+# some bugfixes in the above
+#    if [ "$REMAP_PATHS" ]; then
+#        PATH=$(echo "$PATH" | sed 's/rdcw/storage1/')
+#    fi
 
     if [ $YAML_FN != "-" ]; then
         OUT_ARG="-o $YAML_FN"

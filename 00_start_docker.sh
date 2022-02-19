@@ -12,7 +12,7 @@ START_DOCKERD="docker/WUDocker"
 
 IMAGE="mwyczalkowski/cromwell-runner"
 MEM=4  
-ARG="-q dinglab-interactive"
+ARG="-q dinglab-interactive -r"
 GROUP="-G compute-dinglab"
 
 # Common error - CWL directory does not exist

@@ -43,6 +43,8 @@ runs, aka a "project".  Instructions below assume a Linux command line environme
 Details specific to this batch are recorded in the `README.project.md` file for future
 reference.
 
+See installation details at bottom of this document (TODO: intgrate)
+
 ## Basic concepts
 
 Important things to be aware of when running CromwellRunner.
@@ -66,7 +68,7 @@ MGI or compute1.  Below are the basics to get started.
 Refer to [RIS documentation](https://docs.ris.wustl.edu/doc/compute/recipes/job-execution-examples.html?highlight=bjgroup#job-groups)
 for additional details.
 
-User `bob` will create a job group named
+User `bob` (use your own user ID) will create a job group named
 `/bob/cromwell_runner` which can run five jobs (runs) at a time with,
 ```
 bgadd -L 5 /bob/cromwell_runner
@@ -644,6 +646,24 @@ Both run_pindel and run_strelka2 have adjustable numbers of threads / CPUs to ru
 This can be assessed using `cq -q timing`.  Current testing suggests 5 and 4 threads for pindel and strelka2, respectively,
 seems to make run times roughly uniform.  Mutect and varscan don't seem to have an option to adjust thread counts.
 
+### Address already in use
+After starting `05_start_cromwell_db_server.sh` get error like,
+```
+Binding failed interface 127.0.0.1 port 8000
+```
+This is because instance of cromwell server already running on this machine.
+Solution is to start it on another port, and have cq use that port too.  To set the port to
+8001,
+* edit `dat/cromwell-server-config-db.dat` 
+```
+  port = 8001
+```
+* edit `src/cq`
+```
+    CROMWELL_URL="http://localhost:8001"
+```
+
+
 ## Stashing and finalizing
 
 Describe what stashing and finalizing is
@@ -706,3 +726,47 @@ cat zombies.dat | runtidy -x finalize -p MMRF_WXS_restart -m "Succeeded zombie m
 cat zombies.dat | datatidy -x compress -p MMRF_WXS_restart -m "Succeeded zombie manual cleanup" -F Succeeded   -
 ```
 
+# Suggested workflow for production CromwellRunner batches
+Text taken from `/storage1/fs1/dinglab/Active/Projects/CPTAC3/Analysis/CromwellRunner/README.md`, please
+incorporate into above
+
+Production and development runs by CromwellRunner on compute1
+
+Support for the following workflows:
+* SomaticCNV -  https://github.com/mwyczalkowski/BICSEQ2.CWL.git
+* SomaticSV -   https://github.com/ding-lab/SomaticSV.git
+* TinDaisy -    https://github.com/ding-lab/TinDaisy.git 
+* TinJasmine -  https://github.com/ding-lab/TinJasmine.git
+
+#$# Project names
+Each CromwellRunner batch has a project name of the format `NN.PROJECT_NAME` (example: `05.ATAC_346`)
+consisting of an increasing number and a useful descriptor (for instance, number of runs in batch)
+
+##$ Installation
+To install instances of CromwellRunner, 
+```
+P="NN.PROJECT_NAME"
+git clone --recurse-submodules https://github.com/ding-lab/CromwellRunner.git $P
+mkdir -p $P/Workflow && cd $P/Workflow && git clone --recurse-submodule GIT_URL
+```
+where `GIT_URL` is one of the above workflow URLs
+
+This will clone the CromwellRunner project and place a copy of the workflow in the project's Workflow directory.
+CromwellRunner uses the CWL code from those projects.
+
+## Git considerations
+
+Individual projects are individual repositories cloned from GitHub.
+* Strictly production runs can have own branch but need not
+  * Version of repository which corresponds to any released version is tagged
+    * This is a production tag
+* Development work is branched, with the goal of merging back into master
+  * all branches have BRANCH.branch_name to describe the purpose of this branch
+  * Changes (typically merged back into master) which significantly change workflow will
+    receive "pipeline versions" (e.g., v2.2) which can be reflected on pipeline submissions
+
+## Run catalog
+
+All CromwellRunner batches are cataloged here:
+    https://docs.google.com/spreadsheets/d/12ANLh3H1dgZcGFwmCjL3i-XZHtukeicw6DtboAjMT7E/edit#gid=0
+Please add to this list every time a new CromwellRunner batch is processed.
