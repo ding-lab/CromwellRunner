@@ -54,7 +54,7 @@ CQ_ROOT_H="$PWD"
 CQ_ROOT_C="/usr/local/CromwellRunner"
 
 # Using common datalog file
-export DATALOG="/storage1/fs1/m.wyczalkowski/Active/cromwell-data/CromwellRunner/datalog.dat"
+export DATALOG="$WORKFLOW_ROOT/CromwellRunner/datalog.dat"
 
 # Mapping home directory to /home/m.wyczalkowski is convenient because it includes environment
 # definitions for interactive work.  All scripts should run without this mapping, however

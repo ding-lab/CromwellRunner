@@ -7,7 +7,7 @@ WORKFLOW="SomaticSV"
 SYSTEM="compute1"  
 HAS_SCRATCH=1		# 1 if data needs to be copied from scratch to storage at end of batch, otherwise 0
 LSF_CONF="/opt/ibm/lsfsuite/lsf/conf/lsf.conf"
-LSF_GROUP="/m.wyczalkowski/cromwell-runner"
+LSF_GROUP="/m.wyczalkowski/cromwell-runner" # This should be changed for every user
 LSFQ="dinglab"
 COMPUTE_GROUP="compute-dinglab"
 LSF_ARGS="-B \"-g $LSF_GROUP -G $COMPUTE_GROUP \" -M -q $LSFQ"
@@ -33,7 +33,8 @@ CATALOG_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog
 
 # Path to BamMap, which is a file which defines sequence data path and other metadata
 # BamMap format is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
-BAMMAP="$CATALOG_ROOT/BamMap/storage1.BamMap.dat"
+#BAMMAP="$CATALOG_ROOT/BamMap/storage1.BamMap.dat"      # Typical CPTAC3 BAMMAP
+BAMMAP="/storage1/fs1/dinglab/Active/Projects/cliu/Catalog/washu.catalog/BamMap/storage1.BamMap.dat"  # Clara's homebrew BAMMAP
 
 # Assume that all references are based here
 REF_ROOT="/storage1/fs1/dinglab/Active/Resources/References"
@@ -52,7 +53,7 @@ CQ_ROOT_H="$PWD"
 CQ_ROOT_C="/usr/local/CromwellRunner"
 
 # Using common datalog file
-export DATALOG="/storage1/fs1/m.wyczalkowski/Active/cromwell-data/CromwellRunner/datalog.dat"
+export DATALOG="$WORKFLOW_ROOT/CromwellRunner/datalog.dat"
 
 # Mapping home directory to /home/m.wyczalkowski is convenient because it includes environment
 # definitions for interactive work.  All scripts should run without this mapping, however
@@ -88,7 +89,7 @@ REF_NAME="hg38"                     # Reference, as used when matching to BAMMAP
 #   CWL_ROOT
 #   WORKFLOW_ROOT
 
-CWL="$CWL_ROOT_C/cwl/SomaticSV.cwl"
+CWL="$CWL_ROOT_C/cwl/SomaticSV.cwl" # Note, this is running v1.2 of pipeline.  Does not have tumor-only support
 
 # template used for generating YAML files
 YAML_TEMPLATE="config/Templates/YAML/SomaticSV.template.yaml"
@@ -96,8 +97,8 @@ YAML_TEMPLATE="config/Templates/YAML/SomaticSV.template.yaml"
 # pipeline-specific script to obtain parameters to fill in YAML file, get_pipeline_params.XXX.sh
 PARAM_SCRIPT="config/Scripts/get_pipeline_params.SomaticSV.sh"
 
-# this is specific to SomaticCNV workflow to delete large staged BAMs
-WORKFLOW_RUN_ARGS="-P config/Templates/prune_list/SomaticSV.stage_files_delete.dat"
+# this is specific to workflows with stagd BAMs to delete them. Not currently used in SomaticSV
+# WORKFLOW_RUN_ARGS="-P config/Templates/prune_list/SomaticSV.stage_files_delete.dat"
 
 # For moving data from scratch to final storage upon completion
 # Relevant only if HAS_SCRATCH=1

@@ -4,4 +4,4 @@
 cd ..
 
 bash src/runtidy -f1
-#bash src/datatidy -f1
+bash src/datatidy -f1

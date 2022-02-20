@@ -59,7 +59,7 @@ VEP_CACHE_ROOT="/storage1/fs1/m.wyczalkowski/Active/Primary/Resources/Databases/
 PARAM_ROOT="$CWL_ROOT_H/params"
 
 # Use common datalog file
-export DATALOG="$STORAGE_ROOT/CromwellRunner/datalog.dat"
+export DATALOG="$WORKFLOW_ROOT/CromwellRunner/datalog.dat"
 
 # Mapping home directory to /home/<USERNAME> is convenient because it includes environment
 # definitions for interactive work.  All scripts should run without this mapping, however
