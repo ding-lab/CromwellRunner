@@ -67,7 +67,7 @@ while getopts ":h1P:gs:c:U:GB:" opt; do
       RUN_LIST="$OPTARG"
       ;;
     G) 
-      TUMOR_NORMAL=0
+      unset TUMOR_NORMAL
       ;;
     B) 
       BAM_MAP="$OPTARG"
@@ -148,11 +148,11 @@ function get_sample_name {
 
     SN=$(awk -v uuid=$UUID 'BEGIN{FS="\t";OFS="\t"}{if ($10 == uuid) print $1}' $BAM_MAP)
     if [ -z "$SN" ]; then
-        >&2 echo ERROR: UUID $UUID not found in $BAM_MAP
+        >&2 echo ERROR : UUID $UUID not found in $BAM_MAP
         exit 1
     fi
     if [ $(echo "$SN" | wc -l) != "1" ]; then
-        >&2 echo "ERROR: multiple samples found for UUID $UUID: $SN"
+        >&2 echo "ERROR : multiple samples found for UUID $UUID: $SN"
         exit 1
     fi
     echo $SN
@@ -172,11 +172,11 @@ function get_sample_case_disease {
 
     CD=$(awk -v uuid=$UUID 'BEGIN{FS="\t";OFS="\t"}{if ($10 == uuid) print $2,$3}' $BAM_MAP)
     if [ -z "$CD" ]; then
-        >&2 echo ERROR: UUID $UUID not found in $BAM_MAP
+        >&2 echo ERROR : UUID $UUID not found in $BAM_MAP
         exit 1
     fi
     if [ $(echo "$CD" | wc -l) != "1" ]; then
-        >&2 echo "ERROR: multiple samples found for UUID $UUID: $CD"
+        >&2 echo "ERROR : multiple samples found for UUID $UUID: $CD"
         exit 1
     fi
     echo $CD
@@ -272,7 +272,11 @@ init_summary
 for L in $RUN_NAMES; do
     RUN_NAME=$(echo "$L" | cut -f 1)
 
-    >&2 echo Processing $RUN_NAME 
+    if [ $TUMOR_NORMAL ]; then
+        >&2 echo Processing tumor/normal $RUN_NAME 
+    else
+        >&2 echo Processing single sample $RUN_NAME 
+    fi
 
     make_summary $RUN_NAME  
 
