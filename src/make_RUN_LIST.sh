@@ -11,6 +11,7 @@ Usage:
 
 Options:
 -h: Print this help message
+-v: verbose output
 -o OUT: output file.  Default: UUID_MAP.dat
 -r REF_NAME: reference name, for matching in BAM_MAP. Default: hg38
 -e ES: Experimental strategy, for matching in BAM_MAP. Default: WXS
@@ -18,6 +19,7 @@ Options:
 -T TUMOR_ST: Sample type to use for tumor.  Default: tumor
 -N NORMAL_ST: Sample type to use for tumor.  Default: blood_normal
 -D: disregard any datasets with the string "deprecated" in the catalog line
+-W: In case of missing data print warning and mark data as such
 
 Iterate over all CASEs in CASE_NAMES and create a RUN_NAME associated with each
 tumor sample for that case.  Assume only one normal exists.
@@ -53,7 +55,7 @@ TUMOR_ST="tumor"
 NORMAL_ST="blood_normal"
 
 # http://wiki.bash-hackers.org/howto/getopts_tutorial
-while getopts ":ho:r:e:G:T:N:D" opt; do
+while getopts ":ho:r:e:G:T:N:DWv" opt; do
   case $opt in
     h)
       echo "$USAGE"
@@ -79,6 +81,12 @@ while getopts ":ho:r:e:G:T:N:D" opt; do
       ;;
     D)
       REMOVE_DEPRECATED=1
+      ;;
+    W)
+      WARN_MISSING=1
+      ;;
+    v)
+      VERBOSE=1
       ;;
     \?)
       >&2 echo "Invalid option: -$OPTARG"
@@ -139,8 +147,14 @@ function get_sample_names {
         LINE_A=$(awk -v c=$CASE -v ref=$REF_NAME -v es=$ES -v st=$ST 'BEGIN{FS="\t";OFS="\t"}{if ($2 == c && $4 == es && $5 == st && $9 == ref) print}' $BAM_MAP)
     fi
     if [ -z "$LINE_A" ]; then
-        >&2 echo ERROR: $REF_NAME $CASE $ES $ST sample not found in $BAM_MAP
-        exit 1
+        if [ -z "$WARN_MISSING" ]; then
+            >&2 echo ERROR: $REF_NAME $CASE $ES $ST sample not found in $BAM_MAP
+            exit 1
+        else
+            >&2 echo WARNING: $REF_NAME $CASE $ES $ST sample not found in $BAM_MAP .  Marking sample_name \"MISSING\"
+            printf "MISSING"
+            return
+        fi
     fi
 
     SNS=$(echo "$LINE_A" | cut -f 1)
@@ -188,6 +202,12 @@ function get_tumor_sample_names {
     printf "$SNS"
 }
 
+function log {
+    if [ $VERBOSE ]; then
+        >&2 echo "$1"
+    fi
+}
+
 if [ ! -e $BAM_MAP ]; then 
     >&2 echo ERROR: BAM_MAP does not exist: $BAM_MAP
     exit
@@ -214,6 +234,7 @@ touch $OUT
 function get_tumor_run_name {
     TSN=$1
     # Change C3L-00103.WXS.T.HET_oymKX.hg38 to C3L-00103.HET_oymKX
+    # This doesn't play well with e.g. Tbm  but whatever
     RUN_NAME=$(echo $TSN | sed "s/${ES}.T.//" | sed 's/.hg38//')
     test_exit_status
 
@@ -223,6 +244,7 @@ function get_tumor_run_name {
 function get_any_run_name {
     TSN=$1
     # Change C3L-00103.WXS.T.HET_oymKX.hg38 to C3L-00103.HET_oymKX
+    # This doesn't play well with e.g. Tbm but whatever
     RUN_NAME=$(echo $TSN | sed "s/${ES}\.T\.//" | sed "s/${ES}\.N\.//" | sed "s/${ES}\.A\.//" | sed 's/.hg38//')
     test_exit_status
 
@@ -231,42 +253,62 @@ function get_any_run_name {
 
 while read CASE; do
 
+    log "DEBUG: CASE = $CASE"
     if [ -z $GERMLINE_ST ]; then    # do tumor / normal
         # Assume there is just blood normal per case
+        log "DEBUG: tumor / normal mode.  NORMAL_ST = $NORMAL_ST, TUMOR_ST = $TUMOR_ST"
         NORMAL_SN=$(get_sample_names $CASE $NORMAL_ST 0 )
         test_exit_status
-        NORMAL_UUID=$(grep $NORMAL_SN $BAM_MAP | cut -f 10)  
+        log "DEBUG: NORMAL_SN = $NORMAL_SN"
+        unset NORMAL_UUID
+        NORMAL_UUID=$(grep $NORMAL_SN $BAM_MAP | cut -f 10)   # TODO: Deal gracefully with missing value (-W)
         test_exit_status
+        if [ -z $NORMAL_UUID ]; then
+            NORMAL_UUID="MISSING"
+        fi
+        log "DEBUG: NORMAL_UUID = $NORMAL_UUID"
 
         # MULTI_OK is 1, since multiple tumors samples OK
         TUMOR_SNS=$(get_sample_names $CASE $TUMOR_ST 1 )
         test_exit_status
+        log "DEBUG: TUMOR_SNS = $TUMOR_SNS"
 
-        for TSN in $TUMOR_SNS; do
-            T_UUID=$(awk -v tsn=$TSN 'BEGIN{FS="\t";OFS="\t"}{if ($1 == tsn) print}' $BAM_MAP | cut -f 10)
+        if [ $TUMOR_SNS == "MISSING" ]; then
+            printf "${CASE}-bad_run\t$CASE\tMISSING\t$NORMAL_UUID\n" >> $OUT
+        else
+            for TSN in $TUMOR_SNS; do
+                T_UUID=$(awk -v tsn=$TSN 'BEGIN{FS="\t";OFS="\t"}{if ($1 == tsn) print}' $BAM_MAP | cut -f 10)
 
-            RUN_NAME=$(get_tumor_run_name $TSN)
+                RUN_NAME=$(get_tumor_run_name $TSN)
+                log "DEBUG: RUN_NAME = $RUN_NAME"
 
-            test_exit_status
-            printf "$RUN_NAME\t$CASE\t$T_UUID\t$NORMAL_UUID\n" >> $OUT
-        done
+                test_exit_status
+                printf "$RUN_NAME\t$CASE\t$T_UUID\t$NORMAL_UUID\n" >> $OUT
+            done
+        fi
     else
         # note, this may need some work
         # Get sample names for case based on GERMLINE_ST as sample type, and multiple samples OK
->&2 echo DEBUG: Germline mode : $GERMLINE_ST
+        log "DEBUG: Germline mode : $GERMLINE_ST"
         SNS=$(get_sample_names $CASE $GERMLINE_ST 1 ) # here, GERMLINE_ST has to be name
->&2 echo DEBUG: SNS = $SNS
         test_exit_status
-        for SN in $SNS; do
-            S_UUID=$(awk -v sn=$SN 'BEGIN{FS="\t";OFS="\t"}{if ($1 == sn) print}' $BAM_MAP | cut -f 10)
->&2 echo DEBUG: S_UUID = $S_UUID
+        log "DEBUG: SNS = $SNS"
 
-            # Change C3L-00103.WXS.T.HET_oymKX.hg38 to C3L-00103.HET_oymKX
-            RUN_NAME=$(get_any_run_name $SN )  # but here, has to be a code
->&2 echo DEBUG: RUN_NAME = $RUN_NAME
-            test_exit_status
-            printf "$RUN_NAME\t$CASE\t$S_UUID\n" >> $OUT
-        done
+
+        if [ $TUMOR_SNS == "MISSING" ]; then
+            printf "${CASE}-bad_run\t$CASE\tMISSING\n" >> $OUT
+        else
+            for SN in $SNS; do
+                S_UUID=$(awk -v sn=$SN 'BEGIN{FS="\t";OFS="\t"}{if ($1 == sn) print}' $BAM_MAP | cut -f 10)
+                log "DEBUG: S_UUID = $S_UUID"
+
+                # Change C3L-00103.WXS.T.HET_oymKX.hg38 to C3L-00103.HET_oymKX
+                RUN_NAME=$(get_any_run_name $SN )  # but here, has to be a code
+                log "DEBUG: RUN_NAME = $RUN_NAME"
+                test_exit_status
+                printf "$RUN_NAME\t$CASE\t$S_UUID\n" >> $OUT
+            done
+        fi
     fi
         
 
