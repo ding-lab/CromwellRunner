@@ -4,21 +4,21 @@
 # https://dinglab.wustl.edu/
 
 read -r -d '' USAGE <<'EOF'
-Utility for making RUN_LIST file from a list of cases.
+Utility for making RunList file from a list of cases and Catalog3 data
 
 Usage:
-  make_RUN_LIST.sh [options] BAM_MAP CASE_NAMES
+  make_RunList3.sh [options] CASE_NAMES
 
 Options:
 -h: Print this help message
 -v: verbose output
+-C CATALOG: Catalog3 file.  Required
 -o OUT: output file.  Default: UUID_MAP.dat
--r REF_NAME: reference name, for matching in BAM_MAP. Default: hg38
--e ES: Experimental strategy, for matching in BAM_MAP. Default: WXS
+-r ALIGNMENT: Alignment, for matching in CATALOG. Default: harmonized
+-e ES: Experimental strategy, for matching in CATALOG. Default: WXS
 -G GERMLINE_ST: Run in germline mode, with given sample type used
 -T TUMOR_ST: Sample type to use for tumor.  Default: tumor
 -N NORMAL_ST: Sample type to use for tumor.  Default: blood_normal
--D: disregard any datasets with the string "deprecated" in the catalog line
 -W: In case of missing data print warning and mark data as such
 
 Iterate over all CASEs in CASE_NAMES and create a RUN_NAME associated with each
@@ -35,6 +35,12 @@ In instances where there is only one tumor sample, RUN_NAME and CASE are the sam
 For cases with multiple samples for tumor, the run name will consist of 
 the case name with a suffix; for instance, C3L-00103.HET_oymKX
 
+If -W (WARN_MISSING) is defined, and if a given file is not available in CATALOG file, it is marked as "MISSING"
+It is assumed that if a file is in Catalog it is available in house.  May wish to use a in-house catalog
+file which contains entries only for datasets available in house, which can be created with,
+    fgrep <(cut -f 2 BAMMAP) CATALOG > in-house.CATALOG.dat
+
+<OUTDATED>
 We'll make assumption that sample_name in BamMap is unique and use that as the
 unique way to identify runs of same case.  Currently the run name is derived from
 the tumor sample name 
@@ -46,16 +52,17 @@ It is obtained as ANN_SUFFIX here: https://github.com/ding-lab/CPTAC3.case.disco
 
 for tumor sample_name =
 C3L-00103.WXS.T.HET_oymKX.hg38, run name looks like C3L-00103.HET_oymKX
+</OUTDATED>
 EOF
 
 OUT="UUID_MAP.dat"
-REF_NAME="hg38"
+ALIGNMENT="harmonized"
 ES="WXS"
 TUMOR_ST="tumor"
 NORMAL_ST="blood_normal"
 
 # http://wiki.bash-hackers.org/howto/getopts_tutorial
-while getopts ":ho:r:e:G:T:N:DWv" opt; do
+while getopts ":ho:C:r:e:G:T:N:Wv" opt; do
   case $opt in
     h)
       echo "$USAGE"
@@ -64,8 +71,11 @@ while getopts ":ho:r:e:G:T:N:DWv" opt; do
     o) 
       OUT=$OPTARG
       ;;
+    C) 
+      CATALOG=$OPTARG
+      ;;
     r) 
-      REF_NAME=$OPTARG
+      ALIGNMENT=$OPTARG
       ;;
     e) 
       ES=$OPTARG
@@ -78,9 +88,6 @@ while getopts ":ho:r:e:G:T:N:DWv" opt; do
       ;;
     N) 
       NORMAL_ST=$OPTARG
-      ;;
-    D)
-      REMOVE_DEPRECATED=1
       ;;
     W)
       WARN_MISSING=1
@@ -103,14 +110,13 @@ done
 shift $((OPTIND-1))
 
 
-if [ "$#" -ne 2 ]; then
+if [ "$#" -ne 1 ]; then
     >&2 echo Error: Wrong number of arguments
     echo "$USAGE"
     exit 1
 fi
 
-BAM_MAP=$1
-CASES=$2
+CASES=$1
 
 function test_exit_status {
     # Evaluate return value for chain of pipes; see https://stackoverflow.com/questions/90418/exit-shell-script-based-on-process-exit-code
@@ -134,24 +140,38 @@ function test_exit_status {
 #       * Error if sample names not all unique
 #   * if MULTI_OK is not 1, exit with an error
 #   
+# Catalog3 format
+#     1  dataset_name
+#     2  case
+#     3  disease
+#     4  experimental_strategy
+#     5  sample_type
+#     6  specimen_name
+#     7  filename
+#     8  filesize
+#     9  data_format
+#    10  data_variety
+#    11  alignment
+#    12  project
+#    13  uuid
+#    14  md5
+#    15  metadata
+
 function get_sample_names {
-    # BAM_MAP, ES, REF_NAME  as global
+    # CATALOG, ES, ALIGNMENT  as global
     CASE=$1
     ST=$2
     MULTI_OK=$3
-    # BAM_MAP, ES, REF_NAME  as global
+    # CATALOG, ES, ALIGNMENT  as global
 
-    if [ $REMOVE_DEPRECATED ]; then  # ad hoc code to remove samples with "deprecated" in name. 
-        LINE_A=$(awk -v c=$CASE -v ref=$REF_NAME -v es=$ES -v st=$ST 'BEGIN{FS="\t";OFS="\t"}{if ($2 == c && $4 == es && $5 == st && $9 == ref) print}' $BAM_MAP | grep -v "deprecated")
-    else
-        LINE_A=$(awk -v c=$CASE -v ref=$REF_NAME -v es=$ES -v st=$ST 'BEGIN{FS="\t";OFS="\t"}{if ($2 == c && $4 == es && $5 == st && $9 == ref) print}' $BAM_MAP)
-    fi
+    LINE_A=$(awk -v c=$CASE -v ref=$ALIGNMENT -v es=$ES -v st=$ST 'BEGIN{FS="\t";OFS="\t"}{if ($2 == c && $4 == es && $5 == st && $11 == ref) print}' $CATALOG)
+
     if [ -z "$LINE_A" ]; then
         if [ -z "$WARN_MISSING" ]; then
-            >&2 echo ERROR: $REF_NAME $CASE $ES $ST sample not found in $BAM_MAP
+            >&2 echo ERROR: $ALIGNMENT $CASE $ES $ST sample not found in $CATALOG
             exit 1
         else
-            >&2 echo WARNING: $REF_NAME $CASE $ES $ST sample not found in $BAM_MAP .  Marking sample_name \"MISSING\"
+            >&2 echo WARNING: $ALIGNMENT $CASE $ES $ST sample not found in $CATALOG .  Marking sample_name \"MISSING\"
             printf "MISSING"
             return
         fi
@@ -179,10 +199,10 @@ function get_sample_names {
 
 # Return one sample name associated with normal.  Error if more than one
 function get_blood_normal_sample_name {
-    # BAM_MAP, ES, REF_NAME  as global
+    # CATALOG, ES, ALIGNMENT  as global
     CASE=$1
     ST="blood_normal"
-    # BAM_MAP, ES, REF_NAME as global
+    # CATALOG, ES, ALIGNMENT as global
     # MULTI_OK is 0, since expect single normal
     SNS=$(get_sample_names $CASE $ST 0 )
     test_exit_status
@@ -208,13 +228,17 @@ function log {
     fi
 }
 
-if [ ! -e $BAM_MAP ]; then 
-    >&2 echo ERROR: BAM_MAP does not exist: $BAM_MAP
-    exit
+if [ -z $CATALOG ]; then 
+    >&2 echo ERROR: CATALOG not defined
+    exit 1
+fi
+if [ ! -e $CATALOG ]; then 
+    >&2 echo ERROR: CATALOG does not exist: $CATALOG
+    exit 1
 fi
 if [ ! -e $CASES ]; then 
     >&2 echo ERROR: CASES does not exist: $CASES
-    exit
+    exit 1
 fi
 
 rm -f $OUT
@@ -261,9 +285,9 @@ while read CASE; do
         test_exit_status
         log "DEBUG: NORMAL_SN = $NORMAL_SN"
         unset NORMAL_UUID
-        NORMAL_UUID=$(grep $NORMAL_SN $BAM_MAP | cut -f 10)   # TODO: Deal gracefully with missing value (-W)
+        NORMAL_UUID=$(grep $NORMAL_SN $CATALOG | cut -f 13)   # TODO: Deal gracefully with missing value (-W)
         test_exit_status
-        if [ -z $NORMAL_UUID ]; then
+        if [ -z "$NORMAL_UUID" ]; then
             NORMAL_UUID="MISSING"
         fi
         log "DEBUG: NORMAL_UUID = $NORMAL_UUID"
@@ -277,7 +301,7 @@ while read CASE; do
             printf "${CASE}-bad_run\t$CASE\tMISSING\t$NORMAL_UUID\n" >> $OUT
         else
             for TSN in $TUMOR_SNS; do
-                T_UUID=$(awk -v tsn=$TSN 'BEGIN{FS="\t";OFS="\t"}{if ($1 == tsn) print}' $BAM_MAP | cut -f 10)
+                T_UUID=$(awk -v tsn=$TSN 'BEGIN{FS="\t";OFS="\t"}{if ($1 == tsn) print}' $CATALOG | cut -f 13)
 
                 RUN_NAME=$(get_tumor_run_name $TSN)
                 log "DEBUG: RUN_NAME = $RUN_NAME"
@@ -299,7 +323,7 @@ while read CASE; do
             printf "${CASE}-bad_run\t$CASE\tMISSING\n" >> $OUT
         else
             for SN in $SNS; do
-                S_UUID=$(awk -v sn=$SN 'BEGIN{FS="\t";OFS="\t"}{if ($1 == sn) print}' $BAM_MAP | cut -f 10)
+                S_UUID=$(awk -v sn=$SN 'BEGIN{FS="\t";OFS="\t"}{if ($1 == sn) print}' $CATALOG | cut -f 13)
                 log "DEBUG: S_UUID = $S_UUID"
 
                 # Change C3L-00103.WXS.T.HET_oymKX.hg38 to C3L-00103.HET_oymKX
