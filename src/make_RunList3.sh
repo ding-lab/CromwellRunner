@@ -186,6 +186,7 @@ function get_sample_names {
             SNA_UN=$(echo "$SNS" | sort -u | wc -l)
             if [ "$SNA_N" != "$SNA_UN" ] ; then
                 >&2 echo "ERROR: non-unique $ST sample names for case $CASE : $SNS"
+                exit 1      # Quitting because malformed RunList otherwise
             fi
         else
             >&2 echo "ERROR: multiple $ST samples found for case $CASE: $SNS"
@@ -275,7 +276,9 @@ function get_any_run_name {
     echo "$RUN_NAME"
 }
 
-while read CASE; do
+while read CD; do
+
+    CASE=$(echo "$CD" | cut -f 1)
 
     log "DEBUG: CASE = $CASE"
     if [ -z $GERMLINE_ST ]; then    # do tumor / normal
@@ -297,7 +300,7 @@ while read CASE; do
         test_exit_status
         log "DEBUG: TUMOR_SNS = $TUMOR_SNS"
 
-        if [ $TUMOR_SNS == "MISSING" ]; then
+        if [ "$TUMOR_SNS" == "MISSING" ]; then
             printf "${CASE}-bad_run\t$CASE\tMISSING\t$NORMAL_UUID\n" >> $OUT
         else
             for TSN in $TUMOR_SNS; do

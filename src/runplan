@@ -44,7 +44,7 @@ and UUID obtained from RESTART_MAP file (TSV with CASE and UUID, `cq | cut -f 1-
 Remapping paths /rdcw/ to /storage1/ allows paths obtained with `readlink` on a compute1 client
 to be used on cache layer machines.
 
-Format of BamMap is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
+Format of Catalog3 and BamMap3 is defined here: https://docs.google.com/document/d/1uSgle8jiIx9EnDFf_XHV3fWYKFElszNLkmGlht_CQGE/edit
 EOF
 
 source src/cromwell_utils.sh
