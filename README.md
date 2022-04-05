@@ -285,7 +285,7 @@ bash 40_start_runs.sh -1
 Evaluate log output, principally in `logs/RUN_NAME.out`.  If this is a new install, allow this to run to completion to confirm
 pipeline is stable.  Once that is confirmed, launch the rest of the runs with,
 ```
-tail -n +2 dat/RUN_LIST.dat | bash 40_start_runs.sh -
+tail -n +2 dat/RUN_LIST.dat | cut -f 1 | bash 40_start_runs.sh -
 ```
 Here, running starting all but the first run in the list.  This will submit each run individually to the 
 queue, and as many will start running as the job group limit allows.
