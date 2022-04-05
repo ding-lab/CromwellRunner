@@ -7,7 +7,7 @@ WORKFLOW="SomaticSV"
 SYSTEM="compute1"  
 HAS_SCRATCH=1		# 1 if data needs to be copied from scratch to storage at end of batch, otherwise 0
 LSF_CONF="/opt/ibm/lsfsuite/lsf/conf/lsf.conf"
-LSF_GROUP="/m.wyczalkowski/cromwell-runner" # This should be changed for every user
+LSF_GROUP="/m.wyczalkowski/cromwell-runner2" # This should be changed for every user
 LSFQ="dinglab"
 COMPUTE_GROUP="compute-dinglab"
 LSF_ARGS="-B \"-g $LSF_GROUP -G $COMPUTE_GROUP \" -M -q $LSFQ"
@@ -33,8 +33,7 @@ CATALOG_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog
 
 # Path to BamMap, which is a file which defines sequence data path and other metadata
 # BamMap format is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
-#BAMMAP="$CATALOG_ROOT/BamMap/storage1.BamMap.dat"      # Typical CPTAC3 BAMMAP
-BAMMAP="/storage1/fs1/dinglab/Active/Projects/cliu/Catalog/washu.catalog/BamMap/storage1.BamMap.dat"  # Clara's homebrew BAMMAP
+BAMMAP="$CATALOG_ROOT/BamMap/storage1.BamMap.dat"      # Typical CPTAC3 BAMMAP
 
 # Assume that all references are based here
 REF_ROOT="/storage1/fs1/dinglab/Active/Resources/References"
