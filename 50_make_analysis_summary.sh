@@ -16,7 +16,7 @@ if [ $HAS_SCRATCH ]; then
 else
     AS_NAME="./dat/analysis_summary.dat"
 fi
-CMD="bash src/summarize_runs.sh $@ -s $AS_NAME -B $BAMMAP -P $PARAMS -U $RUN_LIST "
+CMD="bash src/summarize_runs.sh $@ -s $AS_NAME -B $BAMMAP -P $PARAMS -U $RUN_LIST -C $CATALOG"
 
 >&2 echo Running: $CMD
 eval $CMD

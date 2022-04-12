@@ -17,7 +17,8 @@ Options:
 -U RUN_LIST: file with lines composed of RUN_NAME, CASE_NAME, and one or more UUIDs corresponding to data to be
    processed.  Required.
 -G: this is a workflow with just one input UUID (otherwise, tumor and normal UUIDs are provided in RUN_LIST)
--B BAM_MAP: path to BamMap file
+-B BAM_MAP: path to BamMap3 file
+-C CATALOG: path to Catalog3 file
 
 Obtain run inputs and result data to generate an analysis summary file
   - Defined here: https://docs.google.com/document/d/1Ho5cygpxd8sB_45nJ90d15DcdaGCiDqF0_jzIcc-9B4/edit
@@ -42,7 +43,7 @@ PARAMS="Project.config.sh"
 CROMWELL_QUERY="bash src/cq"
 TUMOR_NORMAL=1
 
-while getopts ":h1P:gs:c:U:GB:" opt; do
+while getopts ":h1P:gs:c:U:GB:C:" opt; do
   case $opt in
     h)  
       echo "$USAGE"
@@ -71,6 +72,9 @@ while getopts ":h1P:gs:c:U:GB:" opt; do
       ;;
     B) 
       BAM_MAP="$OPTARG"
+      ;;
+    C) 
+      CATALOG="$OPTARG"
       ;;
     \?)
       >&2 echo "Invalid option: -$OPTARG" 
@@ -113,6 +117,13 @@ function init_summary {
     fi
     confirm $BAM_MAP $ONLYWARN
 
+    if [ -z $CATALOG ]; then
+        >&2 echo ERROR: CATALOG not defined \(-C\)
+        >&2 echo "$USAGE"
+        exit 1
+    fi
+    confirm $CATALOG $ONLYWARN
+
 # Summary prep and header written
     if [ $TUMOR_NORMAL ]; then
         if [ -z $RESTART_MAP ]; then
@@ -142,11 +153,11 @@ function init_summary {
     fi 
 }
 
-# given a UUID, return sample name based on lookup in BAM_MAP
-function get_sample_name {
+# given a UUID, return dataset name based on lookup in CATALOG file
+function get_dataset_name {
     UUID=$1
 
-    SN=$(awk -v uuid=$UUID 'BEGIN{FS="\t";OFS="\t"}{if ($10 == uuid) print $1}' $BAM_MAP)
+    SN=$(awk -v uuid=$UUID 'BEGIN{FS="\t";OFS="\t"}{if ($13 == uuid) print $1}' $CATALOG)
     if [ -z "$SN" ]; then
         >&2 echo ERROR : UUID $UUID not found in $BAM_MAP
         exit 1
@@ -158,8 +169,7 @@ function get_sample_name {
     echo $SN
 }
 
-# given a UUID, return disease based on lookup in BAM_MAP
-# This is very similar to get_sample_name
+# given a UUID, return case and disease based on lookup in CATALOG
 # Return multiple values based on https://stackoverflow.com/questions/2488715/idioms-for-returning-multiple-values-in-shell-scripting
 #get_vars () {
 #  #...
@@ -170,7 +180,7 @@ function get_sample_name {
 function get_sample_case_disease {
     UUID=$1
 
-    CD=$(awk -v uuid=$UUID 'BEGIN{FS="\t";OFS="\t"}{if ($10 == uuid) print $2,$3}' $BAM_MAP)
+    CD=$(awk -v uuid=$UUID 'BEGIN{FS="\t";OFS="\t"}{if ($13 == uuid) print $2,$3}' $CATALOG)
     if [ -z "$CD" ]; then
         >&2 echo ERROR : UUID $UUID not found in $BAM_MAP
         exit 1
@@ -190,13 +200,13 @@ function make_summary {
 
     if [ $TUMOR_NORMAL ]; then
         TUMOR_UUID=$(echo "$SARGS" | cut -f 3)
-        TUMOR_SN=$(get_sample_name $TUMOR_UUID)
+        TUMOR_SN=$(get_dataset_name $TUMOR_UUID)
         NORMAL_UUID=$(echo "$SARGS" | cut -f 4)
-        NORMAL_SN=$(get_sample_name $NORMAL_UUID)
+        NORMAL_SN=$(get_dataset_name $NORMAL_UUID)
         read CASE DIS < <(get_sample_case_disease $TUMOR_UUID)
     else
         SAMPLE_UUID=$(echo "$SARGS" | cut -f 3)
-        SAMPLE_SN=$(get_sample_name $SAMPLE_UUID)
+        SAMPLE_SN=$(get_dataset_name $SAMPLE_UUID)
         read CASE DIS < <(get_sample_case_disease $SAMPLE_UUID)
     fi
 
