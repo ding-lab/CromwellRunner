@@ -3,11 +3,11 @@
 # Compute1 system with Cromwell output to scratch volume
 ###############################################################################################
 
-WORKFLOW="SomaticCNV"
+WORKFLOW="SomaticSV"
 SYSTEM="compute1"  
 HAS_SCRATCH=1		# 1 if data needs to be copied from scratch to storage at end of batch, otherwise 0
 LSF_CONF="/opt/ibm/lsfsuite/lsf/conf/lsf.conf"
-LSF_GROUP="/m.wyczalkowski/cromwell-runner"
+LSF_GROUP="/m.wyczalkowski/cromwell-runner2" # This should be changed for every user
 LSFQ="dinglab"
 COMPUTE_GROUP="compute-dinglab"
 LSF_ARGS="-B \"-g $LSF_GROUP -G $COMPUTE_GROUP \" -M -q $LSFQ"
@@ -32,21 +32,20 @@ STORAGE_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"
 
 # Path to BamMap, which is a file which defines sequence data path and other metadata
 # BamMap format is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
-#BAMMAP="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Analysis/CromwellRunner/SomaticCNV/07.ATAC_17/X_get_cased/GDAN.catalog/Catalog3/ATAC.BamMap3.merged.tsv"
 CATALOG="/cache1/fs1/home1/Active/home/m.wyczalkowski/Projects/GDAN/GDAN.catalog/Catalog3/DLBCL.Catalog3.tsv"
 BAMMAP="/cache1/fs1/home1/Active/home/m.wyczalkowski/Projects/GDAN/GDAN.catalog/Catalog3/DLBCL.BamMap3.tsv"
 
 # Assume that all references are based here
-REF_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Analysis/WGS_CNV_Somatic/Datasets"
+REF_ROOT="/storage1/fs1/dinglab/Active/Resources/References"
 
 # CWL_ROOT is needed for CWL.  It is the container path to where project is installed
 # This is also used in rungo to get git status of project for tracking purposes
 # Use _C for arguments to scripts
 # We are making the assumption that the workflow project directory is in ./Workflow directory
 PWD=$(pwd)
-CWL_ROOT_H_LOC="$PWD/Workflow/BICSEQ2.CWL"
+CWL_ROOT_H_LOC="./Workflow/SomaticSV"
 CWL_ROOT_H=$CWL_ROOT_H_LOC
-CWL_ROOT_C="/usr/local/BICSEQ2.CWL"
+CWL_ROOT_C="/usr/local/SomaticSV"
 
 # path to CromwellRunner and its scripts.  We map local path to absolute path in container
 # so all scripts know where to find these
@@ -76,9 +75,8 @@ $HOME_MAP \
 ###############################################################################################
 #
 
-# This is a per-chromosome reference in a .tar.gz file
-# /storage1/fs1/dinglab/Active/Projects/CPTAC3/Analysis/WGS_CNV_Somatic/Datasets/inputs/hg38/GRCh38.d1.vd1-per_chrom_fa.tar.gz
-REF_PATH="$REF_ROOT/inputs/hg38/GRCh38.d1.vd1-per_chrom_fa.tar.gz"
+# This path below is for CPTAC3-standard GRCh38 reference
+REF_PATH="$REF_ROOT/GRCh38.d1.vd1/GRCh38.d1.vd1.fa"
 
 REF_NAME="hg38"                     # Reference, as used when matching to BAMMAP
 
@@ -91,21 +89,21 @@ REF_NAME="hg38"                     # Reference, as used when matching to BAMMAP
 #   CWL_ROOT
 #   WORKFLOW_ROOT
 
-CWL="$CWL_ROOT_C/cwl/workflows/bicseq2-cwl.case-control.cwl"
+CWL="$CWL_ROOT_C/cwl/SomaticSV.cwl" # Note, this is running v1.2 of pipeline.  Does not have tumor-only support
 
 # template used for generating YAML files
-YAML_TEMPLATE="config/Templates/YAML/SomaticCNV.template.yaml"
+YAML_TEMPLATE="config/Templates/YAML/SomaticSV.template.yaml"
 
 # pipeline-specific script to obtain parameters to fill in YAML file, get_pipeline_params.XXX.sh
-PARAM_SCRIPT="config/Scripts/get_pipeline_params.SomaticCNV.sh"
+PARAM_SCRIPT="config/Scripts/get_pipeline_params.SomaticSV.sh"
 
-# this is specific to SomaticCNV workflow to delete large staged BAMs
-WORKFLOW_RUN_ARGS="-P config/Templates/prune_list/SomaticCNV.stage_files_delete.dat"
+# this is specific to workflows with stagd BAMs to delete them. Not currently used in SomaticSV
+# WORKFLOW_RUN_ARGS="-P config/Templates/prune_list/SomaticSV.stage_files_delete.dat"
 
 # For moving data from scratch to final storage upon completion
 # Relevant only if HAS_SCRATCH=1
-SCRATCH_BASE="$WORKFLOW_ROOT/cromwell-workdir/cromwell-executions/bicseq2-cwl.case-control.cwl"
-DEST_BASE="$STORAGE_ROOT/cromwell-workdir/cromwell-executions/bicseq2-cwl.case-control.cwl"
+SCRATCH_BASE="$WORKFLOW_ROOT/cromwell-workdir/cromwell-executions/SomaticSV.cwl"
+DEST_BASE="$STORAGE_ROOT/cromwell-workdir/cromwell-executions/SomaticSV.cwl"
 
 
 # These parameters used when finding data in BamMap
@@ -116,13 +114,8 @@ CONFIG_FILE="dat/cromwell-config-db.dat"
 CONFIG_SERVER_FILE="dat/cromwell-server-config-db.dat"
 
 # RESTART_ROOT used when restarting
-#RESTART_ROOT="$WORKFLOW_ROOT/cromwell-workdir/cromwell-executions/bicseq2-cwl.case-control.cwl"
+#RESTART_ROOT="$WORKFLOW_ROOT/cromwell-workdir/cromwell-executions/tindaisy.cwl"
 
 # List of runs to analyze
 RUN_LIST="dat/RUN_LIST.dat"
 
-# Mapping files
-MAP_PATH="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Analysis/WGS_CNV_Somatic/Datasets/inputs/GRCh38.d1.vd1.fa.150mer-noBedGraph.tar.gz"
-
-# GENE BED - annotation BED file
-GENE_BED_PATH="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Analysis/WGS_CNV_Somatic/Datasets/cached.annotation/gencode.v29.annotation.hg38.p12.bed"

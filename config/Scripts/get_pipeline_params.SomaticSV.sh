@@ -148,23 +148,10 @@ init_params_kv
 # Usage:
 #   get_BAM UUID
 #   Obtain BAM information based on UUID lookup in BAMMAP 
-# Returns "BAM_path sample_name UUID Disease"
+# Returns "BAM_path sample_name UUID "
 function get_BAM {
     UUID=$1
     # BAMMAP is global
-
-    # BamMap columns
-    #     1  sample_name
-    #     2  case
-    #     3  disease
-    #     4  experimental_strategy
-    #     5  sample_type
-    #     6  data_path
-    #     7  filesize
-    #     8  data_format
-    #     9  reference
-    #    10  UUID
-    #    11  system
 
     LINE_A=$(grep $UUID $BAMMAP)
 
@@ -178,11 +165,10 @@ function get_BAM {
 
     # Sample Name and UUID will be needed for analysis summary
     SN=$(echo "$LINE_A" | cut -f 1)
-    DIS=$(echo "$LINE_A" | cut -f 3)
-    BAM=$(echo "$LINE_A" | cut -f 6)
-    UUID=$(echo "$LINE_A" | cut -f 10)
+    UUID=$(echo "$LINE_A" | cut -f 2)
+    BAM=$(echo "$LINE_A" | cut -f 4)
 
-    printf "$BAM\t$SN\t$UUID\t$DIS"
+    printf "$BAM\t$SN\t$UUID"
 }
 
 # Returns base directory of prior run and confirms it exists
