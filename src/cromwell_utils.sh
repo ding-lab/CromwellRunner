@@ -83,6 +83,13 @@ function getLogWID {
     if grep -Fq "$SSTR" $LOG ; then   # String found
         W=$(grep "$SSTR" $LOG | sed 's/\x1b\[[0-9;]*m//g' | sed -n -e 's/^.*submitted //p')
         test_exit_status "getLogWID"
+        LEN=$(echo "$W" | wc -c)
+#>&2 echo DEBUG LEN = $LEN
+        if (( $LEN > 50 )); then
+        # Malformed (e.g. duplicate) workflow IDs detected in log file.  Rare but weird
+            >&2 echo ERROR: malformed parsed Workflow ID: $W
+            exit 1
+        fi
     else    # LOG does not have Workflow ID - may happen in early processing or in error states
         W="Unassigned"
     fi
@@ -188,14 +195,17 @@ function getCaseWID {
     if [[ $RUNID =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then
         WID=$RUNID
         CASE=$( getRunLogCase $WID $RUNLOG )
+#>&2 echo DEBUG getCaseWID A WID = $WID
     else
         CASE=$RUNID
         LOG="logs/$CASE.out"
         if [ -f $LOG ]; then
             WID=$( getLogWID $LOG )
             test_exit_status "getCaseWID"
+#>&2 echo DEBUG getCaseWID B WID = $WID
         else
             WID=$( getRunLogWID $CASE $RUNLOG )
+#>&2 echo DEBUG getCaseWID C WID = $WID
         fi
     fi
 
