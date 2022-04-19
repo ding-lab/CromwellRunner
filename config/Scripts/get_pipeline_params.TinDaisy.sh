@@ -164,28 +164,15 @@ init_params_kv
 # Usage:
 #   get_BAM UUID
 #   Obtain BAM information based on UUID lookup in BAMMAP 
-# Returns "BAM_path sample_name UUID Disease"
+# Returns "BAM_path sample_name UUID "
 function get_BAM {
     UUID=$1
     # BAMMAP is global
 
-    # BamMap columns
-    #     1  sample_name
-    #     2  case
-    #     3  disease
-    #     4  experimental_strategy
-    #     5  sample_type
-    #     6  data_path
-    #     7  filesize
-    #     8  data_format
-    #     9  reference
-    #    10  UUID
-    #    11  system
-
     LINE_A=$(grep $UUID $BAMMAP)
 
     if [ -z "$LINE_A" ]; then
-        >&2 echo ERROR: ES $UUID sample not found in $BAMMAP
+        >&2 echo ERROR: $UUID sample not found in $BAMMAP
         exit 1
     elif [ $(echo "$LINE_A" | wc -l) != "1" ]; then
         >&2 echo ERROR: $UUID sample has multiple matches in $BAMMAP
@@ -194,11 +181,10 @@ function get_BAM {
 
     # Sample Name and UUID will be needed for analysis summary
     SN=$(echo "$LINE_A" | cut -f 1)
-    DIS=$(echo "$LINE_A" | cut -f 3)
-    BAM=$(echo "$LINE_A" | cut -f 6)
-    UUID=$(echo "$LINE_A" | cut -f 10)
+    UUID=$(echo "$LINE_A" | cut -f 2)
+    BAM=$(echo "$LINE_A" | cut -f 4)
 
-    printf "$BAM\t$SN\t$UUID\t$DIS"
+    printf "$BAM\t$SN\t$UUID"
 }
 
 # Obtain aliquot name associated with given UUID from Catalog file
@@ -207,24 +193,26 @@ function get_BAM {
 # TODO: allow aliquot names to be obtained even if Catalog file does not exist
 #  An option is pass a fake catalog file with two columns, UUID and Aliquot, and 
 #  check here how many columns the catalog file has.
-function get_aliquot {
+function get_specimen_name {
     UUID=$1
     CATALOG=$2
-#$ header CPTAC3.Catalog.dat
-#     1  # sample_name
+
+# Catalog3 columns
+#     1  dataset_name
 #     2  case
 #     3  disease
 #     4  experimental_strategy
-#     5  short_sample_type
-#     6  aliquot
+#     5  sample_type
+#     6  specimen_name
 #     7  filename
 #     8  filesize
 #     9  data_format
-#    10  result_type
-#    11  UUID
-#    12  MD5
-#    13  reference
-#    14  sample_type
+#    10  data_variety
+#    11  alignment
+#    12  project
+#    13  uuid
+#    14  md5
+#    15  metadata
 
     LINE_A=$(grep $UUID $CATALOG)
     if [ -z "$LINE_A" ]; then
@@ -277,8 +265,8 @@ fi
 # If $CATALOG is defined, obtain NORMAL_BARCODE and _TUMOR based on aliquot column using lookup of UUID
 # if CATALOG not defined, NORMAL_BARCODE = NORMAL and TUMOR_BARCODE = TUMOR
 if [ ! -z $CATALOG ]; then
-    TUMOR_BARCODE=$(get_aliquot $TUMOR_UUID $CATALOG) 
-    NORMAL_BARCODE=$(get_aliquot $NORMAL_UUID $CATALOG) 
+    TUMOR_BARCODE=$(get_specimen_name $TUMOR_UUID $CATALOG) 
+    NORMAL_BARCODE=$(get_specimen_name $NORMAL_UUID $CATALOG) 
 else
     >&2 echo NOTE: CATALOG not defined in Project Config file, using placeholder tumor and normal barcodes
     TUMOR_BARCODE="TUMOR"
