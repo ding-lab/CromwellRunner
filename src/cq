@@ -6,6 +6,12 @@
 # TODO: check if server is running / available and report reasonable error message
 # TODO: implement -d debug output for all queries, based on get_output implementation
 
+# TODO: 
+#	* easily view status and disk usage stats for all workflows
+# 	* Be able to run arbitrary commands on each workflow
+# 	* Optionally print status in all queries
+
+
 read -r -d '' USAGE <<'EOF'
 Cromwell Query: Print out per-case run statistics. Specific to cromwell runs registered with MGI Cromwell database
 
@@ -18,7 +24,7 @@ Options:
 -v: Indicate progress in stderr
 -1: Stop after one
 -k RUN_LIST: file with list of all run names, one per line, used when RUN_NAME1 not defined. Default: dat/RUN_LIST.dat
--q QUERY: type of query, one of 'check_server', 'status', 'logs', 'workflowRoot', 'timing', 'duration', 'outputs', 'runlog', 'url'.  Default is `status`
+-q QUERY: type of query, one of 'check_server', 'status', 'logs', 'workflowRoot', 'timing', 'duration', 'outputs', 'runlog', 'url', 'du'.  Default is `status`
 -s STEP: define step of interest for use with 'logs' query
 -V: output query result only only (i.e., don't write case and workflow ID)
 -U: skip cases were WorkflowID is Unknown or Unassigned
@@ -27,7 +33,6 @@ Options:
 -D: Do not access database.  Limited functionality: status is unknown, best guesses are made for other queries.  TODO: complete implementation
 -C CROMWELL_URL: define the cromwell URL.  Default: http://localhost:8000
 -L RUNLOG: Run log file. Default is "./logs/runlog.dat".  Can be obtained from environment variable
-#-W CWL_OUTPUT: ID of principal output of workflow, used for parsing JSON output. Default is "tindaisy.cwl.output_vcf"
 
 RID is RunID, and can be either a Run Name or a WorkflowID.  Examples:
 * `cq` - will return status for all cases defined in `dat/RUN_LIST.dat`
@@ -49,17 +54,13 @@ Evaluates the following information for each case
     * outputs - All outputs of workflow run as specified in input CWL
     * runlog - Output status, start, end times
     * url - print URL of Cromwell server and quit.  This is a hardcoded value, but useful to know for manual queries
+    * du - size of each workflow dir
 
 Workflow ID associated with given cromwell output file is obtaining by grepping for output line like,
 [2019-04-14 15:54:01,69] [info] SingleWorkflowRunnerActor: Workflow submitted d6c83416-af3f-46f3-a892-ff1e9074fe74
 
 CROMWELL_URL can be defined as environment variable, e.g., `export CROMWELL_URL=http://localhost:8000`
 RUNLOG can be defined as environment variable, e.g., `export RUNLOG=/path/to/logs/runlog.dat`
-
-# CWL_OUTPUT is deprecated.  Use `cq outputs` instead
-CWL_OUTPUT is used to find the principal output of workflow, i.e., what is reported with `cq output`.
-  It is a concatenation of the CWL filename and 'id' of variable of interest in 'outputs' section of CWL
-  e.g., tindaisy.cwl.output_vcf
 
 Note that this script requires `jq` to be installed: https://stedolan.github.io/jq/download/
 Also check to make sure cromwell server is running
@@ -83,7 +84,6 @@ fi
 # Defaults
 RUN_LIST="dat/RUN_LIST.dat"
 QUERY="status"
-#CWL_OUTPUT="tindaisy.cwl.output_vcf"
 
 # http://wiki.bash-hackers.org/howto/getopts_tutorial
 while getopts ":hdv1k:q:s:VUSTDC:L:" opt; do
@@ -131,9 +131,6 @@ while getopts ":hdv1k:q:s:VUSTDC:L:" opt; do
     L) 
       RUNLOG="$OPTARG"
       ;;
-#    W) 
-#      CWL_OUTPUT="$OPTARG"
-#      ;;
     \?)
       >&2 echo "Invalid option: -$OPTARG"
       echo "$USAGE"
@@ -214,11 +211,34 @@ function get_logs {
 
 function get_workflowRoot {
     WID=$1
+    Q="curl $CURL_ARG -s -X GET \"$CROMWELL_URL/api/workflows/v1/$WID/metadata\" -H \"accept: application/json\" "
+#   >&2 echo DEBUG: Q=$Q
     R=$( curl $CURL_ARG -s -X GET "$CROMWELL_URL/api/workflows/v1/$WID/metadata" -H "accept: application/json" )
     test_exit_status $SCRIPT
+#   >&2 echo DEBUG: R=$R
     S=$( echo "$R" | jq -r '.workflowRoot' )
     test_exit_status $SCRIPT
+#   >&2 echo DEBUG: S=$S
     echo "$S"
+}
+
+# Get the directory size of each workflow as returned by du -sh
+# If directory does not exist it is 0
+function get_du {
+	WID=$1
+
+#    >&2 echo DEBUG: in get_du.  WID=$WID
+	WR=$(get_workflowRoot $WID) 
+#    >&2 echo DEBUG: WR = $WR
+	if [ ! -d $WR ]; then
+		echo "0"
+        return
+	fi
+	CMD="du -sh $WR"
+
+    eval $CMD
+    test_exit_status $SCRIPT   
+
 }
 
 # This will return ALL outputs specified in CWL.  Note that this will consist of multiple lines
@@ -421,6 +441,9 @@ for RID in $RIDS; do
             test_exit_status $SCRIPT
         elif [ "$QUERY" == 'runlog' ]; then
             STATUS=$(get_runlog $WID)
+            test_exit_status $SCRIPT
+        elif [ "$QUERY" == 'du' ]; then
+            STATUS=$(get_du $WID)
             test_exit_status $SCRIPT
         elif [ "$QUERY" == 'url' ]; then
             echo $CROMWELL_URL
