@@ -1,5 +1,5 @@
 # DAT is a filename to list of workflowRoot paths
-# and may be created with `cq -x workflowRoot | cut -f 3`
+# and may be created with `bash src/cq -q workflowRoot | cut -f 3 > workflowRoot.dat"
 
 DAT=$1
 if [ -z $DAT ]; then

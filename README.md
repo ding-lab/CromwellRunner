@@ -35,6 +35,8 @@ is a combination which is relatively well supported on both the MGI and
 compute1 systems at Wash U but which remains under continuous development.  CromwellRunner
 has been used to process batches of over a thousand cases.
 
+Docker image used: `mwyczalkowski/cromwell-runner:v78`, has v78 of Cromwell
+
 # Getting started
 
 CromwellRunner is run regularly on MGI and compute1 environments at Wash U.
@@ -247,6 +249,7 @@ bash 00_start_docker.sh
 bash 05_start_cromwell_db_server.sh
 ```
 Note that this has to be done anytime the Cromwell database is to be queried, for instance when running `cq` (described below).
+
 
 If starting a new project, create new run logs with,
 ```
