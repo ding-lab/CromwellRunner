@@ -183,7 +183,8 @@ git clone --recurse-submodules https://github.com/ding-lab/CromwellRunner.git PR
 ```
 where `PROJECT_NAME` is a name for this particular batch.
 
-Next, clone the relevant workflow into `PROJECT_NAME/workflow` directory.  
+
+Next, clone the relevant workflow into `PROJECT_NAME/Workflow` directory.  
 ```
 cd PROJECT_NAME
 mkdir Workflow && cd Workflow
@@ -194,6 +195,13 @@ where `WORKFLOW_LINK` is the GitHub URL of the appropriate workflow:
 * TinJasmine: `https://github.com/ding-lab/TinJasmine.git`
 * SomaticSV: `https://github.com/ding-lab/SomaticSV.git`
 * SomaticCNV: `https://github.com/mwyczalkowski/BICSEQ2.CWL.git`
+
+#### Ignore file mode changes
+Possibly,
+```
+git submodule foreach git config core.fileMode false
+git submodule foreach git submodule foreach git config core.fileMode false
+```
 
 ### Define system configuration files
 

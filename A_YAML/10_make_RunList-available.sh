@@ -5,8 +5,8 @@ cd ..
 source Project.config.sh
 
 #CASES="dat/DLBCL.cases.dat"
-#CASES="dat/cases-IH.dat"    # looking at in-house cases only
-CASES="/cache1/fs1/home1/Active/home/m.wyczalkowski/Projects/GDAN/GDAN.catalog/Catalog3/DLBCL.cases.tsv"
+CASES="dat/cases.dat"    # looking at in-house cases only
+#CASES="/cache1/fs1/home1/Active/home/m.wyczalkowski/Projects/GDAN/GDAN.catalog/Catalog3/DLBCL.cases.tsv"
 RUN_LIST_TMP="dat/RUN_LIST.tmp"
 RUN_LIST="dat/RUN_LIST.dat"
 

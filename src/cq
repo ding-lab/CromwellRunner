@@ -31,7 +31,7 @@ Options:
 -S: retain only cases where Status is Succeeded
 -T: Skip cases where logs are stashed 
 -D: Do not access database.  Limited functionality: status is unknown, best guesses are made for other queries.  TODO: complete implementation
--C CROMWELL_URL: define the cromwell URL.  Default: http://localhost:8000
+-C CROMWELL_URL: define the cromwell URL.  Default: http://mammoth.wusm.wustl.edu:8000
 -L RUNLOG: Run log file. Default is "./logs/runlog.dat".  Can be obtained from environment variable
 
 RID is RunID, and can be either a Run Name or a WorkflowID.  Examples:
@@ -59,7 +59,7 @@ Evaluates the following information for each case
 Workflow ID associated with given cromwell output file is obtaining by grepping for output line like,
 [2019-04-14 15:54:01,69] [info] SingleWorkflowRunnerActor: Workflow submitted d6c83416-af3f-46f3-a892-ff1e9074fe74
 
-CROMWELL_URL can be defined as environment variable, e.g., `export CROMWELL_URL=http://localhost:8000`
+CROMWELL_URL can be defined as environment variable, e.g., `export CROMWELL_URL=http://mammoth.wusm.wustl.edu:8000
 RUNLOG can be defined as environment variable, e.g., `export RUNLOG=/path/to/logs/runlog.dat`
 
 Note that this script requires `jq` to be installed: https://stedolan.github.io/jq/download/
@@ -71,8 +71,8 @@ SCRIPT=$(basename $0)   # used to identify this executable in error messages
 
 # read default from environment variable if possible, otherwise use default
 if [ -z $CROMWELL_URL ]; then
-#    CROMWELL_URL="https://genome-cromwell.gsc.wustl.edu"
-    CROMWELL_URL="http://localhost:8000"
+    CROMWELL_URL="https://genome-cromwell.gsc.wustl.edu"
+#    CROMWELL_URL="http://mammoth.wusm.wustl.edu:8000"
 fi
 CURL_ARG="-k"   # arguments passed to all cromwell db calls 
 

@@ -2,3 +2,5 @@ Goal of catalog3 branch is to generate RUN_LIST files from Catalog3 and BamMap3-
 Specific development is for GDAN ATAC project
 
 * Also added new feature, `-q du` to `src/cq`
+* Merged with master to get cromwell v78 functionality
+* Using mammoth cromwell server and getting rid of local cromwell server
