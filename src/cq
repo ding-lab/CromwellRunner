@@ -71,8 +71,8 @@ SCRIPT=$(basename $0)   # used to identify this executable in error messages
 
 # read default from environment variable if possible, otherwise use default
 if [ -z $CROMWELL_URL ]; then
-    CROMWELL_URL="https://genome-cromwell.gsc.wustl.edu"
-#    CROMWELL_URL="http://mammoth.wusm.wustl.edu:8000"
+#    CROMWELL_URL="https://genome-cromwell.gsc.wustl.edu"
+    CROMWELL_URL="http://mammoth.wusm.wustl.edu:8000"
 fi
 CURL_ARG="-k"   # arguments passed to all cromwell db calls 
 

@@ -338,7 +338,7 @@ bash src/cq | grep Failed | cut -f 1 | bash src/runtidy -x finalize -p PROJECT -
 ```
 Likewise, the data in the workflow root directory can have the input files deleted (these can be very large) and intermediate files compressed with,
 ```
-bash src/cq | grep Failed | cut -f 1 | bash src/datatidy -x compress -p PROJECT_NAME -F Failed -m "Manual cleanup" -
+bash src/cq | grep Failed | cut -f 1 | bash src/datatidy -x compress -p PROJECT -F Failed -m "Manual cleanup" -
 ```
 Note that failed jobs can be deleted wholesale (-x wipe) if there is no need to keep them around.
 
