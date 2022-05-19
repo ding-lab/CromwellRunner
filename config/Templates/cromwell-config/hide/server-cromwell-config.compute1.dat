@@ -53,17 +53,36 @@ backend {
     }
   }
 }
+
+# New system on mammoth
 database {
-  profile = "slick.jdbc.MySQLProfile$"
+  profile = “slick.jdbc.MySQLProfile$”
   db {
-    driver = "com.mysql.jdbc.Driver"
-    url = "jdbc:mysql://genome-cromwell.gsc.wustl.edu/cromwell?rewriteBatchedStatements=true&useSSL=false"
-    user = "cromwell"
-    password = "kc11-18da-L18K"
-    connectionTimeout = 5000
-    numThreads = 5
+    driver = “com.mysql.jdbc.Driver”
+    url = “jdbc:mysql://mammoth.wusm.wustl.edu:3307/cromwell_db?rewriteBatchedStatements=true&useSSL=false”
+    user = “root”
+    password = “cromwell”
+    connectionTimeout = 180000
+    maxConnections = 10
+    numThreads = 10
   }
 }
+
+# Original MGI database
+#database {
+#  profile = "slick.jdbc.MySQLProfile$"
+#  db {
+#    driver = "com.mysql.jdbc.Driver"
+#    url = "jdbc:mysql://genome-cromwell.gsc.wustl.edu/cromwell?rewriteBatchedStatements=true&useSSL=true"
+#    user = "cromwell"
+#    password = "kc11-18da-L18K"
+#    connectionTimeout = 180000
+#    maxConnections = 10
+#    numThreads = 10
+#  }
+#}
+
+
 webservice {
   port = 8000
   interface = 127.0.0.1
