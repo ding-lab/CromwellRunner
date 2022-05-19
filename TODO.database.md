@@ -12,7 +12,9 @@ restarting the server is here https://github.com/estorrs/cromwell-server
 
 ## Cromwell version
 
-Erik currently using Cromwell v78
+Erik currently using Cromwell v78 running on 
+
+http://mammoth.wusm.wustl.edu:3307
 
 # File-based database
 
