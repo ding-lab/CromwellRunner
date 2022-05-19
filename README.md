@@ -35,6 +35,8 @@ is a combination which is relatively well supported on both the MGI and
 compute1 systems at Wash U but which remains under continuous development.  CromwellRunner
 has been used to process batches of over a thousand cases.
 
+Docker image used: `mwyczalkowski/cromwell-runner:v78`, has v78 of Cromwell
+
 # Getting started
 
 CromwellRunner is run regularly on MGI and compute1 environments at Wash U.
@@ -181,7 +183,8 @@ git clone --recurse-submodules https://github.com/ding-lab/CromwellRunner.git PR
 ```
 where `PROJECT_NAME` is a name for this particular batch.
 
-Next, clone the relevant workflow into `PROJECT_NAME/workflow` directory.  
+
+Next, clone the relevant workflow into `PROJECT_NAME/Workflow` directory.  
 ```
 cd PROJECT_NAME
 mkdir Workflow && cd Workflow
@@ -192,6 +195,13 @@ where `WORKFLOW_LINK` is the GitHub URL of the appropriate workflow:
 * TinJasmine: `https://github.com/ding-lab/TinJasmine.git`
 * SomaticSV: `https://github.com/ding-lab/SomaticSV.git`
 * SomaticCNV: `https://github.com/mwyczalkowski/BICSEQ2.CWL.git`
+
+#### Ignore file mode changes
+Possibly,
+```
+git submodule foreach git config core.fileMode false
+git submodule foreach git submodule foreach git config core.fileMode false
+```
 
 ### Define system configuration files
 
@@ -247,6 +257,7 @@ bash 00_start_docker.sh
 bash 05_start_cromwell_db_server.sh
 ```
 Note that this has to be done anytime the Cromwell database is to be queried, for instance when running `cq` (described below).
+
 
 If starting a new project, create new run logs with,
 ```
@@ -327,7 +338,7 @@ bash src/cq | grep Failed | cut -f 1 | bash src/runtidy -x finalize -p PROJECT -
 ```
 Likewise, the data in the workflow root directory can have the input files deleted (these can be very large) and intermediate files compressed with,
 ```
-bash src/cq | grep Failed | cut -f 1 | bash src/datatidy -x compress -p PROJECT_NAME -F Failed -m "Manual cleanup" -
+bash src/cq | grep Failed | cut -f 1 | bash src/datatidy -x compress -p PROJECT -F Failed -m "Manual cleanup" -
 ```
 Note that failed jobs can be deleted wholesale (-x wipe) if there is no need to keep them around.
 

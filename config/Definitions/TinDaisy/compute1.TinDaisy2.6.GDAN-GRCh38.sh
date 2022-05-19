@@ -7,7 +7,7 @@ WORKFLOW="TinDaisy"
 SYSTEM="compute1"
 HAS_SCRATCH=1		# 1 if data needs to be copied from scratch to storage at end of batch, otherwise 0
 LSF_CONF="/opt/ibm/lsfsuite/lsf/conf/lsf.conf"
-LSF_GROUP="/m.wyczalkowski/cromwell-runner"
+LSF_GROUP="/m.wyczalkowski/cromwell_runner2"
 LSFQ="dinglab"              
 COMPUTE_GROUP="compute-dinglab"
 LSF_ARGS="-B \"-g $LSF_GROUP -G $COMPUTE_GROUP \" -M -q $LSFQ"
@@ -115,7 +115,7 @@ CANONICAL_BED="$PARAM_ROOT/chrlist/GRCh38.callRegions.bed"
 #   WORKFLOW_ROOT
 ###############################################################################################
 
-CWL="$CWL_ROOT_H/cwl/workflows/tindaisy2.6.cwl"
+CWL="$CWL_ROOT_H/cwl/workflows/tindaisy2.6.1.cwl"
 
 # template used for generating YAML files
 YAML_TEMPLATE="config/Templates/YAML/tindaisy2.6.WGS.template.yaml"
