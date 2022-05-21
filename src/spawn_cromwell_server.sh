@@ -99,8 +99,13 @@ if [ ! -e $CONFIG ]; then
     exit
 fi
 
-JAVA="/opt/java/openjdk/bin/java"
-CROMWELL="/app/cromwell-78-38cd360.jar"
+# Reverting to MGI
+JAVA="/usr/bin/java"
+#CROMWELL_JAR="/opt/cromwell.jar"
+CROMWELL="/usr/local/cromwell/cromwell-47.jar"
+
+#JAVA="/opt/java/openjdk/bin/java"
+#CROMWELL="/app/cromwell-78-38cd360.jar"
 
 CMD="$JAVA -Dconfig.file=$CONFIG -jar $CROMWELL server >/dev/null & "
 echo Starting local instance of cromwell server

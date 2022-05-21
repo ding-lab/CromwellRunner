@@ -12,8 +12,10 @@ LSFQ="dinglab"
 COMPUTE_GROUP="compute-dinglab"
 LSF_ARGS="-B \"-g $LSF_GROUP -G $COMPUTE_GROUP \" -M -q $LSFQ"
 
-# This is in CromwellRunner container
-CROMWELL_JAR="/app/cromwell-78-38cd360.jar"
+# This is in CromwellRunner container.  Reverting to use MGI
+#CROMWELL_JAR="/app/cromwell-78-38cd360.jar"
+CROMWELL_JAR="/usr/local/cromwell/cromwell-47.jar"
+#CROMWELL_JAR="/opt/cromwell.jar"
 
 # Workflow root - where Cromwell output goes.  Writing to scratch1
 #WORKFLOW_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"

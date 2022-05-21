@@ -10,7 +10,8 @@ source Project.config.sh
 
 START_DOCKERD="docker/WUDocker"
 
-IMAGE="mwyczalkowski/cromwell-runner:v78"
+#IMAGE="mwyczalkowski/cromwell-runner:v78"
+IMAGE="mwyczalkowski/cromwell-runner"  # Reverting
 MEM=4  
 ARG="-q dinglab-interactive -r"
 GROUP="-G compute-dinglab"

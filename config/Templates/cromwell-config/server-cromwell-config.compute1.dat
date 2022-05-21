@@ -1,0 +1,89 @@
+include required(classpath("application"))
+
+# Compute1
+# -M memory_mb 
+# -q general
+
+
+backend {
+  default = "LSF"
+  providers {
+    LSF {
+      actor-factory = "cromwell.backend.impl.sfs.config.ConfigBackendLifecycleActorFactory"
+      config {
+        runtime-attributes = """
+        Int cpu = 1
+        Int? memory_kb
+        Int? memory_mb
+        String? docker
+        """
+        submit = """
+        bsub \
+        -J ${job_name} \
+        -cwd ${cwd} \
+        -o /dev/null \
+        -e ${err + ".%J.lsf"} \
+        ${"-M " + memory_mb} \
+        ${"-n " + cpu} \
+        ${"-R \"select[mem>" + memory_mb + "] rusage[mem=" + memory_mb + "]\""} \
+        -G compute-dinglab \
+        /bin/bash ${script}
+        """
+        submit-docker = """
+        LSF_DOCKER_VOLUMES=${cwd}:${docker_cwd} \
+        bsub \
+        -J ${job_name} \
+        -cwd ${cwd} \
+        -o /dev/null \
+        -e ${err + ".%J.lsf"} \
+        ${"-a \"docker(" + docker + ")\""} \
+        -q general \
+        ${"-M " + memory_mb} \
+        ${"-n " + cpu} \
+        ${"-R \"select[mem>" + memory_mb + "] rusage[mem=" + memory_mb + "]\""} \
+        -G compute-dinglab \
+        /bin/bash ${script}
+        """
+
+        kill = "bkill ${job_id}"
+        docker-kill = "bkill ${job_id}"
+        check-alive = "bjobs -noheader -o stat ${job_id} | /bin/grep 'PEND\\|RUN'"
+        job-id-regex = "Job <(\\d+)>.*"
+      }
+    }
+  }
+}
+
+# New system on mammoth
+#database {
+#  profile = “slick.jdbc.MySQLProfile$”
+#  db {
+#    driver = “com.mysql.jdbc.Driver”
+#    url = “jdbc:mysql://mammoth.wusm.wustl.edu:3307/cromwell_db?rewriteBatchedStatements=true&useSSL=false”
+#    user = “root”
+#    password = “cromwell”
+#    connectionTimeout = 180000
+#    maxConnections = 10
+#    numThreads = 10
+#  }
+#}
+#
+# Original MGI database
+database {
+  profile = "slick.jdbc.MySQLProfile$"
+  db {
+    driver = "com.mysql.jdbc.Driver"
+    url = "jdbc:mysql://genome-cromwell.gsc.wustl.edu/cromwell?rewriteBatchedStatements=true&useSSL=true"
+    user = "cromwell"
+    password = "kc11-18da-L18K"
+    connectionTimeout = 180000
+    maxConnections = 10
+    numThreads = 10
+  }
+}
+
+
+webservice {
+  port = 8000
+  interface = 127.0.0.1
+}

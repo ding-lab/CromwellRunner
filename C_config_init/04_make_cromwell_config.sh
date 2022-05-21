@@ -17,9 +17,9 @@ mkdir -p $(dirname $CONFIG_FILE)
 >&2 echo Writing Cromwell config file to $CONFIG_FILE
 bash src/make_config.sh $CONFIG_TEMPLATE $WORKFLOW_ROOT > $CONFIG_FILE
 
-#>&2 echo Skipping cromwell server configuration
-#mkdir -p $(dirname $CONFIG_SERVER_FILE)
-#>&2 echo Writing Cromwell server config file to $CONFIG_SERVER_FILE
-#bash src/make_config.sh $CONFIG_SERVER_TEMPLATE $WORKFLOW_ROOT > $CONFIG_SERVER_FILE
+# Reverting
+mkdir -p $(dirname $CONFIG_SERVER_FILE)
+>&2 echo Writing Cromwell server config file to $CONFIG_SERVER_FILE
+bash src/make_config.sh $CONFIG_SERVER_TEMPLATE $WORKFLOW_ROOT > $CONFIG_SERVER_FILE
 
 
