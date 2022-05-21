@@ -1,18 +1,16 @@
+cd ..
 source Project.config.sh
 
 # Uncompress intermediate files from past run which will serve as input into 
-# post-merge restart.  We will do this for all workflows in RESTART_MAP
-# Details about RESTART_MAP here: workflows/restart/README.md
+# post-merge restart.  
 
-# This is sourced both here and in make_yaml.sh to fill out template parameters
-
-export DATALOG
-
-RESTART_MAP="dat/restart_map.dat"
-RESULT_LIST="dat/uncompress_result_list.dat"
+RESTART_WORKFLOW_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Analysis/CromwellRunner/TinDaisy/27.DLBCL_105-refilter/dat-MGIdb/25b.restart-workflowRoot.dat"
+RESULT_LIST="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Analysis/CromwellRunner/TinDaisy/27.DLBCL_105-refilter/dat-MGIdb/postmerge_result_list.dat"
 
 >&2 echo Uncompressing restart files
-cut -f 2 $RESTART_MAP | bash src/datatidy -x uncompress_restart -P $RESULT_LIST "$@" -
+CMD="bash src/uncompress_restart.sh -U $RESTART_WORKFLOW_ROOT -P $RESULT_LIST $@"
+>&2 echo Running $CMD
+eval $CMD
 
 rc=$?
 if [[ $rc != 0 ]]; then

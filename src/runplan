@@ -16,7 +16,7 @@ Options:
 -p PARAM_SCRIPT: path to executable which returns a list of key:value pairs 
    used to create configuration file from YAML_TEMPLATE.  Required
 -g: Issue warnings rather than quitting for testing
--R RESTART_MAP: file listing case and workflow IDs for each case when restarting runs.  This is not fully implemented
+-R RESTART_MAP: file listing case and workflow IDs for each case when restarting runs.  
 -Y YAML_TEMPLATE: template file used to generate YAML configuration file for each template.  Required
 -U RUN_LIST: file with lines composed of RUN_NAME, CASE_NAME, and one or more UUIDs corresponding to data to be
    processed.  Required.
@@ -150,14 +150,21 @@ function init_yaml {
 # Create YAML configuration file in three steps:
 # * get per-run parameters from RUN_LIST by matching by RUN_NAME
 # * get key/value parameters by calling pipeline-specific PARAM_SCRIPT
+# * New - create RESTART_D with RESTART_UUID from by matching RUN_NAME to RESTART_MAP
 # * populate YAML_TEMPLATE by replacing "key" with "value" to generate YAML configuration file
 function make_yaml {
     RUN_NAME=$1
     YAML_FN=$2
 
+    if [ ! -z $RESTART_MAP ]; then
+        RESTART_UUID=$(grep $RUN_NAME $RESTART_MAP | cut -f 2)
+        RESTART_ARGS="-R $RESTART_UUID"
+    fi
+#    >&2 echo DEBUG: PARAM_KV = $PARAM_KV
+
     # find RUN_NAME in RUN_LIST; the matching line provides arguments to PARAM_SCRIPT
     SARGS=$(awk -v run_name=$RUN_NAME '{if ($1 == run_name) print}' $RUN_LIST)
-    CMD="bash $PARAM_SCRIPT -P $PARAMS $SARGS"
+    CMD="bash $PARAM_SCRIPT -P $PARAMS $RESTART_ARGS $SARGS"
     if [ "$TP_DEBUG" == 1 ]; then
         >&2 echo $SCRIPT Running: $CMD
         DARG="-d"
@@ -165,11 +172,7 @@ function make_yaml {
     
     PARAM_KV=$(eval $CMD)
     test_exit_status 
-# Code from WUdocker/start_docker.sh.  Not clear whether this has to be implemented following
-# some bugfixes in the above
-#    if [ "$REMAP_PATHS" ]; then
-#        PATH=$(echo "$PATH" | sed 's/rdcw/storage1/')
-#    fi
+
 
     if [ $YAML_FN != "-" ]; then
         OUT_ARG="-o $YAML_FN"

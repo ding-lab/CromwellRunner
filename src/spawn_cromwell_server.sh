@@ -99,9 +99,10 @@ if [ ! -e $CONFIG ]; then
     exit
 fi
 
-CROMWELL="/usr/local/cromwell/cromwell-47.jar"
+JAVA="/opt/java/openjdk/bin/java"
+CROMWELL="/app/cromwell-78-38cd360.jar"
 
-CMD="/usr/bin/java -Dconfig.file=$CONFIG -jar $CROMWELL server >/dev/null & "
+CMD="$JAVA -Dconfig.file=$CONFIG -jar $CROMWELL server >/dev/null & "
 echo Starting local instance of cromwell server
 run_cmd "$CMD" $DRYRUN
 

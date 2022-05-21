@@ -1,0 +1,49 @@
+# TinDaisy2 restart template
+# * tindaisy2.cwl restart after merge
+# * production optimizations
+
+# YAML template as generated with cwltool --make-template
+#
+input_vcf:  # This is the main part that's new
+    class: File
+    path: RESTART_D/call-merge_vcf_td/execution/output/merged.vcf
+
+clinvar_annotation:  # type "File" (optional)
+    class: File
+    path: CLINVAR_ANNOTATION
+rescue_clinvar: true  
+rescue_cosmic: true  
+canonical_BED:  # type "File"
+    class: File
+    path: CANONICAL_BED
+
+tumor_bam:
+  class: File
+  path: TUMOR_BAM
+reference_fasta:
+  class: File
+  path: REF_PATH
+
+# barcodes replace "TUMOR" and "NORMAL" as sample names in output MAF 
+normal_barcode: NORMAL_BARCODE
+tumor_barcode: TUMOR_BARCODE
+
+# Other filter config
+bypass_classification: true  # if false, exclude non-protein-coding variants.  recommend true for WGS, false for WXS
+classification_config:
+  class: File
+  path: PARAM_ROOT/filter_config/classification_filter_config.ini
+af_config:
+  class: File
+  path: PARAM_ROOT/filter_config/af_filter_config.ini
+
+# VEP Cache is used for VEP annotation and vcf_2_maf.
+# If not defined, online lookups will be used by VEP annotation. These are slower and do not include allele frequency info (MAX_AF) needed by AF filter.
+# For performance reasons, defining vep_cache_gz is suggested for production systems
+vep_cache_gz:
+  class: File
+  path: VEP_CACHE_GZ
+
+vep_cache_version: VEP_CACHE_VERSION
+assembly: ASSEMBLY
+
