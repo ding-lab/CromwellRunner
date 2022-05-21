@@ -68,7 +68,7 @@ shift $((OPTIND-1))
 AS_SCRATCH=$1
 confirm $AS_SCRATCH
 confirm_dir $SCRATCH_BASE
-confirm_dir $DEST_BASE
+mkdir -p $DEST_BASE	# Create if necessary
 
 # Loop over all UUID in analysis summary file
 UUIDS=$(grep "$SCRATCH_BASE" $AS_SCRATCH | cut -f 10 | sort -u)
