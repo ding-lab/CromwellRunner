@@ -24,8 +24,8 @@ Optional options
 -e: write STDERR output of workflow to terminal rather than LOGD/RUN_NAME.err
 -D DB_ARGS: arguments for connecting to Cromwell DB.  Default as specified in Cromwell configuration page below.  If value is "none",
    will not save to database
--R CROMWELL_JAR: Cromwell JAR file.  Default: /opt/cromwell.jar
--j JAVA: path to java.  Default: /usr/bin/java
+-R CROMWELL_JAR: Cromwell JAR file.  
+-j JAVA: path to java.  
 -c CQD: explicit path to cromwell query utilities `runtidy` and `datatidy`
 -F: Finalize run and compress run data immediately after successful completion of run.
     This calls `runtidy -x finalize` and `datatidy -x compress`
@@ -84,12 +84,13 @@ LOGD="./logs"
 # Cromwell default DB Args 
 #DB_ARGS="-Djavax.net.ssl.trustStorePassword=changeit -Djavax.net.ssl.trustStore=/gscmnt/gc2560/core/genome/cromwell/cromwell.truststore"
 
-# Reverting to MGI
-JAVA="/usr/bin/java"
-CROMWELL_JAR="/usr/local/cromwell/cromwell-47.jar"
+# MGI cromwell server
+#JAVA="/usr/bin/java"
+#CROMWELL_JAR="/usr/local/cromwell/cromwell-47.jar"
 
-#JAVA="/opt/java/openjdk/bin/java"
-#CROMWELL_JAR="/app/cromwell-78-38cd360.jar"
+# mammoth cromwell server
+JAVA="/opt/java/openjdk/bin/java"
+CROMWELL_JAR="/app/cromwell-78-38cd360.jar"
 
 RUN_LIST="dat/RUN_LIST.dat"
 BSUB="bsub"
@@ -99,8 +100,8 @@ SPAWN_CROMWELL="bash src/spawn_cromwell_server.sh -C -s 60" # confirm that serve
 
 
 # for now this is hard coded
-LSF_IMAGE="mwyczalkowski/cromwell-runner:v78"
-LSF_IMAGE="mwyczalkowski/cromwell-runner" # Reverting
+LSF_IMAGE="mwyczalkowski/cromwell-runner:v78"   # mammoth cromwell server
+#LSF_IMAGE="mwyczalkowski/cromwell-runner" # MGI cromwell server
 
 while getopts ":W:y:hd1J:g:eC:D:R:j:k:c:FX:p:L:l:G:Mq:B:S:P:" opt; do
   case $opt in

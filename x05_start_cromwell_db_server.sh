@@ -1,3 +1,5 @@
+# Use this only when running local server / MGI mode
+
 # Start local instance of cromwell server (rather than relying on default MGI production server)
 # This gets around problems with database queries circa summer 2019
 # With this server running, database queries are to http://localhost:8000

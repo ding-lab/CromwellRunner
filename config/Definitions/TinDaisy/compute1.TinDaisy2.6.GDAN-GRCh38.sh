@@ -20,8 +20,8 @@ CROMWELL_JAR="/usr/local/cromwell/cromwell-47.jar"
 WORKFLOW_ROOT="/scratch1/fs1/dinglab/m.wyczalkowski/cromwell-data"
 # This is template for cromwell run
 CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.compute1.template.dat"
-# this is template for cromwell server
-CONFIG_SERVER_TEMPLATE="config/Templates/cromwell-config/server-cromwell-config.compute1.dat"
+# this is template for cromwell server, used only for MGI-based server
+CONFIG_SERVER_TEMPLATE="config/Templates/cromwell-config/server-cromwell-config.compute1.MGI_server.dat"
 
 # For moving data from scratch to storage upon completion
 # This is analogous to WORKFLOW_ROOT

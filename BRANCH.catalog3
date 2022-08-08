@@ -4,3 +4,5 @@ Specific development is for GDAN ATAC project
 * Also added new feature, `-q du` to `src/cq`
 * Merged with master to get cromwell v78 functionality
 * Using mammoth cromwell server and getting rid of local cromwell server
+  * Support for local cromwell server is maintened in case need to backtrack
+  * This is marked as MGI

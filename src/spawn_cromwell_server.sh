@@ -3,6 +3,7 @@
 # https://dinglab.wustl.edu/
 
 # Start local instance of cromwell server (rather than relying on default MGI production server)
+# This is used for MGI database server (it is not used for mammoth database server)
 # This gets around problems with database queries circa summer 2019
 # With this server running, database queries are to http://localhost:8000
 # Only one server should be running at once.  
@@ -99,11 +100,11 @@ if [ ! -e $CONFIG ]; then
     exit
 fi
 
-# Reverting to MGI
+# MGI cromwell server
 JAVA="/usr/bin/java"
-#CROMWELL_JAR="/opt/cromwell.jar"
 CROMWELL="/usr/local/cromwell/cromwell-47.jar"
 
+# Mammoth - not clear this would ever be used...
 #JAVA="/opt/java/openjdk/bin/java"
 #CROMWELL="/app/cromwell-78-38cd360.jar"
 
