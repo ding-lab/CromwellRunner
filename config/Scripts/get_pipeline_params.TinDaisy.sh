@@ -24,8 +24,6 @@ The following parameters are returned
     * NORMAL_BARCODE
     * PARAM_ROOT
     * VEP_CACHE_GZ
-    * VEP_CACHE_VERSION
-    * ASSEMBLY
     * CHRLIST
     * CLINVAR_ANNOTATION
     * CALL_REGIONS
@@ -144,8 +142,8 @@ function init_params_kv {
     push_params_kv REF_PATH $REF_PATH
     push_params_kv PARAM_ROOT $PARAM_ROOT
     push_params_kv VEP_CACHE_GZ $VEP_CACHE_GZ
-    push_params_kv VEP_CACHE_VERSION $VEP_CACHE_VERSION
-    push_params_kv ASSEMBLY $ASSEMBLY
+#    push_params_kv VEP_CACHE_VERSION $VEP_CACHE_VERSION
+#    push_params_kv ASSEMBLY $ASSEMBLY
     push_params_kv CHRLIST $CHRLIST
     push_params_kv CLINVAR_ANNOTATION $CLINVAR_ANNOTATION
     push_params_kv CALL_REGIONS $CALL_REGIONS

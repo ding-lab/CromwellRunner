@@ -1,6 +1,7 @@
 ###############################################################################################
 # System config
 # Compute1 system with Cromwell output to scratch volume
+# mammoth Cromwell DB server
 ###############################################################################################
 
 WORKFLOW="TinDaisy"
@@ -13,15 +14,16 @@ COMPUTE_GROUP="compute-dinglab"
 LSF_ARGS="-B \"-g $LSF_GROUP -G $COMPUTE_GROUP \" -M -q $LSFQ"
 
 # This is in CromwellRunner container
-CROMWELL_JAR="/usr/local/cromwell/cromwell-47.jar"
+# CROMWELL_JAR="/usr/local/cromwell/cromwell-47.jar" # Used for MGI server
+CROMWELL_JAR="/app/cromwell-78-38cd360.jar"          # used for mammoth
 
 # Workflow root - where Cromwell output goes.  Writing to scratch1
 #WORKFLOW_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"
 WORKFLOW_ROOT="/scratch1/fs1/dinglab/m.wyczalkowski/cromwell-data"
 # This is template for cromwell run
-CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.compute1.template.dat"
-# this is template for cromwell server, used only for MGI-based server
-CONFIG_SERVER_TEMPLATE="config/Templates/cromwell-config/server-cromwell-config.compute1.MGI_server.dat"
+CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.compute1.mammoth_server.template.dat"
+## this is template for cromwell server, used only for MGI-based server
+#CONFIG_SERVER_TEMPLATE="config/Templates/cromwell-config/server-cromwell-config.compute1.MGI_server.dat"
 
 # For moving data from scratch to storage upon completion
 # This is analogous to WORKFLOW_ROOT
@@ -90,10 +92,10 @@ $HOME_MAP \
 REF_PATH="$REF_ROOT/GRCh38.d1.vd1/GRCh38.d1.vd1.fa"
 
 # VEP Cache is used for VEP annotation and vcf_2_maf.
+# Updated versions of VEP_Annotate, associated with image mwyczalkowski/vep-annotate:20220505, no longer need the VEP_CACHE_VERSION and ASSEMBLY parameters
+
 # If not defined, online lookups will be used by VEP annotation. These are slower and do not include allele frequency info (MAX_AF) needed by AF filter.
 # For performance reasons, defining vep_cache_gz is suggested for production systems
-VEP_CACHE_VERSION="99"  # Must match the filename below
-ASSEMBLY="GRCh38"       # Must match the filename below
 VEP_CACHE_GZ="$VEP_CACHE_ROOT/v99/vep-cache.99_GRCh38.tar.gz"
 
 REF_NAME="hg38"                     # Reference, as used when matching to BAMMAP
@@ -115,10 +117,10 @@ CANONICAL_BED="$PARAM_ROOT/chrlist/GRCh38.callRegions.bed"
 #   WORKFLOW_ROOT
 ###############################################################################################
 
-CWL="$CWL_ROOT_H/cwl/workflows/tindaisy2.6.1.cwl"
+CWL="$CWL_ROOT_H/cwl/workflows/tindaisy2.6.2.cwl"
 
 # template used for generating YAML files
-YAML_TEMPLATE="config/Templates/YAML/tindaisy2.6.WGS.template.yaml"
+YAML_TEMPLATE="config/Templates/YAML/TinDaisy/tindaisy2.6.2-WGS.template.yaml"
 
 # pipeline-specific script to obtain parameters to fill in YAML file, get_pipeline_params.XXX.sh
 PARAM_SCRIPT="config/Scripts/get_pipeline_params.TinDaisy.sh"
