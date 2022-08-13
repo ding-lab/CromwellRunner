@@ -1,6 +1,7 @@
 ###############################################################################################
 # System config
 # Compute1 system with Cromwell output to scratch volume
+# mammoth Cromwell DB server
 ###############################################################################################
 
 WORKFLOW="TinDaisy"
@@ -13,14 +14,16 @@ COMPUTE_GROUP="compute-dinglab"
 LSF_ARGS="-B \"-g $LSF_GROUP -G $COMPUTE_GROUP \" -M -q $LSFQ"
 
 # This is in CromwellRunner container
-CROMWELL_JAR="/usr/local/cromwell/cromwell-47.jar"
+# CROMWELL_JAR="/usr/local/cromwell/cromwell-47.jar" # Used for MGI server
+CROMWELL_JAR="/app/cromwell-78-38cd360.jar"          # used for mammoth
 
 # Workflow root - where Cromwell output goes.  Writing to scratch1
+#WORKFLOW_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"
 WORKFLOW_ROOT="/scratch1/fs1/dinglab/m.wyczalkowski/cromwell-data"
 # This is template for cromwell run
-CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.compute1.template.dat"
-# this is template for cromwell server, used only for MGI-based server
-CONFIG_SERVER_TEMPLATE="config/Templates/cromwell-config/server-cromwell-config.compute1.MGI_server.dat"
+CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.compute1.mammoth_server.template.dat"
+## this is template for cromwell server, used only for MGI-based server
+#CONFIG_SERVER_TEMPLATE="config/Templates/cromwell-config/server-cromwell-config.compute1.MGI_server.dat"
 
 # For moving data from scratch to storage upon completion
 # This is analogous to WORKFLOW_ROOT
@@ -28,11 +31,18 @@ STORAGE_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"
 CATALOG_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog"
 
 # Path to BamMap, which is a file which defines sequence data path and other metadata
-# BamMap format is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
-BAMMAP="$CATALOG_ROOT/BamMap/storage1.BamMap.dat"
+# BamMap v2 format is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
+# Newer v3 format is here: https://docs.google.com/document/d/1uSgle8jiIx9EnDFf_XHV3fWYKFElszNLkmGlht_CQGE/edit
+#CATALOG="/cache1/fs1/home1/Active/home/m.wyczalkowski/Projects/GDAN/GDAN.catalog/Catalog3/DLBCL.Catalog3.tsv"
+#BAMMAP="/cache1/fs1/home1/Active/home/m.wyczalkowski/Projects/GDAN/GDAN.catalog/Catalog3/DLBCL.BamMap3.tsv"
 
-# CATALOG file is needed for TinDaisy to obtain tumor / normal barcodes
-CATALOG="$CATALOG_ROOT/CPTAC3.Catalog.dat"
+# Catalog v2
+#BAMMAP="$CATALOG_ROOT/BamMap/storage1.BamMap.dat"
+#CATALOG="$CATALOG_ROOT/CPTAC3.Catalog.dat"
+
+# Catalog v3
+BAMMAP="$CATALOG_ROOT/Catalog3/storage1.BamMap3.tsv"
+CATALOG="$CATALOG_ROOT/Catalog3/CPTAC3.Catalog3.tsv"
 
 # Assume that all references are based here
 REF_ROOT="/storage1/fs1/dinglab/Active/Resources/References"
@@ -92,10 +102,12 @@ $HOME_MAP \
 REF_PATH="$REF_ROOT/GRCh38.d1.vd1/GRCh38.d1.vd1.fa"
 
 # VEP Cache is used for VEP annotation and vcf_2_maf.
+# Updated versions of VEP_Annotate, associated with image mwyczalkowski/vep-annotate:20220505, no longer need the VEP_CACHE_VERSION and ASSEMBLY parameters
+
 # If not defined, online lookups will be used by VEP annotation. These are slower and do not include allele frequency info (MAX_AF) needed by AF filter.
 # For performance reasons, defining vep_cache_gz is suggested for production systems
-VEP_CACHE_VERSION="99"  # Must match the filename below
-ASSEMBLY="GRCh38"       # Must match the filename below
+# VEP_CACHE_VERSION and ASSEMBLY prameters no longer needed with newer VEP introduced in
+# TinDaisy 2.6.2
 VEP_CACHE_GZ="$VEP_CACHE_ROOT/v99/vep-cache.99_GRCh38.tar.gz"
 
 REF_NAME="hg38"                     # Reference, as used when matching to BAMMAP
@@ -117,10 +129,11 @@ CANONICAL_BED="$PARAM_ROOT/chrlist/GRCh38.callRegions.bed"
 #   WORKFLOW_ROOT
 ###############################################################################################
 
-CWL="$CWL_ROOT_H/cwl/workflows/tindaisy2.cwl"
+CWL_FILE="tindaisy2.6.2.cwl"
+CWL="$CWL_ROOT_H/cwl/workflows/$CWL_FILE"
 
 # template used for generating YAML files
-YAML_TEMPLATE="config/Templates/YAML/tindaisy2.template.yaml"
+YAML_TEMPLATE="config/Templates/YAML/TinDaisy/tindaisy2.6.2-WES.template.yaml"
 
 # pipeline-specific script to obtain parameters to fill in YAML file, get_pipeline_params.XXX.sh
 PARAM_SCRIPT="config/Scripts/get_pipeline_params.TinDaisy.sh"
@@ -130,11 +143,12 @@ WORKFLOW_RUN_ARGS="-P config/Templates/prune_list/TinDaisy.stage_files_delete.da
 
 # For moving data from scratch to final storage upon completion
 # Relevant only if HAS_SCRATCH=1
-SCRATCH_BASE="$WORKFLOW_ROOT/cromwell-workdir/cromwell-executions/tindaisy2.cwl"
-DEST_BASE="$STORAGE_ROOT/cromwell-workdir/cromwell-executions/tindaisy2.cwl"
+SCRATCH_BASE="$WORKFLOW_ROOT/cromwell-workdir/cromwell-executions/$CWL_FILE"
+DEST_BASE="$STORAGE_ROOT/cromwell-workdir/cromwell-executions/$CWL_FILE"
 
 # These parameters used when finding data in BamMap
-ES="WXS"                            # experimental strategy
+# should not be needed since run_list being provided
+#ES="WXS"                            # experimental strategy
 
 # This isn't currently used when creating RUN_LIST, but it could be...
 # # TUMOR_ST is normally "tumor", but will be "tissue_normal" for Normal Adjacent Normal Adjacent analyses
