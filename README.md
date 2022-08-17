@@ -58,7 +58,7 @@ runs, aka a "project".  Instructions below assume a Linux command line environme
 Details specific to this batch are recorded in the `README.project.md` file for future
 reference.
 
-See installation details at bottom of this document (TODO: intgrate)
+Installation instructions below. 
 
 ## Basic concepts
 
