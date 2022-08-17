@@ -20,7 +20,7 @@ CROMWELL_JAR="/app/cromwell-78-38cd360.jar"          # used for mammoth
 # Workflow root - where Cromwell output goes.  Writing to scratch1
 #WORKFLOW_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"
 WORKFLOW_ROOT="/scratch1/fs1/dinglab/m.wyczalkowski/cromwell-data"
-# This is template for cromwell run
+# This is cromwell configuration file template 
 CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.compute1.mammoth_server.template.dat"
 ## this is template for cromwell server, used only for MGI-based server
 #CONFIG_SERVER_TEMPLATE="config/Templates/cromwell-config/server-cromwell-config.compute1.MGI_server.dat"
