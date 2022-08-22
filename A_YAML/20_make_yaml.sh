@@ -19,18 +19,26 @@
 #    datafile2_uuid
 # Also, RUNLIST9 has a header line while RUNLIST4 does not
 
+# Usage: 20_make_yaml.sh dat/WGS_CNV_Somatic.run_list.tsv
 
 cd ..
 PARAMS="Project.config.sh"
 source $PARAMS
 
-RL9="dat/WXS_Somatic_Variant_TD.run_list.tsv"
+#RL9="dat/WGS_CNV_Somatic.run_list.tsv"
+RL9=$1
+shift 1
+
+if [ -z $RL9 ]; then
+    >&2 echo ERROR: RL9 parameter not passed
+    exit 1
+fi
 if [ -z $RUN_LIST ]; then
     >&2 echo ERROR: RUN_LIST parameter not defined in $PARAMS
     exit 1
 fi
 if [ ! -e $RL9 ]; then
-    >&2 echo ERROR: $RL9 not found
+    >&2 echo ERROR: RL9 $RL9 not found
     exit 1
 fi
 

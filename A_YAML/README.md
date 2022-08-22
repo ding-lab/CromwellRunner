@@ -33,6 +33,6 @@ To be compatible with YAML creation, require the following columns (RUNLIST4 for
     datafile1_uuid
     datafile2_uuid
 
-This is done with step 20
+This is done with step 20.  Note that the 9-column format Run list must be passed as an argument
 
 Also, require that BamMap v3 format is available
