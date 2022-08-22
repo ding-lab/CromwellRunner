@@ -8,7 +8,7 @@ WORKFLOW="SomaticCNV"
 SYSTEM="compute1"  
 HAS_SCRATCH=1		# 1 if data needs to be copied from scratch to storage at end of batch, otherwise 0
 LSF_CONF="/opt/ibm/lsfsuite/lsf/conf/lsf.conf"
-LSF_GROUP="/m.wyczalkowski/cromwell_runner3"
+LSF_GROUP="/m.wyczalkowski/cromwell_runner-SomaticCNV"
 LSFQ="dinglab"
 COMPUTE_GROUP="compute-dinglab"
 LSF_ARGS="-B \"-g $LSF_GROUP -G $COMPUTE_GROUP \" -M -q $LSFQ"
@@ -18,7 +18,6 @@ LSF_ARGS="-B \"-g $LSF_GROUP -G $COMPUTE_GROUP \" -M -q $LSFQ"
 CROMWELL_JAR="/app/cromwell-78-38cd360.jar"          # used for mammoth
 
 # Workflow root - where Cromwell output goes.  Writing to scratch1
-#WORKFLOW_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"
 WORKFLOW_ROOT="/scratch1/fs1/dinglab/m.wyczalkowski/cromwell-data"
 # This is template for cromwell run
 CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.compute1.mammoth_server.template.dat"
@@ -33,6 +32,10 @@ CATALOG_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog
 # Path to BamMap, which is a file which defines sequence data path and other metadata
 # BamMap v2 format is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
 # Newer v3 format is here: https://docs.google.com/document/d/1uSgle8jiIx9EnDFf_XHV3fWYKFElszNLkmGlht_CQGE/edit
+
+# Catalog v2
+#BAMMAP="$CATALOG_ROOT/BamMap/storage1.BamMap.dat"
+#CATALOG="$CATALOG_ROOT/CPTAC3.Catalog.dat"
 
 # Catalog v3
 BAMMAP="$CATALOG_ROOT/Catalog3/storage1.BamMap3.tsv"
@@ -59,7 +62,7 @@ CQ_ROOT_C="/usr/local/CromwellRunner"
 # Using common datalog file
 export DATALOG="$WORKFLOW_ROOT/CromwellRunner/datalog.dat"
 
-# Mapping home directory to /home/m.wyczalkowski is convenient because it includes environment
+# Mapping home directory to /home/<USERNAME> is convenient because it includes environment
 # definitions for interactive work.  All scripts should run without this mapping, however
 # Note that /home used to be expanded to /storage1/fs1/home1/Active/home
 HOME_MAP="$HOME"
@@ -75,7 +78,7 @@ $HOME_MAP \
 "
 
 ###############################################################################################
-# Collection Config: config/Definitions/Collection/CPTAC3-GRCh38.config.sh
+# Collection config
 ###############################################################################################
 #
 

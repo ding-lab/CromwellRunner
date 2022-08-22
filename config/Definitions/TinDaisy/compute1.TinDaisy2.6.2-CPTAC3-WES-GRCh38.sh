@@ -158,7 +158,7 @@ DEST_BASE="$STORAGE_ROOT/cromwell-workdir/cromwell-executions/$CWL_FILE"
 
 # Output of cromwell config creation step
 CONFIG_FILE="dat/cromwell-config-db.dat"
-CONFIG_SERVER_FILE="dat/cromwell-server-config-db.dat"
+#CONFIG_SERVER_FILE="dat/cromwell-server-config-db.dat"
 
 # RESTART_ROOT used when restarting
 #RESTART_ROOT="$WORKFLOW_ROOT/cromwell-workdir/cromwell-executions/tindaisy.cwl"

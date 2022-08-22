@@ -27,7 +27,12 @@ source $PARAMS
 
 #RL9="dat/WGS_CNV_Somatic.run_list.tsv"
 RL9=$1
+shift 1
 
+if [ -z $RL9 ]; then
+    >&2 echo ERROR: RL9 parameter not passed
+    exit 1
+fi
 if [ -z $RUN_LIST ]; then
     >&2 echo ERROR: RUN_LIST parameter not defined in $PARAMS
     exit 1
