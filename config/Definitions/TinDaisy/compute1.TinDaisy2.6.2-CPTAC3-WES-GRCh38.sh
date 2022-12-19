@@ -106,8 +106,6 @@ REF_PATH="$REF_ROOT/GRCh38.d1.vd1/GRCh38.d1.vd1.fa"
 
 # If not defined, online lookups will be used by VEP annotation. These are slower and do not include allele frequency info (MAX_AF) needed by AF filter.
 # For performance reasons, defining vep_cache_gz is suggested for production systems
-# VEP_CACHE_VERSION and ASSEMBLY prameters no longer needed with newer VEP introduced in
-# TinDaisy 2.6.2
 VEP_CACHE_GZ="$VEP_CACHE_ROOT/v99/vep-cache.99_GRCh38.tar.gz"
 
 REF_NAME="hg38"                     # Reference, as used when matching to BAMMAP
@@ -145,16 +143,6 @@ WORKFLOW_RUN_ARGS="-P config/Templates/prune_list/TinDaisy.stage_files_delete.da
 # Relevant only if HAS_SCRATCH=1
 SCRATCH_BASE="$WORKFLOW_ROOT/cromwell-workdir/cromwell-executions/$CWL_FILE"
 DEST_BASE="$STORAGE_ROOT/cromwell-workdir/cromwell-executions/$CWL_FILE"
-
-# These parameters used when finding data in BamMap
-# should not be needed since run_list being provided
-#ES="WXS"                            # experimental strategy
-
-# This isn't currently used when creating RUN_LIST, but it could be...
-# # TUMOR_ST is normally "tumor", but will be "tissue_normal" for Normal Adjacent Normal Adjacent analyses
-# TUMOR_ST="tumor"                    # Sample type for tumor BAM, for BAMMAP matching
-# # TUMOR_ST="tissue_normal"            # Sample type for Normal Adjacent analyses
-# NORMAL_ST='blood_normal'            # Sample type for normal BAM, for BAMMAP matching.  Default 'blood_normal'
 
 # Output of cromwell config creation step
 CONFIG_FILE="dat/cromwell-config-db.dat"

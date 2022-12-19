@@ -25,25 +25,26 @@ cd ..
 PARAMS="Project.config.sh"
 source $PARAMS
 
-#RL9="dat/WGS_CNV_Somatic.run_list.tsv"
-RL9=$1
-shift 1
+#RL9=$1
+#shift 1
+#
+#if [ -z $RL9 ]; then
+#    >&2 echo ERROR: RL9 parameter not passed
+#    exit 1
+#fi
+#if [ -z $RUN_LIST ]; then
+#    >&2 echo ERROR: RUN_LIST parameter not defined in $PARAMS
+#    exit 1
+#fi
+#if [ ! -e $RL9 ]; then
+#    >&2 echo ERROR: RL9 $RL9 not found
+#    exit 1
+#fi
 
-if [ -z $RL9 ]; then
-    >&2 echo ERROR: RL9 parameter not passed
-    exit 1
-fi
-if [ -z $RUN_LIST ]; then
-    >&2 echo ERROR: RUN_LIST parameter not defined in $PARAMS
-    exit 1
-fi
-if [ ! -e $RL9 ]; then
-    >&2 echo ERROR: RL9 $RL9 not found
-    exit 1
-fi
+#tail -n +2 $RL9 | cut -f 2,3,6,9 > $RUN_LIST
+#>&2 echo Written to $RUN_LIST
 
-tail -n +2 $RL9 | cut -f 2,3,6,9 > $RUN_LIST
->&2 echo Written to $RUN_LIST
+# dat/RUN_LIST.dat is already created
 
 >&2 echo Writing YAML files
 CMD="bash src/runplan -P $PARAMS -p $PARAM_SCRIPT -U $RUN_LIST -Y $YAML_TEMPLATE $@ "
