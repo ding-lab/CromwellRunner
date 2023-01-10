@@ -1,3 +1,6 @@
+Two types of workflows are supported: those where a list of cases is provided and TinDaisy is to figure out tumor / normal pairing,
+or where a run list is provided, which lists all input pairs for each run explicitly.
+
 # Case-list workflow
 Typical workflow for creating YAML files based on list of cases
 
@@ -33,6 +36,12 @@ To be compatible with YAML creation, require the following columns (RUNLIST4 for
     datafile1_uuid
     datafile2_uuid
 
-This is done with step 20.  Note that the 9-column format Run list must be passed as an argument
+This is done with step 20.  Note that the 9-column format Run list must be passed as an argument.  The path to the data file
+is relative to the parent directory (fix this).
 
 Also, require that BamMap v3 format is available
+
+Example:
+```
+bash 20_make_yaml.sh dat/A_canonical_run_list.dat
+```

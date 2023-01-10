@@ -2,6 +2,8 @@
 # System config
 # Compute1 system with Cromwell output to scratch volume
 # mammoth Cromwell DB server
+# TinDaisy v2.6.2
+# Used for both CPTAC3 and GDAN analyses
 ###############################################################################################
 
 WORKFLOW="TinDaisy"
@@ -28,7 +30,14 @@ CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.compute1.ma
 # For moving data from scratch to storage upon completion
 # This is analogous to WORKFLOW_ROOT
 STORAGE_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"
-CATALOG_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog"
+
+# CatalogRoot will differ for GDAN vs. CPTAC3. GDAN also requires a project name, e.g., MILD
+# CPTAC3
+#CATALOG_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog"
+
+# GDAN
+PROJECT="MILD"
+CATALOG_ROOT="/cache1/fs1/home1/Active/home/m.wyczalkowski/Projects/GDAN/GDAN.catalog"
 
 # Path to BamMap, which is a file which defines sequence data path and other metadata
 # BamMap v2 format is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
@@ -41,8 +50,8 @@ CATALOG_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog
 #CATALOG="$CATALOG_ROOT/CPTAC3.Catalog.dat"
 
 # Catalog v3
-BAMMAP="$CATALOG_ROOT/Catalog3/storage1.BamMap3.tsv"
-CATALOG="$CATALOG_ROOT/Catalog3/CPTAC3.Catalog3.tsv"
+BAMMAP="$CATALOG_ROOT/Catalog3/WUSTL-BamMap/MILD.BamMap3.tsv"	# future GDAN downloads will prob be in same BamMap
+CATALOG="$CATALOG_ROOT/Catalog3/$PROJECT.Catalog3.tsv"
 
 # Assume that all references are based here
 REF_ROOT="/storage1/fs1/dinglab/Active/Resources/References"
@@ -98,7 +107,7 @@ $HOME_MAP \
 # * PARAM_ROOT  -- base directory of various TinDaisy parameter files
 ###############################################################################################
 
-# This path below is for CPTAC3-standard GRCh38 reference
+# This path below is for CPTAC3-standard GRCh38 reference (also used for GDAN)
 REF_PATH="$REF_ROOT/GRCh38.d1.vd1/GRCh38.d1.vd1.fa"
 
 # VEP Cache is used for VEP annotation and vcf_2_maf.

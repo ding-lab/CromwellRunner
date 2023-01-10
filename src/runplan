@@ -203,6 +203,9 @@ init_yaml
 
 for L in $RUN_NAMES; do
     RUN_NAME=$(echo "$L" | cut -f 1)
+    if [ $RUN_NAME == "run_name" ]; then
+        continue
+    fi
 
     >&2 echo Processing $RUN_NAME 
 
@@ -211,7 +214,11 @@ for L in $RUN_NAMES; do
     else
         YAML_FN="-"
     fi
-    make_yaml $RUN_NAME $YAML_FN
+    CMD="make_yaml $RUN_NAME $YAML_FN"
+    echo Running: $CMD
+    eval $CMD
+    echo Complete
+
 
     # Now do a sanity check on written YAML files - make sure all files listed in it exist
     if [ $YAMLD != "-" ]; then
