@@ -191,26 +191,22 @@ function get_BAM {
 # TODO: allow aliquot names to be obtained even if Catalog file does not exist
 #  An option is pass a fake catalog file with two columns, UUID and Aliquot, and 
 #  check here how many columns the catalog file has.
+
+# Updating to REST catalog format
+#     1  dataset_name
+#     2  case
+#     3  sample_type
+#     4  data_format
+#     5  experimental_strategy
+#     6  preservation_method
+#     7  aliquot
+#     8  file_name
+#     9  file_size
+#    10  uuid
+#    11  md5sum
 function get_specimen_name {
     UUID=$1
     CATALOG=$2
-
-# Catalog3 columns
-#     1  dataset_name
-#     2  case
-#     3  disease
-#     4  experimental_strategy
-#     5  sample_type
-#     6  specimen_name
-#     7  filename
-#     8  filesize
-#     9  data_format
-#    10  data_variety
-#    11  alignment
-#    12  project
-#    13  uuid
-#    14  md5
-#    15  metadata
 
     LINE_A=$(grep $UUID $CATALOG)
     if [ -z "$LINE_A" ]; then
@@ -220,7 +216,7 @@ function get_specimen_name {
         >&2 echo ERROR: UUID $UUID has multiple matches in $CATALOG
         exit 1
     fi
-    ALIQUOT=$(echo "$LINE_A" | cut -f 6)
+    ALIQUOT=$(echo "$LINE_A" | cut -f 7)
     printf "$ALIQUOT"
 }
 
