@@ -10,5 +10,5 @@ reference:
   path: REF_PATH
 
 # This generates BAMs on the order of 50Mb
-generateEvidenceBam: true
+generateEvidenceBam: false
 #dryrun: false

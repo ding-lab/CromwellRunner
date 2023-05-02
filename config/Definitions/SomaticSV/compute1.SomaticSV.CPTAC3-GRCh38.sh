@@ -27,19 +27,24 @@ CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.compute1.ma
 # For moving data from scratch to storage upon completion
 # This is analogous to WORKFLOW_ROOT
 STORAGE_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"
-CATALOG_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog"
 
-# Path to BamMap, which is a file which defines sequence data path and other metadata
-# BamMap v2 format is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
-# Newer v3 format is here: https://docs.google.com/document/d/1uSgle8jiIx9EnDFf_XHV3fWYKFElszNLkmGlht_CQGE/edit
+# CatalogRoot will differ for GDAN vs. CPTAC3. GDAN also requires a project name, e.g., MILD
+# CPTAC3
+#CATALOG_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog"
 
-# Catalog v2
-#BAMMAP="$CATALOG_ROOT/BamMap/storage1.BamMap.dat"
-#CATALOG="$CATALOG_ROOT/CPTAC3.Catalog.dat"
+# GDAN
+PROJECT="CTSP_DLBCL"
+CATALOG_ROOT="/home/m.wyczalkowski/Projects/GDAN/GDAN.catalog"
 
-# Catalog v3
-BAMMAP="$CATALOG_ROOT/Catalog3/storage1.BamMap3.tsv"
-CATALOG="$CATALOG_ROOT/Catalog3/CPTAC3.Catalog3.tsv"
+# Path to BamMap and Catalog, which define sequence data path and other metadata
+# BamMap v3 format defined here: https://docs.google.com/document/d/1uSgle8jiIx9EnDFf_XHV3fWYKFElszNLkmGlht_CQGE/edit
+# Catalog format has changed with the REST catalog format
+#CATALOG="$CATALOG_ROOT/Catalog3/DLBCL.Catalog3.tsv"
+
+# Experimental catalog, atypical name
+CATALOG="$CATALOG_ROOT/Catalog3/DLBCL.GDC_REST.20230409-AWG.tsv"
+
+BAMMAP="$CATALOG_ROOT/Catalog3/WUSTL-BamMap/$PROJECT.BamMap3.tsv"
 
 # Assume that all references are based here
 REF_ROOT="/storage1/fs1/dinglab/Active/Resources/References"
@@ -111,13 +116,6 @@ PARAM_SCRIPT="config/Scripts/get_pipeline_params.SomaticSV.sh"
 # Relevant only if HAS_SCRATCH=1
 SCRATCH_BASE="$WORKFLOW_ROOT/cromwell-workdir/cromwell-executions/$CWL_FILE"
 DEST_BASE="$STORAGE_ROOT/cromwell-workdir/cromwell-executions/$CWL_FILE"
-
-# These parameters used when finding data in BamMap
-# should not be needed since run_list being provided
-#ES="WGS"                            # experimental strategy
-
-#TUMOR_ST="tumor"                    # Sample type for tumor BAM, for BAMMAP matching
-#NORMAL_ST='blood_normal'            # Sample type for normal BAM, for BAMMAP matching.  Default 'blood_normal'
 
 # Output of cromwell config creation step
 CONFIG_FILE="dat/cromwell-config-db.dat"
