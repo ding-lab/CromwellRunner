@@ -10,7 +10,6 @@ Usage: summarize_runs.sh [options] [RUN_NAME1 [ RUN_NAME2 ... ]]
 Options:
 -h: print usage information
 -1: Quit after evaluating one case
--P PARAMS: parameters file which holds varibles for substution in template.  Not read by this script but passed to PARAMS_SCRIPT
 -g: Issue warnings rather than quitting for testing
 -s SUMMARY_OUT: output analysis summary file for task `summary`.  If '-', write to STDOUT
 -c CROMWELL_QUERY: explicit path to cromwell query utility `cq`.  Default "cq" 
@@ -27,7 +26,7 @@ If RUN_NAME1 is - then read RUN_NAME from STDIN.  If RUN_NAME1 is not defined, r
 
 Restarting of runs is supported by making available RESTART_D variable in YAML
 template, which provides path to root directory of prior run.
-RESTART_D="RESTART_ROOT/UUID", with RESTART_ROOT defined in PARAMS (mandatory),
+RESTART_D="RESTART_ROOT/UUID", with RESTART_ROOT defined in PARAMS (?) 
 and UUID obtained from RESTART_MAP file (TSV with CASE and UUID, `cq | cut -f 1-2` will work)
 This is not currently implemented
 
@@ -39,11 +38,11 @@ source src/cromwell_utils.sh
 SCRIPT=$(basename $0)
 
 SUMMARY_OUT="./dat/analysis_summary.dat"
-PARAMS="Project.config.sh"
+#PARAMS="Project.config.sh"
 CROMWELL_QUERY="bash src/cq"
 TUMOR_NORMAL=1
 
-while getopts ":h1P:gs:c:U:GB:C:" opt; do
+while getopts ":h1gs:c:U:GB:C:" opt; do
   case $opt in
     h)  
       echo "$USAGE"
@@ -52,9 +51,9 @@ while getopts ":h1P:gs:c:U:GB:C:" opt; do
     1)  
       JUSTONE=1
       ;;
-    P)  
-      PARAMS="$OPTARG"
-      ;;
+#    P)  
+#      PARAMS="$OPTARG"
+#      ;;
     g) 
       ONLYWARN=1
       ;;
@@ -108,6 +107,7 @@ function init_summary {
         >&2 echo "$USAGE"
         exit 1
     fi
+>&2 echo DEBUG - confirming RUN_LIST $RUN_LIST
     confirm $RUN_LIST $ONLYWARN
 
     if [ -z $BAM_MAP ]; then
@@ -115,6 +115,7 @@ function init_summary {
         >&2 echo "$USAGE"
         exit 1
     fi
+>&2 echo DEBUG - confirming BAM_MAP $BAM_MAP
     confirm $BAM_MAP $ONLYWARN
 
     if [ -z $CATALOG ]; then
@@ -122,6 +123,7 @@ function init_summary {
         >&2 echo "$USAGE"
         exit 1
     fi
+>&2 echo DEBUG - confirming $CATALOG
     confirm $CATALOG $ONLYWARN
 
 # Summary prep and header written
@@ -157,9 +159,9 @@ function init_summary {
 function get_dataset_name {
     UUID=$1
 
-    SN=$(awk -v uuid=$UUID 'BEGIN{FS="\t";OFS="\t"}{if ($13 == uuid) print $1}' $CATALOG)
+    SN=$(awk -v uuid=$UUID 'BEGIN{FS="\t";OFS="\t"}{if ($10== uuid) print $1}' $CATALOG)
     if [ -z "$SN" ]; then
-        >&2 echo ERROR : UUID $UUID not found in $BAM_MAP
+        >&2 echo ERROR : UUID $UUID not found in $CATALOG
         exit 1
     fi
     if [ $(echo "$SN" | wc -l) != "1" ]; then
@@ -169,7 +171,9 @@ function get_dataset_name {
     echo $SN
 }
 
+
 # given a UUID, return case and disease based on lookup in CATALOG
+# UPDATE - REST Catalog does not have disease
 # Return multiple values based on https://stackoverflow.com/questions/2488715/idioms-for-returning-multiple-values-in-shell-scripting
 #get_vars () {
 #  #...
@@ -177,12 +181,13 @@ function get_dataset_name {
 #}
 #
 #read var1 var2 < <(get_vars)
-function get_sample_case_disease {
+#function get_sample_case_disease {
+function get_sample_case {
     UUID=$1
 
-    CD=$(awk -v uuid=$UUID 'BEGIN{FS="\t";OFS="\t"}{if ($13 == uuid) print $2,$3}' $CATALOG)
+    CD=$(awk -v uuid=$UUID 'BEGIN{FS="\t";OFS="\t"}{if ($10 == uuid) print $2}' $CATALOG)
     if [ -z "$CD" ]; then
-        >&2 echo ERROR : UUID $UUID not found in $BAM_MAP
+        >&2 echo ERROR : UUID $UUID not found in $CATALOG
         exit 1
     fi
     if [ $(echo "$CD" | wc -l) != "1" ]; then
@@ -203,11 +208,15 @@ function make_summary {
         TUMOR_SN=$(get_dataset_name $TUMOR_UUID)
         NORMAL_UUID=$(echo "$SARGS" | cut -f 4)
         NORMAL_SN=$(get_dataset_name $NORMAL_UUID)
-        read CASE DIS < <(get_sample_case_disease $TUMOR_UUID)
+        #read CASE DIS < <(get_sample_case_disease $TUMOR_UUID)
+        CASE=$(get_sample_case $TUMOR_UUID)
+        DIS="unknown"
     else
         SAMPLE_UUID=$(echo "$SARGS" | cut -f 3)
         SAMPLE_SN=$(get_dataset_name $SAMPLE_UUID)
-        read CASE DIS < <(get_sample_case_disease $SAMPLE_UUID)
+        CASE=$(get_sample_case $TUMOR_UUID)
+        DIS="unknown"
+        #read CASE DIS < <(get_sample_case_disease $SAMPLE_UUID)
     fi
 
     # Evaluate only runs which have status Succeeded
@@ -276,6 +285,8 @@ elif [ "$1" == "-" ] ; then
 else
     RUN_NAMES="$@"
 fi
+
+>&2 echo DEBUG - starting
 
 init_summary
 

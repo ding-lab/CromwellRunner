@@ -1,39 +1,48 @@
 ###############################################################################################
 # System config based on : compute1.SomaticSV.config.sh
 # Compute1 system with Cromwell output to scratch volume
+# mammoth Cromwell DB server
 ###############################################################################################
 
 WORKFLOW="SomaticSV"
 SYSTEM="compute1"  
 HAS_SCRATCH=1		# 1 if data needs to be copied from scratch to storage at end of batch, otherwise 0
 LSF_CONF="/opt/ibm/lsfsuite/lsf/conf/lsf.conf"
-LSF_GROUP="/m.wyczalkowski/cromwell-runner2" # This should be changed for every user
+LSF_GROUP="/m.wyczalkowski/cromwell_runner-SomaticSV"
 LSFQ="dinglab"
 COMPUTE_GROUP="compute-dinglab"
 LSF_ARGS="-B \"-g $LSF_GROUP -G $COMPUTE_GROUP \" -M -q $LSFQ"
 
 # This is in CromwellRunner container
-CROMWELL_JAR="/usr/local/cromwell/cromwell-47.jar"
+# CROMWELL_JAR="/usr/local/cromwell/cromwell-47.jar" # Used for MGI server
+CROMWELL_JAR="/app/cromwell-78-38cd360.jar"          # used for mammoth
 
-# Workflow root - where Cromwell output goes.  This value replaces text WORKFLOW_ROOT in CONFIG_TEMPLATE,
-# and is written to CONFIG_FILE
-#WORKFLOW_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"
-
-# Writing to scratch
+# Workflow root - where Cromwell output goes.  Writing to scratch1
 WORKFLOW_ROOT="/scratch1/fs1/dinglab/m.wyczalkowski/cromwell-data"
 # This is template for cromwell run
-CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.compute1.template.dat"
-# this is template for cromwell server
-CONFIG_SERVER_TEMPLATE="config/Templates/cromwell-config/server-cromwell-config.compute1.dat"
+CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.compute1.mammoth_server.template.dat"
+## this is template for cromwell server, used only for MGI-based server
+#CONFIG_SERVER_TEMPLATE="config/Templates/cromwell-config/server-cromwell-config.compute1.MGI_server.dat"
 
 # For moving data from scratch to storage upon completion
 # This is analogous to WORKFLOW_ROOT
 STORAGE_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"
 
-# Path to BamMap, which is a file which defines sequence data path and other metadata
-# BamMap format is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
-CATALOG="/cache1/fs1/home1/Active/home/m.wyczalkowski/Projects/GDAN/GDAN.catalog/Catalog3/DLBCL.Catalog3.tsv"
-BAMMAP="/cache1/fs1/home1/Active/home/m.wyczalkowski/Projects/GDAN/GDAN.catalog/Catalog3/DLBCL.BamMap3.tsv"
+# CatalogRoot will differ for GDAN vs. CPTAC3. GDAN also requires a project name, e.g., MILD
+# CPTAC3
+#CATALOG_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog"
+
+# GDAN
+PROJECT="HCMI"
+CATALOG_ROOT="/home/m.wyczalkowski/Projects/GDAN/GDAN.catalog"
+
+# Path to BamMap and Catalog, which define sequence data path and other metadata
+# BamMap v3 format defined here: https://docs.google.com/document/d/1uSgle8jiIx9EnDFf_XHV3fWYKFElszNLkmGlht_CQGE/edit
+# Catalog format has changed with the REST catalog format
+CATALOG="$CATALOG_ROOT/Catalog3/${PROJECT}.Catalog-REST.tsv"
+
+
+BAMMAP="$CATALOG_ROOT/Catalog3/WUSTL-BamMap/$PROJECT.BamMap3.tsv"
 
 # Assume that all references are based here
 REF_ROOT="/storage1/fs1/dinglab/Active/Resources/References"
@@ -43,7 +52,7 @@ REF_ROOT="/storage1/fs1/dinglab/Active/Resources/References"
 # Use _C for arguments to scripts
 # We are making the assumption that the workflow project directory is in ./Workflow directory
 PWD=$(pwd)
-CWL_ROOT_H_LOC="./Workflow/SomaticSV"
+CWL_ROOT_H_LOC="$PWD/Workflow/SomaticSV"
 CWL_ROOT_H=$CWL_ROOT_H_LOC
 CWL_ROOT_C="/usr/local/SomaticSV"
 
@@ -89,7 +98,8 @@ REF_NAME="hg38"                     # Reference, as used when matching to BAMMAP
 #   CWL_ROOT
 #   WORKFLOW_ROOT
 
-CWL="$CWL_ROOT_C/cwl/SomaticSV.cwl" # Note, this is running v1.2 of pipeline.  Does not have tumor-only support
+CWL_FILE="SomaticSV.cwl" # Note, this is running v1.2 of pipeline.  Does not have tumor-only support
+CWL="$CWL_ROOT_C/cwl/$CWL_FILE" 
 
 # template used for generating YAML files
 YAML_TEMPLATE="config/Templates/YAML/SomaticSV.template.yaml"
@@ -97,21 +107,16 @@ YAML_TEMPLATE="config/Templates/YAML/SomaticSV.template.yaml"
 # pipeline-specific script to obtain parameters to fill in YAML file, get_pipeline_params.XXX.sh
 PARAM_SCRIPT="config/Scripts/get_pipeline_params.SomaticSV.sh"
 
-# this is specific to workflows with stagd BAMs to delete them. Not currently used in SomaticSV
+# this is specific to workflows with staged BAMs to delete them. Not currently used in SomaticSV
 # WORKFLOW_RUN_ARGS="-P config/Templates/prune_list/SomaticSV.stage_files_delete.dat"
 
 # For moving data from scratch to final storage upon completion
 # Relevant only if HAS_SCRATCH=1
-SCRATCH_BASE="$WORKFLOW_ROOT/cromwell-workdir/cromwell-executions/SomaticSV.cwl"
-DEST_BASE="$STORAGE_ROOT/cromwell-workdir/cromwell-executions/SomaticSV.cwl"
-
-
-# These parameters used when finding data in BamMap
-ES="WGS"                            # experimental strategy
+SCRATCH_BASE="$WORKFLOW_ROOT/cromwell-workdir/cromwell-executions/$CWL_FILE"
+DEST_BASE="$STORAGE_ROOT/cromwell-workdir/cromwell-executions/$CWL_FILE"
 
 # Output of cromwell config creation step
 CONFIG_FILE="dat/cromwell-config-db.dat"
-CONFIG_SERVER_FILE="dat/cromwell-server-config-db.dat"
 
 # RESTART_ROOT used when restarting
 #RESTART_ROOT="$WORKFLOW_ROOT/cromwell-workdir/cromwell-executions/tindaisy.cwl"

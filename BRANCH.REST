@@ -1,0 +1,5 @@
+Branch associated with REST-based workflow.
+
+Main difference is that REST catalogs don't have a disease column.  
+
+This may introduce backward incompatibilities with CPTAC3 workflows, so moving to new branch for now
