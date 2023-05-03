@@ -2,9 +2,11 @@
 # Project config
 #
 
-PROJECT="29.CPTAC3_185"
+PROJECT="20.DLBCL_84"
 
 # Master configuration file
-MASTER_CONFIG="config/Definitions/TinDaisy/compute1.TinDaisy2.6.2-CPTAC3-WES-GRCh38.sh"
+# config/Definitions/SomaticSV/compute1.SomaticSV.GDAN-GRCh38.sh is currently the latest model
+MASTER_CONFIG="config/Definitions/SomaticSV/compute1.SomaticSV.GDAN-GRCh38.sh"
+               
 
 source $MASTER_CONFIG

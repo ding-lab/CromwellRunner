@@ -4,6 +4,7 @@
 # mammoth Cromwell DB server
 ###############################################################################################
 
+PROJECT="CTSP_DLBCL" # GDAN
 WORKFLOW="SomaticSV"
 SYSTEM="compute1"  
 HAS_SCRATCH=1		# 1 if data needs to be copied from scratch to storage at end of batch, otherwise 0
@@ -32,9 +33,10 @@ STORAGE_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"
 # CPTAC3
 #CATALOG_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog"
 
-# GDAN
-PROJECT="HCMI"
-CATALOG_ROOT="/home/m.wyczalkowski/Projects/GDAN/GDAN.catalog"
+
+# Path weirdness to /home 
+#CATALOG_ROOT="/home/m.wyczalkowski/Projects/GDAN/GDAN.catalog"
+CATALOG_ROOT="/cache1/fs1/home1/Active/home/m.wyczalkowski/Projects/GDAN/GDAN.catalog"
 
 # Path to BamMap and Catalog, which define sequence data path and other metadata
 # BamMap v3 format defined here: https://docs.google.com/document/d/1uSgle8jiIx9EnDFf_XHV3fWYKFElszNLkmGlht_CQGE/edit

@@ -15,12 +15,22 @@ AS_OUT="dat/analysis_summary.stored.dat"
 
 CMD="bash src/store_results.sh $@ -b $SCRATCH_BASE -B $DEST_BASE -o $AS_OUT $AS"
 >&2 echo Running: $CMD
-eval "$CMD"
 
-rc=$?
-if [[ $rc != 0 ]]; then
-    >&2 echo Fatal error $rc: $!.  Exiting.
-    exit $rc;
+read -p "Proceed? (y/n) " -n 1 -r
+echo    # (optional) move to a new line
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+    eval "$CMD"
+
+    rc=$?
+    if [[ $rc != 0 ]]; then
+         >&2 echo Fatal error $rc: $!.  Exiting.
+        exit $rc;
+    fi
+else
+    >&2 echo Quitting
 fi
+
+
 
 
