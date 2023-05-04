@@ -2,11 +2,9 @@
 # Project config
 #
 
-PROJECT="20.DLBCL_84"
+PROJECT="34.DLBCL_64"
 
 # Master configuration file
-# config/Definitions/SomaticSV/compute1.SomaticSV.GDAN-GRCh38.sh is currently the latest model
-MASTER_CONFIG="config/Definitions/SomaticSV/compute1.SomaticSV.GDAN-GRCh38.sh"
-               
+MASTER_CONFIG="config/Definitions/TinDaisy/compute1.TinDaisy2.6.2-GDAN-WGS-GRCh38.sh"
 
 source $MASTER_CONFIG

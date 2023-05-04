@@ -6,6 +6,7 @@
 # Used for both CPTAC3 and GDAN analyses
 ###############################################################################################
 
+PROJECT="CTSP_DLBCL"
 WORKFLOW="TinDaisy"
 SYSTEM="compute1"
 HAS_SCRATCH=1		# 1 if data needs to be copied from scratch to storage at end of batch, otherwise 0
@@ -23,8 +24,6 @@ CROMWELL_JAR="/app/cromwell-78-38cd360.jar"          # used for mammoth
 WORKFLOW_ROOT="/scratch1/fs1/dinglab/m.wyczalkowski/cromwell-data"
 # This is cromwell configuration file template 
 CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.compute1.mammoth_server.template.dat"
-## this is template for cromwell server, used only for MGI-based server
-#CONFIG_SERVER_TEMPLATE="config/Templates/cromwell-config/server-cromwell-config.compute1.MGI_server.dat"
 
 # For moving data from scratch to storage upon completion
 # This is analogous to WORKFLOW_ROOT
@@ -34,17 +33,16 @@ STORAGE_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"
 # CPTAC3
 #CATALOG_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog"
 
-# GDAN
-PROJECT="CTSP_DLBCL"
+
+# Path weirdness to /home 
+#CATALOG_ROOT="/home/m.wyczalkowski/Projects/GDAN/GDAN.catalog"
 CATALOG_ROOT="/cache1/fs1/home1/Active/home/m.wyczalkowski/Projects/GDAN/GDAN.catalog"
 
 # Path to BamMap and Catalog, which define sequence data path and other metadata
 # BamMap v3 format defined here: https://docs.google.com/document/d/1uSgle8jiIx9EnDFf_XHV3fWYKFElszNLkmGlht_CQGE/edit
 # Catalog format has changed with the REST catalog format
-#CATALOG="$CATALOG_ROOT/Catalog3/DLBCL.Catalog3.tsv"
+CATALOG="$CATALOG_ROOT/Catalog3/${PROJECT}.Catalog-REST.tsv"
 
-# Experimental catalog, atypical name
-CATALOG="$CATALOG_ROOT/Catalog3/DLBCL.GDC_REST.20230409-AWG.tsv"
 
 BAMMAP="$CATALOG_ROOT/Catalog3/WUSTL-BamMap/$PROJECT.BamMap3.tsv"
 
@@ -57,7 +55,6 @@ REF_ROOT="/storage1/fs1/dinglab/Active/Resources/References"
 # We are making the assumption that the workflow project directory is in ./Workflow directory
 PWD=$(pwd)
 CWL_ROOT_H_LOC="$PWD/Workflow/TinDaisy"
-# CWL_ROOT_H=$(readlink -f $CWL_ROOT_H_LOC)
 CWL_ROOT_H=$CWL_ROOT_H_LOC
 CWL_ROOT_C="/usr/local/TinDaisy"
 

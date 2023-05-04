@@ -175,6 +175,10 @@ function make_yaml {
 
 
     if [ $YAML_FN != "-" ]; then
+        if [ -e $YAML_FN ]; then
+            >&2 echo ERROR: YAML file $YAML_FN exists.  Confirm that not duplicate run name and delete if necessary
+            exit 1
+        fi
         OUT_ARG="-o $YAML_FN"
     else
         OUT_ARG=""
@@ -201,6 +205,18 @@ fi
 
 init_yaml
 
+# make sure that run names are unique.  There should be no duplicates in column 1
+N=$(echo $RUN_NAMES | tr ' ' '\n' | wc -l)
+NU=$(echo $RUN_NAMES | tr ' ' '\n' | sort -u | wc -l)
+
+# Validate this on real data
+if [ "$N" != "$NU" ]; then
+    >&2 echo ERROR: duplicate run names
+    exit 1
+fi
+
+
+
 for L in $RUN_NAMES; do
     RUN_NAME=$(echo "$L" | cut -f 1)
     if [ $RUN_NAME == "run_name" ]; then
@@ -216,7 +232,7 @@ for L in $RUN_NAMES; do
     fi
     CMD="make_yaml $RUN_NAME $YAML_FN"
     echo Running: $CMD
-    eval $CMD
+    run_cmd $CMD
     echo Complete
 
 

@@ -6,7 +6,7 @@
 
 PROJECT="CTSP_DLBCL" # GDAN
 WORKFLOW="SomaticSV"
-SYSTEM="compute1"  
+SYSTEM="compute1"
 HAS_SCRATCH=1		# 1 if data needs to be copied from scratch to storage at end of batch, otherwise 0
 LSF_CONF="/opt/ibm/lsfsuite/lsf/conf/lsf.conf"
 LSF_GROUP="/m.wyczalkowski/cromwell_runner-SomaticSV"
@@ -22,8 +22,6 @@ CROMWELL_JAR="/app/cromwell-78-38cd360.jar"          # used for mammoth
 WORKFLOW_ROOT="/scratch1/fs1/dinglab/m.wyczalkowski/cromwell-data"
 # This is template for cromwell run
 CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.compute1.mammoth_server.template.dat"
-## this is template for cromwell server, used only for MGI-based server
-#CONFIG_SERVER_TEMPLATE="config/Templates/cromwell-config/server-cromwell-config.compute1.MGI_server.dat"
 
 # For moving data from scratch to storage upon completion
 # This is analogous to WORKFLOW_ROOT
