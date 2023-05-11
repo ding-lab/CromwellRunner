@@ -231,9 +231,10 @@ for L in $RUN_NAMES; do
         YAML_FN="-"
     fi
     CMD="make_yaml $RUN_NAME $YAML_FN"
-    echo Running: $CMD
-    run_cmd $CMD
-    echo Complete
+    >&2 echo Running: $CMD
+#    run_cmd $CMD 0
+    eval $CMD
+    >&2 echo Complete
 
 
     # Now do a sanity check on written YAML files - make sure all files listed in it exist

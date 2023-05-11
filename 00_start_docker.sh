@@ -13,8 +13,8 @@ START_DOCKERD="docker/WUDocker"
 IMAGE="mwyczalkowski/cromwell-runner:v78"  # mammoth server
 # IMAGE="mwyczalkowski/cromwell-runner"  # MGI server
 MEM=4  
-#ARG="-q dinglab-interactive -r"
-ARG="-q general-interactive "
+ARG="-q dinglab-interactive -r"
+#ARG="-q general-interactive -r "
 GROUP="-G compute-dinglab"
 
 # Common error - CWL directory does not exist
