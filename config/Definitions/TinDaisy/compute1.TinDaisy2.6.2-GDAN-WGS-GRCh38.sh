@@ -27,7 +27,8 @@ CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.compute1.ma
 
 # For moving data from scratch to storage upon completion
 # This is analogous to WORKFLOW_ROOT
-STORAGE_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"
+#STORAGE_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"
+STORAGE_ROOT="/storage1/fs1/dinglab/Active/Projects/m.wyczalkowski/cromwell-data"
 
 # CatalogRoot will differ for GDAN vs. CPTAC3. GDAN also requires a project name, e.g., MILD
 # CPTAC3

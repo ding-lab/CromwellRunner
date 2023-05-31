@@ -3,6 +3,7 @@
 # mammoth Cromwell DB server
 ###############################################################################################
 
+PROJECT="HCMI"
 WORKFLOW="SomaticCNV"
 SYSTEM="compute1"  
 HAS_SCRATCH=1		# 1 if data needs to be copied from scratch to storage at end of batch, otherwise 0
@@ -18,22 +19,22 @@ CROMWELL_JAR="/app/cromwell-78-38cd360.jar"          # used for mammoth
 
 # Workflow root - where Cromwell output goes.  Writing to scratch1
 WORKFLOW_ROOT="/scratch1/fs1/dinglab/m.wyczalkowski/cromwell-data"
-# This is template for cromwell run
+# This is cromwell configuration file template 
 CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.compute1.mammoth_server.template.dat"
-## this is template for cromwell server, used only for MGI-based server
-#CONFIG_SERVER_TEMPLATE="config/Templates/cromwell-config/server-cromwell-config.compute1.MGI_server.dat"
 
 # For moving data from scratch to storage upon completion
 # This is analogous to WORKFLOW_ROOT
-STORAGE_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"
+#STORAGE_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"
+STORAGE_ROOT="/storage1/fs1/dinglab/Active/Projects/m.wyczalkowski/cromwell-data"
 
 # CatalogRoot will differ for GDAN vs. CPTAC3. GDAN also requires a project name, e.g., MILD
 # CPTAC3
 #CATALOG_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Common/CPTAC3.catalog"
 
-# GDAN
-PROJECT="HCMI"
-CATALOG_ROOT="/home/m.wyczalkowski/Projects/GDAN/GDAN.catalog"
+
+# Path weirdness to /home 
+#CATALOG_ROOT="/home/m.wyczalkowski/Projects/GDAN/GDAN.catalog"
+CATALOG_ROOT="/cache1/fs1/home1/Active/home/m.wyczalkowski/Projects/GDAN/GDAN.catalog"
 
 # Path to BamMap and Catalog, which define sequence data path and other metadata
 # BamMap v3 format defined here: https://docs.google.com/document/d/1uSgle8jiIx9EnDFf_XHV3fWYKFElszNLkmGlht_CQGE/edit
@@ -41,7 +42,6 @@ CATALOG_ROOT="/home/m.wyczalkowski/Projects/GDAN/GDAN.catalog"
 CATALOG="$CATALOG_ROOT/Catalog3/${PROJECT}.Catalog-REST.tsv"
 
 BAMMAP="$CATALOG_ROOT/Catalog3/WUSTL-BamMap/$PROJECT.BamMap3.tsv"
-
 
 # Assume that all references are based here
 REF_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Analysis/WGS_CNV_Somatic/Datasets"
