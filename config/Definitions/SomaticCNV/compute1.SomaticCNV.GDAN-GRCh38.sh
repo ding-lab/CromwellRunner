@@ -87,9 +87,6 @@ $HOME_MAP \
 # /storage1/fs1/dinglab/Active/Projects/CPTAC3/Analysis/WGS_CNV_Somatic/Datasets/inputs/hg38/GRCh38.d1.vd1-per_chrom_fa.tar.gz
 REF_PATH="$REF_ROOT/inputs/hg38/GRCh38.d1.vd1-per_chrom_fa.tar.gz"
 
-REF_NAME="hg38"                     # Reference, as used when matching to BAMMAP
-
-
 ###############################################################################################
 # Workflow config
 ###############################################################################################

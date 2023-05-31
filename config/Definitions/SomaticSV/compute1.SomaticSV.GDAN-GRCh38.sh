@@ -4,7 +4,7 @@
 # mammoth Cromwell DB server
 ###############################################################################################
 
-PROJECT="CTSP_DLBCL" # GDAN
+PROJECT="HCMI" 
 WORKFLOW="SomaticSV"
 SYSTEM="compute1"
 HAS_SCRATCH=1		# 1 if data needs to be copied from scratch to storage at end of batch, otherwise 0
@@ -20,12 +20,13 @@ CROMWELL_JAR="/app/cromwell-78-38cd360.jar"          # used for mammoth
 
 # Workflow root - where Cromwell output goes.  Writing to scratch1
 WORKFLOW_ROOT="/scratch1/fs1/dinglab/m.wyczalkowski/cromwell-data"
-# This is template for cromwell run
+# This is cromwell configuration file template 
 CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.compute1.mammoth_server.template.dat"
 
 # For moving data from scratch to storage upon completion
 # This is analogous to WORKFLOW_ROOT
-STORAGE_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"
+#STORAGE_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"
+STORAGE_ROOT="/storage1/fs1/dinglab/Active/Projects/m.wyczalkowski/cromwell-data"
 
 # CatalogRoot will differ for GDAN vs. CPTAC3. GDAN also requires a project name, e.g., MILD
 # CPTAC3
@@ -40,7 +41,6 @@ CATALOG_ROOT="/cache1/fs1/home1/Active/home/m.wyczalkowski/Projects/GDAN/GDAN.ca
 # BamMap v3 format defined here: https://docs.google.com/document/d/1uSgle8jiIx9EnDFf_XHV3fWYKFElszNLkmGlht_CQGE/edit
 # Catalog format has changed with the REST catalog format
 CATALOG="$CATALOG_ROOT/Catalog3/${PROJECT}.Catalog-REST.tsv"
-
 
 BAMMAP="$CATALOG_ROOT/Catalog3/WUSTL-BamMap/$PROJECT.BamMap3.tsv"
 
@@ -86,9 +86,6 @@ $HOME_MAP \
 
 # This path below is for CPTAC3-standard GRCh38 reference
 REF_PATH="$REF_ROOT/GRCh38.d1.vd1/GRCh38.d1.vd1.fa"
-
-REF_NAME="hg38"                     # Reference, as used when matching to BAMMAP
-
 
 ###############################################################################################
 # Workflow config
