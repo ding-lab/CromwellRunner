@@ -4,7 +4,7 @@
 # mammoth Cromwell DB server
 ###############################################################################################
 
-PROJECT="HCMI" 
+GDAN_PROJECT="HCMI" 
 WORKFLOW="SomaticSV"
 SYSTEM="compute1"
 HAS_SCRATCH=1		# 1 if data needs to be copied from scratch to storage at end of batch, otherwise 0
@@ -40,9 +40,9 @@ CATALOG_ROOT="/cache1/fs1/home1/Active/home/m.wyczalkowski/Projects/GDAN/GDAN.ca
 # Path to BamMap and Catalog, which define sequence data path and other metadata
 # BamMap v3 format defined here: https://docs.google.com/document/d/1uSgle8jiIx9EnDFf_XHV3fWYKFElszNLkmGlht_CQGE/edit
 # Catalog format has changed with the REST catalog format
-CATALOG="$CATALOG_ROOT/Catalog3/${PROJECT}.Catalog-REST.tsv"
+CATALOG="$CATALOG_ROOT/Catalog3/${GDAN_PROJECT}.Catalog-REST.tsv"
 
-BAMMAP="$CATALOG_ROOT/Catalog3/WUSTL-BamMap/$PROJECT.BamMap3.tsv"
+BAMMAP="$CATALOG_ROOT/Catalog3/WUSTL-BamMap/${GDAN_PROJECT}.BamMap3.tsv"
 
 # Assume that all references are based here
 REF_ROOT="/storage1/fs1/dinglab/Active/Resources/References"

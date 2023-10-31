@@ -2,9 +2,9 @@
 # Project config
 #
 
-PROJECT="34.DLBCL_64"
+PROJECT="14.HCMI_224"
+GDAN_PROJECT="HCMI"
 
-# Master configuration file
-MASTER_CONFIG="config/Definitions/TinDaisy/compute1.TinDaisy2.6.2-GDAN-WGS-GRCh38.sh"
+MASTER_CONFIG="config/Definitions/SomaticCNV/compute1.SomaticCNV.GDAN-GRCh38.sh"
 
 source $MASTER_CONFIG
