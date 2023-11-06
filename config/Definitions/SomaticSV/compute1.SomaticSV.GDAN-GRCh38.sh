@@ -4,7 +4,7 @@
 # mammoth Cromwell DB server
 ###############################################################################################
 
-GDAN_PROJECT="HCMI" 
+#GDAN_PROJECT="HCMI" 
 WORKFLOW="SomaticSV"
 SYSTEM="compute1"
 HAS_SCRATCH=1		# 1 if data needs to be copied from scratch to storage at end of batch, otherwise 0
@@ -95,7 +95,7 @@ REF_PATH="$REF_ROOT/GRCh38.d1.vd1/GRCh38.d1.vd1.fa"
 #   CWL_ROOT
 #   WORKFLOW_ROOT
 
-CWL_FILE="SomaticSV.cwl" # Note, this is running v1.2 of pipeline.  Does not have tumor-only support
+CWL_FILE="somaticsv-1-3.cwl" 
 CWL="$CWL_ROOT_C/cwl/$CWL_FILE" 
 
 # template used for generating YAML files
