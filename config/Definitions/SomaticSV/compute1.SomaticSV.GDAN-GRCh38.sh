@@ -76,6 +76,7 @@ VOLUME_MAPPING=" \
 $CQ_ROOT_H:$CQ_ROOT_C \
 $CWL_ROOT_H:$CWL_ROOT_C \
 $HOME_MAP \
+/cache1/fs1/home1/Active/home/m.wyczalkowski/Projects \
 /scratch1/fs1/dinglab
 "
 
