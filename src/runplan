@@ -148,7 +148,7 @@ function init_yaml {
 }
 
 # Create YAML configuration file in three steps:
-# * get per-run parameters from RUN_LIST by matching by RUN_NAME
+# * get per-run parameters from RUN_LIST by matching by RUN_NAME to first column
 # * get key/value parameters by calling pipeline-specific PARAM_SCRIPT
 # * New - create RESTART_D with RESTART_UUID from by matching RUN_NAME to RESTART_MAP
 # * populate YAML_TEMPLATE by replacing "key" with "value" to generate YAML configuration file

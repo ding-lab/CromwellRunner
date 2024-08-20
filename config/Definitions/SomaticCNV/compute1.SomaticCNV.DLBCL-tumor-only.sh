@@ -8,31 +8,37 @@ SYSTEM="compute1"
 HAS_SCRATCH=1		# 1 if data needs to be copied from scratch to storage at end of batch, otherwise 0
 LSF_CONF="/opt/ibm/lsfsuite/lsf/conf/lsf.conf"
 LSF_GROUP="/m.wyczalkowski/cromwell-runner"
-#LSFQ="general"              # for MGI, queue is "research-hpc"
-LSFQ="dinglab"              # for MGI, queue is "research-hpc"
-LSF_ARGS="-B \"-g $LSF_GROUP\"  -M -q $LSFQ"
+LSFQ="dinglab"
+COMPUTE_GROUP="compute-dinglab"
+LSF_ARGS="-B \"-g $LSF_GROUP -G $COMPUTE_GROUP \" -M -q $LSFQ"
 
 # This is in CromwellRunner container
-CROMWELL_JAR="/usr/local/cromwell/cromwell-47.jar"
+CROMWELL_JAR="/app/cromwell-78-38cd360.jar"
 
-# Workflow root - where Cromwell output goes.  This value replaces text WORKFLOW_ROOT in CONFIG_TEMPLATE,
-# and is written to CONFIG_FILE
-#WORKFLOW_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"
-
-# Writing to scratch
+# Workflow root - where Cromwell output goes.  Writing to scratch1
 WORKFLOW_ROOT="/scratch1/fs1/dinglab/m.wyczalkowski/cromwell-data"
-# This is template for cromwell run
-CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.compute1.template.dat"
-# this is template for cromwell server
-CONFIG_SERVER_TEMPLATE="config/Templates/cromwell-config/server-cromwell-config.compute1.dat"
+# This is cromwell configuration file template 
+CONFIG_TEMPLATE="config/Templates/cromwell-config/cromwell-config-db.compute1.mammoth_server.template.dat"
 
 # For moving data from scratch to storage upon completion
 # This is analogous to WORKFLOW_ROOT
 STORAGE_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"
 
-# Path to BamMap, which is a file which defines sequence data path and other metadata
-# BamMap format is defined here: https://github.com/ding-lab/importGDC/blob/master/make_bam_map.sh
-BAMMAP="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Analysis/CromwellRunner/SomaticCNV/05.ATAC_346/dat/ATACseq.BamMap.storage1.tsv"
+# This doesn't really exist for AWS data.  
+# CatalogRoot will differ for GDAN vs. CPTAC3. GDAN also requires a project name, e.g., MILD
+# GDAN
+PROJECT="CTSP_DLBCL"
+CATALOG_ROOT="/cache1/fs1/home1/Active/home/m.wyczalkowski/Projects/GDAN/GDAN.catalog"
+
+# Path to BamMap and Catalog, which define sequence data path and other metadata
+# BamMap v3 format defined here: https://docs.google.com/document/d/1uSgle8jiIx9EnDFf_XHV3fWYKFElszNLkmGlht_CQGE/edit
+# Catalog format has changed with the REST catalog format
+#CATALOG="$CATALOG_ROOT/Catalog3/DLBCL.Catalog3.tsv"
+
+# The catalog and Bammap are one and the same in the current AWS manifest
+CATALOG="/home/m.wyczalkowski/Projects/GDAN/Work/20240718.DLBCL_Validation/dat/BamMap.DLBCL20.v1.dat"
+
+BAMMAP="/home/m.wyczalkowski/Projects/GDAN/Work/20240718.DLBCL_Validation/dat/BamMap.DLBCL20.v1.dat"
 
 # Assume that all references are based here
 REF_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Analysis/WGS_CNV_Somatic/Datasets"
@@ -40,9 +46,9 @@ REF_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Analysis/WGS_CNV_Somatic/
 # CWL_ROOT is needed for CWL.  It is the container path to where project is installed
 # This is also used in rungo to get git status of project for tracking purposes
 # Use _C for arguments to scripts
+# We are making the assumption that the workflow project directory is in ./Workflow directory
 PWD=$(pwd)
 CWL_ROOT_H_LOC="$PWD/Workflow/BICSEQ2.CWL"
-# CWL_ROOT_H=$(readlink -f $CWL_ROOT_H_LOC) # this is a problem on compute nodes
 CWL_ROOT_H=$CWL_ROOT_H_LOC
 CWL_ROOT_C="/usr/local/BICSEQ2.CWL"
 
@@ -52,7 +58,7 @@ CQ_ROOT_H="$PWD"
 CQ_ROOT_C="/usr/local/CromwellRunner"
 
 # Using common datalog file
-export DATALOG="/storage1/fs1/m.wyczalkowski/Active/cromwell-data/CromwellRunner/datalog.dat"
+export DATALOG="$WORKFLOW_ROOT/CromwellRunner/datalog.dat"
 
 # Mapping home directory to /home/m.wyczalkowski is convenient because it includes environment
 # definitions for interactive work.  All scripts should run without this mapping, however
@@ -89,32 +95,31 @@ REF_NAME="hg38"                     # Reference, as used when matching to BAMMAP
 #   CWL_ROOT
 #   WORKFLOW_ROOT
 
-CWL="$CWL_ROOT_C/cwl/workflows/bicseq2-cwl.case-control.cwl"
+CWL="$CWL_ROOT_C/cwl/workflows/bicseq2-cwl.case-only.cwl"
 
 # template used for generating YAML files
-YAML_TEMPLATE="config/Templates/YAML/SomaticCNV.template.yaml"
+# different in case of tumor-only
+YAML_TEMPLATE="config/Templates/YAML/SomaticCNV-case-only.template.yaml"
 
 # pipeline-specific script to obtain parameters to fill in YAML file, get_pipeline_params.XXX.sh
-PARAM_SCRIPT="config/Scripts/get_pipeline_params.SomaticCNV.sh"
+# this is different in the case of tumor-only
+PARAM_SCRIPT="config/Scripts/get_pipeline_params.SomaticCNV-case-only.sh"
 
 # this is specific to SomaticCNV workflow to delete large staged BAMs
 WORKFLOW_RUN_ARGS="-P config/Templates/prune_list/SomaticCNV.stage_files_delete.dat"
 
 # For moving data from scratch to final storage upon completion
 # Relevant only if HAS_SCRATCH=1
-SCRATCH_BASE="$WORKFLOW_ROOT/cromwell-workdir/cromwell-executions/bicseq2-cwl.case-control.cwl"
-DEST_BASE="$STORAGE_ROOT/cromwell-workdir/cromwell-executions/bicseq2-cwl.case-control.cwl"
+SCRATCH_BASE="$WORKFLOW_ROOT/cromwell-workdir/cromwell-executions/bicseq2-cwl.case-only.cwl"
+DEST_BASE="$STORAGE_ROOT/cromwell-workdir/cromwell-executions/bicseq2-cwl.case-only.cwl"
 
 
 # These parameters used when finding data in BamMap
-ES="WGS"                            # experimental strategy
+#ES="WGS"                            # experimental strategy
 
 # Output of cromwell config creation step
 CONFIG_FILE="dat/cromwell-config-db.dat"
-CONFIG_SERVER_FILE="dat/cromwell-server-config-db.dat"
 
-# RESTART_ROOT used when restarting
-#RESTART_ROOT="$WORKFLOW_ROOT/cromwell-workdir/cromwell-executions/bicseq2-cwl.case-control.cwl"
 
 # List of runs to analyze
 RUN_LIST="dat/RUN_LIST.dat"

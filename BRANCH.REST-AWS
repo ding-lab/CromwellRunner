@@ -1,0 +1,3 @@
+This branch is off REST (which should have been merged with master)
+It has changes required to run Somatic CNV in tumor-only mode using manifest files of AWS data, not
+a catalog or BamMap3 file
