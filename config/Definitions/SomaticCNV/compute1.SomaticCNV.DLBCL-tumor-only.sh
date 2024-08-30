@@ -37,8 +37,11 @@ CATALOG_ROOT="/cache1/fs1/home1/Active/home/m.wyczalkowski/Projects/GDAN/GDAN.ca
 
 # The catalog and Bammap are one and the same in the current AWS manifest
 CATALOG="/home/m.wyczalkowski/Projects/GDAN/Work/20240718.DLBCL_Validation/dat/BamMap.DLBCL20.v1.dat"
-
 BAMMAP="/home/m.wyczalkowski/Projects/GDAN/Work/20240718.DLBCL_Validation/dat/BamMap.DLBCL20.v1.dat"
+
+# Updated to make step 50 run
+CATALOG="/rdcw/fs2/home1/Active/home/m.wyczalkowski/Projects/GDAN/Work/20240718.DLBCL_Validation/dat/BamMap.DLBCL20.v1.dat"
+BAMMAP="/rdcw/fs2/home1/Active/home/m.wyczalkowski/Projects/GDAN/Work/20240718.DLBCL_Validation/dat/BamMap.DLBCL20.v1.dat"
 
 # Assume that all references are based here
 REF_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Analysis/WGS_CNV_Somatic/Datasets"
