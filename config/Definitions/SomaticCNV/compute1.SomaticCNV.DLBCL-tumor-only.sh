@@ -27,8 +27,8 @@ STORAGE_ROOT="/storage1/fs1/m.wyczalkowski/Active/cromwell-data"
 # This doesn't really exist for AWS data.  
 # CatalogRoot will differ for GDAN vs. CPTAC3. GDAN also requires a project name, e.g., MILD
 # GDAN
-PROJECT="CTSP_DLBCL"
-CATALOG_ROOT="/cache1/fs1/home1/Active/home/m.wyczalkowski/Projects/GDAN/GDAN.catalog"
+#PROJECT="CTSP_DLBCL"
+#CATALOG_ROOT="/cache1/fs1/home1/Active/home/m.wyczalkowski/Projects/GDAN/GDAN.catalog"
 
 # Path to BamMap and Catalog, which define sequence data path and other metadata
 # BamMap v3 format defined here: https://docs.google.com/document/d/1uSgle8jiIx9EnDFf_XHV3fWYKFElszNLkmGlht_CQGE/edit
@@ -36,12 +36,17 @@ CATALOG_ROOT="/cache1/fs1/home1/Active/home/m.wyczalkowski/Projects/GDAN/GDAN.ca
 #CATALOG="$CATALOG_ROOT/Catalog3/DLBCL.Catalog3.tsv"
 
 # The catalog and Bammap are one and the same in the current AWS manifest
-CATALOG="/home/m.wyczalkowski/Projects/GDAN/Work/20240718.DLBCL_Validation/dat/BamMap.DLBCL20.v1.dat"
-BAMMAP="/home/m.wyczalkowski/Projects/GDAN/Work/20240718.DLBCL_Validation/dat/BamMap.DLBCL20.v1.dat"
+#CATALOG="/home/m.wyczalkowski/Projects/GDAN/Work/20240913.DLBCL_ValidationB/dat/BamMap.DLBCL-cohortA.dat"
+#BAMMAP="/home/m.wyczalkowski/Projects/GDAN/Work/20240913.DLBCL_ValidationB/dat/BamMap.DLBCL-cohortA.dat"
+
+# for 60_, need to have the rdcw
+CATALOG="/rdcw/fs2/home1/Active/home/m.wyczalkowski/Projects/GDAN/Work/20240913.DLBCL_ValidationB/dat/BamMap.DLBCL-cohortA.dat"
+BAMMAP="/rdcw/fs2/home1/Active/home/m.wyczalkowski/Projects/GDAN/Work/20240913.DLBCL_ValidationB/dat/BamMap.DLBCL-cohortA.dat"
 
 # Updated to make step 50 run
-CATALOG="/rdcw/fs2/home1/Active/home/m.wyczalkowski/Projects/GDAN/Work/20240718.DLBCL_Validation/dat/BamMap.DLBCL20.v1.dat"
-BAMMAP="/rdcw/fs2/home1/Active/home/m.wyczalkowski/Projects/GDAN/Work/20240718.DLBCL_Validation/dat/BamMap.DLBCL20.v1.dat"
+#CATALOG="/rdcw/fs2/home1/Active/$CATALOG"
+#        /rdcw/fs2/home1/Active/home/m.wyczalkowski/Projects/GDAN/Work/20240913.DLBCL_ValidationB/dat/BamMap.DLBCL-cohortA.dat
+#BAMMAP="/rdcw/fs2/home1/Active/$BAMMAP"
 
 # Assume that all references are based here
 REF_ROOT="/storage1/fs1/dinglab/Active/Projects/CPTAC3/Analysis/WGS_CNV_Somatic/Datasets"
@@ -108,8 +113,9 @@ YAML_TEMPLATE="config/Templates/YAML/SomaticCNV-case-only.template.yaml"
 # this is different in the case of tumor-only
 PARAM_SCRIPT="config/Scripts/get_pipeline_params.SomaticCNV-case-only.sh"
 
-# this is specific to SomaticCNV workflow to delete large staged BAMs
-WORKFLOW_RUN_ARGS="-P config/Templates/prune_list/SomaticCNV.stage_files_delete.dat"
+# this is specific to SomaticCNV workflow to delete large staged BAMs.  Tumor-only has differently named files
+#WORKFLOW_RUN_ARGS="-P config/Templates/prune_list/SomaticCNV.stage_files_delete.dat".  Tumor-only has differently named files
+WORKFLOW_RUN_ARGS="-P config/Templates/prune_list/SomaticCNV-case-only.stage_files_delete.dat"
 
 # For moving data from scratch to final storage upon completion
 # Relevant only if HAS_SCRATCH=1

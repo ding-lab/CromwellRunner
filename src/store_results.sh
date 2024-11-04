@@ -71,7 +71,10 @@ confirm_dir $SCRATCH_BASE
 mkdir -p $DEST_BASE	# Create if necessary
 
 # Loop over all UUID in analysis summary file
-UUIDS=$(grep "$SCRATCH_BASE" $AS_SCRATCH | cut -f 10 | sort -u)
+#UUIDS=$(grep "$SCRATCH_BASE" $AS_SCRATCH | cut -f 10 | sort -u)
+
+# for tumor-only
+UUIDS=$(grep "$SCRATCH_BASE" $AS_SCRATCH | cut -f 8 | sort -u)
 
 for UUID in $UUIDS ; do
     echo Processing $UUID

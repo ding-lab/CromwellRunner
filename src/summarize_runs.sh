@@ -159,7 +159,9 @@ function init_summary {
 function get_dataset_name {
     UUID=$1
 
-    SN=$(awk -v uuid=$UUID 'BEGIN{FS="\t";OFS="\t"}{if ($10== uuid) print $1}' $CATALOG)
+    #SN=$(awk -v uuid=$UUID 'BEGIN{FS="\t";OFS="\t"}{if ($10== uuid) print $1}' $CATALOG)
+    # For GDAN AWS, UUID is the aliquot, col 4
+    SN=$(awk -v uuid=$UUID 'BEGIN{FS="\t";OFS="\t"}{if ($4== uuid) print $1}' $CATALOG)
     if [ -z "$SN" ]; then
         >&2 echo ERROR : UUID $UUID not found in $CATALOG
         exit 1
@@ -197,6 +199,19 @@ function get_sample_case {
     echo $CD
 }
 
+# GDAN AWS BamMap
+#$ examine_row /home/m.wyczalkowski/Projects/GDAN/Work/20240913.DLBCL_ValidationB/dat/BamMap.DLBCL-cohortA.dat 10
+#     1	file_name	CTSP-B6FB-TTP1-A-1-0-D-A91O-36.WholeGenome.RP-1329.bam
+#     2	file_size	337184910854
+#     3	case_submitter_id	CTSP-B6FB
+#     4	aliquot_submitter_id	CTSP-B6FB-TTP1-A-1-0-D-A91O-36
+#     5	experimental_strategy	WGS
+#     6	tissue_type	Tumor
+#     7	disease_type	Mature B-Cell Lymphomas
+#     8	primary_site	Unknown
+#     9	url	s3://dlbcl-misc-bucket/Tumor-Only/CTSP-B6FB-TTP1-A-1-0-D-A91O-36.WholeGenome.RP-1329.bam
+#    10	path	/storage1/fs1/m.wyczalkowski/Active/Primary/GDAN-AWS/dlbcl-misc-bucket/CTSP-B6FB-TTP1-A-1-0-D-A91O-36.WholeGenome.RP-1329.bam
+
 function make_summary {
     RUN_NAME=$1
 
@@ -212,9 +227,12 @@ function make_summary {
         CASE=$(get_sample_case $TUMOR_UUID)
         DIS="unknown"
     else
-        SAMPLE_UUID=$(echo "$SARGS" | cut -f 3)
-        SAMPLE_SN=$(get_dataset_name $SAMPLE_UUID)
-        CASE=$(get_sample_case $TUMOR_UUID)
+>&2 echo DEBUG: SARGS = $SARGS
+        SAMPLE_UUID=$(echo "$SARGS" | cut -f 1)
+        #SAMPLE_SN=$(get_dataset_name $SAMPLE_UUID)
+        SAMPLE_SN=$SAMPLE_UUID
+        #CASE=$(get_sample_case $TUMOR_UUID)
+        CASE=$(echo "$SARGS" | cut -f 2)
         DIS="unknown"
         #read CASE DIS < <(get_sample_case_disease $SAMPLE_UUID)
     fi
@@ -254,13 +272,25 @@ function make_summary {
         # File format is just upper case of EXT for now
         FILE_FORMAT=${EXT^^}        # https://stackoverflow.com/questions/11392189/how-to-convert-a-string-from-uppercase-to-lowercase-in-bash
 
-        # If RESTART_MAP is defined, get RESTART_D as RESTART_ROOT/UUID
-        if [ ! -z $RESTART_MAP ]; then
-            RESTART_D=$(get_restartd $RUN_NAME $RESTART_MAP)
-            test_exit_status
-            OUTLINE=$(printf "$RUN_NAME\t$CASE\t$DIS\t$RF\t$FILE_FORMAT\t$TUMOR_SN\t$TUMOR_UUID\t$NORMAL_SN\t$NORMAL_UUID\t$WID\t$RESTART_D\n" )
+        if [ $TUMOR_NORMAL ]; then
+            # If RESTART_MAP is defined, get RESTART_D as RESTART_ROOT/UUID
+            if [ ! -z $RESTART_MAP ]; then
+                RESTART_D=$(get_restartd $RUN_NAME $RESTART_MAP)
+                test_exit_status
+                OUTLINE=$(printf "$RUN_NAME\t$CASE\t$DIS\t$RF\t$FILE_FORMAT\t$TUMOR_SN\t$TUMOR_UUID\t$NORMAL_SN\t$NORMAL_UUID\t$WID\t$RESTART_D\n" )
+            else
+                OUTLINE=$(printf "$RUN_NAME\t$CASE\t$DIS\t$RF\t$FILE_FORMAT\t$TUMOR_SN\t$TUMOR_UUID\t$NORMAL_SN\t$NORMAL_UUID\t$WID\n" )
+            fi
         else
-            OUTLINE=$(printf "$RUN_NAME\t$CASE\t$DIS\t$RF\t$FILE_FORMAT\t$TUMOR_SN\t$TUMOR_UUID\t$NORMAL_SN\t$NORMAL_UUID\t$WID\n" )
+            # If RESTART_MAP is defined, get RESTART_D as RESTART_ROOT/UUID
+            if [ ! -z $RESTART_MAP ]; then
+                RESTART_D=$(get_restartd $RUN_NAME $RESTART_MAP)
+                test_exit_status
+#            HEADER=$(printf "# run_name\tcase\tdisease\tresult_path\tfile_format\tsample_name\tsample_uuid\tcromwell_workflow_id\n") 
+                OUTLINE=$(printf "$RUN_NAME\t$CASE\t$DIS\t$RF\t$FILE_FORMAT\t$SAMPLE_SN\t$SAMPLE_UUID\t$WID\t$RESTART_D\n" )
+            else
+                OUTLINE=$(printf "$RUN_NAME\t$CASE\t$DIS\t$RF\t$FILE_FORMAT\t$SAMPLE_SN\t$SAMPLE_UUID\t$WID\n" )
+            fi
         fi
 
         if [ $SUMMARY_OUT == "-" ]; then
